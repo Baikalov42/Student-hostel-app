@@ -16,4 +16,25 @@ public enum CourseNumber {
     public int getNumber() {
         return number;
     }
+
+    public CourseNumber getByNumber(int value) {
+        CourseNumber result = null;
+
+        for (CourseNumber constant : CourseNumber.values()) {
+            if (constant.getNumber() == value) {
+                result = constant;
+            }
+        }
+        if (result == null) {
+            throw new IllegalArgumentException("incorrect name");
+        }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CourseNumber{" +
+                "number=" + number +
+                '}';
+    }
 }

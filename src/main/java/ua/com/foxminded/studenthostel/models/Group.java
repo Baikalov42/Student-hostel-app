@@ -29,4 +29,10 @@ public class Group {
     public void setCourseNumber(CourseNumber courseNumber) {
         this.courseNumber = courseNumber;
     }
+
+    @Override
+    public String toString() {
+        return "Group{" +
+                "name='" + name + '\'' + ", faculty=" + faculty + ", courseNumber=" + courseNumber + '}';
+    }
 }

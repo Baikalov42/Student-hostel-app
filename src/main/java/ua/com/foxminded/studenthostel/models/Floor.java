@@ -22,4 +22,12 @@ public class Floor {
     public void setRooms(List<Room> rooms) {
         this.rooms = rooms;
     }
+
+    @Override
+    public String toString() {
+        return "Floor{" +
+                "name='" + name + '\'' +
+                ", rooms=" + rooms +
+                '}';
+    }
 }

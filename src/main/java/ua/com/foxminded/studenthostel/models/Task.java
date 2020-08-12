@@ -1,12 +1,13 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Task {
     private String name;
     private String description;
     private int costInHours;
-    private List<Student> executors;
+    private List<Student> executors = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -38,5 +39,15 @@ public class Task {
 
     public void setExecutors(List<Student> executors) {
         this.executors = executors;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", costInHours=" + costInHours +
+                ", executors=" + executors +
+                '}';
     }
 }

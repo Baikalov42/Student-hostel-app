@@ -1,5 +1,6 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Student {
@@ -8,9 +9,9 @@ public class Student {
     private String lastName;
     private int hoursDebt;
     private Group group;
-    private List<Equipment> equipments;
     private Room room;
-    private List<Task> tasks;
+    private List<Equipment> equipments = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
 
     public String getFirstName() {
         return firstName;
@@ -66,5 +67,18 @@ public class Student {
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", hoursDebt=" + hoursDebt +
+                ", group=" + group +
+                ", room=" + room +
+                ", equipments=" + equipments +
+                ", tasks=" + tasks +
+                '}';
     }
 }

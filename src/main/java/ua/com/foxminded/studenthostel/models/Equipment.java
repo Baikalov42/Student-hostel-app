@@ -14,7 +14,28 @@ public enum Equipment {
     Equipment(String name) {
         this.name = name;
     }
-    public String getName(){
+
+    public String getName() {
         return name;
+    }
+
+    public Equipment getByValue(String value) {
+        Equipment result = null;
+        for (Equipment equipment : Equipment.values()) {
+            if (equipment.name.equals(value)) {
+                result = equipment;
+            }
+        }
+        if (result == null) {
+            throw new IllegalArgumentException("incorrect value");
+        }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Equipment{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }
