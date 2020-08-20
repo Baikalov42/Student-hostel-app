@@ -3,8 +3,8 @@ package ua.com.foxminded.studenthostel.models;
 public class Group {
 
     private String name;
-    private Faculty faculty;
-    private CourseNumber courseNumber;
+    private int facultyId;
+    private int courseNumberId;
 
     public String getName() {
         return name;
@@ -14,25 +14,28 @@ public class Group {
         this.name = name;
     }
 
-    public Faculty getFaculty() {
-        return faculty;
+    public int getFacultyId() {
+        return facultyId;
     }
 
-    public void setFaculty(Faculty faculty) {
-        this.faculty = faculty;
+    public void setFacultyId(int facultyId) {
+        this.facultyId = facultyId;
     }
 
-    public CourseNumber getCourseNumber() {
-        return courseNumber;
+    public int getCourseNumberId() {
+        return courseNumberId;
     }
 
-    public void setCourseNumber(CourseNumber courseNumber) {
-        this.courseNumber = courseNumber;
+    public void setCourseNumberId(int courseNumberId) {
+        this.courseNumberId = courseNumberId;
     }
 
     @Override
     public String toString() {
         return "Group{" +
-                "name='" + name + '\'' + ", faculty=" + faculty + ", courseNumber=" + courseNumber + '}';
+                "name='" + name + '\'' +
+                ", facultyId=" + facultyId +
+                ", courseNumberId=" + courseNumberId +
+                '}';
     }
 }

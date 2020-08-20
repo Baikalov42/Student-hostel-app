@@ -1,13 +1,18 @@
 package ua.com.foxminded.studenthostel.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Task {
+    private int id;
     private String name;
     private String description;
     private int costInHours;
-    private List<Student> executors = new ArrayList<>();
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -33,21 +38,13 @@ public class Task {
         this.costInHours = costInHours;
     }
 
-    public List<Student> getExecutors() {
-        return executors;
-    }
-
-    public void setExecutors(List<Student> executors) {
-        this.executors = executors;
-    }
-
     @Override
     public String toString() {
         return "Task{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", costInHours=" + costInHours +
-                ", executors=" + executors +
                 '}';
     }
 }

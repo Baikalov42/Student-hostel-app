@@ -7,21 +7,21 @@ public enum CourseNumber {
     FOURTH(4),
     FIFTH(5);
 
-    private final int number;
+    private final int id;
 
-    CourseNumber(int number) {
-        this.number = number;
+    CourseNumber(int id) {
+        this.id = id;
     }
 
-    public int getNumber() {
-        return number;
+    public int getId() {
+        return id;
     }
 
-    public CourseNumber getByNumber(int value) {
+    public CourseNumber getByNumber(int id) {
         CourseNumber result = null;
 
         for (CourseNumber constant : CourseNumber.values()) {
-            if (constant.getNumber() == value) {
+            if (constant.getId() == id) {
                 result = constant;
             }
         }
@@ -34,7 +34,7 @@ public enum CourseNumber {
     @Override
     public String toString() {
         return "CourseNumber{" +
-                "number=" + number +
+                "number=" + id +
                 '}';
     }
 }

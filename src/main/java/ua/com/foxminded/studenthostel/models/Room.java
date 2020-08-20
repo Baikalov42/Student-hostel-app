@@ -1,12 +1,10 @@
 package ua.com.foxminded.studenthostel.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Room {
 
     private String name;
-    private List<Student> students = new ArrayList<>();
+    private int id;
+    private int floorId;
 
     public String getName() {
         return name;
@@ -16,19 +14,28 @@ public class Room {
         this.name = name;
     }
 
-    public List<Student> getStudents() {
-        return students;
+    public int getId() {
+        return id;
     }
 
-    public void setStudents(List<Student> students) {
-        this.students = students;
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getFloorId() {
+        return floorId;
+    }
+
+    public void setFloorId(int floorId) {
+        this.floorId = floorId;
     }
 
     @Override
     public String toString() {
         return "Room{" +
                 "name='" + name + '\'' +
-                ", students=" + students +
+                ", id=" + id +
+                ", floorId=" + floorId +
                 '}';
     }
 }
