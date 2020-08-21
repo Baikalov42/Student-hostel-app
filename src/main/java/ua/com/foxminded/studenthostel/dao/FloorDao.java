@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Floor;
-import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.mappers.FloorMapper;
 
 @Component
