@@ -1,36 +1,33 @@
 package ua.com.foxminded.studenthostel.models;
 
 public enum Faculty {
-    WEB_DESIGN("web design"),
-    DATABASE_ARCHITECTURE("database architecture"),
-    GAME_DEVELOPMENT("game development"),
-    FRONT_END_DEVELOPMENT("front end development"),
-    BECK_END_DEVELOPMENT("beck end development");
+    WEB_DESIGN(1,"web design"),
+    DATABASE_ARCHITECTURE(2,"database architecture"),
+    GAME_DEVELOPMENT(3,"game development"),
+    FRONT_END_DEVELOPMENT(4,"front end development"),
+    BECK_END_DEVELOPMENT(5,"beck end development");
 
 
     private final String name;
-    private int id;
+    private final int id;
 
-    Faculty(String name) {
-        this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
+    Faculty(int id, String name) {
         this.id = id;
+        this.name = name;
     }
 
     public String getName() {
         return name;
     }
 
-    public Faculty getByValue(String value) {
+    public int getId() {
+        return id;
+    }
+
+    public static Faculty getByName(String name) {
         Faculty result = null;
         for (Faculty faculty : Faculty.values()) {
-            if (faculty.name.equals(value)) {
+            if (faculty.name.equals(name)) {
                 result = faculty;
             }
         }

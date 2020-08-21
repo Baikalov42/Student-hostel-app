@@ -2,46 +2,44 @@ package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Room;
+import ua.com.foxminded.studenthostel.models.mappers.RoomMapper;
 
-import javax.sql.DataSource;
 import java.util.List;
 
+@Component
 public class RoomDao {
 
-    private JdbcTemplate jdbcTemplate;
-
-    private final RowMapper<Room> roomRowMapper = (resultSet, rowNum) -> {
-
-        Room room = new Room();
-        room.setName(resultSet.getString("room_name"));
-        room.setFloorId(resultSet.getInt("floor_id"));
-        room.setId(resultSet.getInt("room_id"));
-
-        return room;
-    };
-
     @Autowired
-    public RoomDao(DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private RoomMapper roomMapper;
+
+    public void insert(Room room) {
+
+        String query = "" +
+                "INSERT INTO rooms (room_name, floor_id) " +
+                "VALUES (?, ?)";
+        jdbcTemplate.update(query, room.getName(), room.getFloorId());
     }
 
     public Room getById(int roomId) {
         String query = "" +
-                "SELECT * FROM rooms " +
+                "SELECT * " +
+                "FROM rooms " +
                 "WHERE room_id = ? ";
-        return jdbcTemplate.queryForObject(query, roomRowMapper, roomId);
+        return jdbcTemplate.queryForObject(query, roomMapper, roomId);
     }
 
     public List<Room> getAllByEquipment(int equipmentId) {
         String query = "" +
                 "SELECT * FROM equipments " +
-                "   INNER JOIN students_equipments ON equipments.equipments_id = students_equipments.equipment_id " +
-                "   INNER JOIN students ON students_equipments.student_id = students.student_id " +
-                "   INNER JOIN rooms ON students.room_id = rooms.room_id " +
+                "INNER JOIN students_equipments ON equipments.equipments_id = students_equipments.equipment_id " +
+                "INNER JOIN students ON students_equipments.student_id = students.student_id " +
+                "INNER JOIN rooms ON students.room_id = rooms.room_id " +
                 "WHERE equipments_id = ? ";
-        return jdbcTemplate.query(query, roomRowMapper, equipmentId);
+        return jdbcTemplate.query(query, roomMapper, equipmentId);
     }
 
     public void changeRoom(int newRoomId, int studentID) {

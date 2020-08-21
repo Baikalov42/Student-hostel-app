@@ -1,32 +1,37 @@
 package ua.com.foxminded.studenthostel.models;
 
 public enum CourseNumber {
-    FIRST(1),
-    SECOND(2),
-    THIRD(3),
-    FOURTH(4),
-    FIFTH(5);
+    FIRST(1,"first"),
+    SECOND(2,"second"),
+    THIRD(3,"third"),
+    FOURTH(4,"fourth"),
+    FIFTH(5,"fifth");
 
+    private final String name;
     private final int id;
 
-    CourseNumber(int id) {
+    CourseNumber(int id,String name) {
+        this.name = name;
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int getId() {
         return id;
     }
 
-    public CourseNumber getByNumber(int id) {
+    public static CourseNumber getByName(String name) {
         CourseNumber result = null;
-
-        for (CourseNumber constant : CourseNumber.values()) {
-            if (constant.getId() == id) {
-                result = constant;
+        for (CourseNumber courseNumber : CourseNumber.values()) {
+            if (courseNumber.name.equals(name)) {
+                result = courseNumber;
             }
         }
         if (result == null) {
-            throw new IllegalArgumentException("incorrect name");
+            throw new IllegalArgumentException("incorrect value");
         }
         return result;
     }
@@ -34,7 +39,8 @@ public enum CourseNumber {
     @Override
     public String toString() {
         return "CourseNumber{" +
-                "number=" + id +
+                "name='" + name + '\'' +
+                ", id=" + id +
                 '}';
     }
 }

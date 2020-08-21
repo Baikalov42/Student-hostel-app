@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS course_numbers CASCADE;
 DROP TABLE IF EXISTS equipments CASCADE;
-DROP TABLE IF EXISTS facultys CASCADE;
+DROP TABLE IF EXISTS faculties CASCADE;
 DROP TABLE IF EXISTS tasks CASCADE;
 DROP TABLE IF EXISTS rooms CASCADE;
 DROP TABLE IF EXISTS floors CASCADE;
@@ -12,43 +12,43 @@ DROP TABLE IF EXISTS students_tasks cascade;
 CREATE TABLE IF NOT EXISTS course_numbers
 (
     course_number_id   SERIAL PRIMARY KEY,
-    course_number_name VARCHAR(30)
+    course_number_name VARCHAR(30) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS equipments
 (
     equipments_id   SERIAL PRIMARY KEY,
-    equipments_name varchar(30) NOT NULL
+    equipments_name varchar(30) UNIQUE NOT NULL
 );
-CREATE TABLE IF NOT EXISTS facultys
+CREATE TABLE IF NOT EXISTS faculties
 (
     faculty_id   SERIAL PRIMARY KEY,
-    faculty_name varchar(30) NOT NULL
+    faculty_name varchar(30) UNIQUE NOT NULL
 );
 CREATE TABLE IF NOT EXISTS tasks
 (
     task_id          SERIAL PRIMARY KEY,
-    task_name        varchar(30) NOT NULL,
+    task_name        varchar(30) UNIQUE NOT NULL,
     task_description varchar(30) NOT NULL,
     cost             INTEGER     NOT NULL
 );
 CREATE TABLE IF NOT EXISTS floors
 (
     floor_id   SERIAL PRIMARY KEY,
-    floor_name varchar(30) NOT NULL
+    floor_name varchar(30) UNIQUE NOT NULL
 );
 CREATE TABLE IF NOT EXISTS rooms
 (
     room_id   SERIAL PRIMARY KEY,
-    room_name varchar(30) NOT NULL,
+    room_name varchar(30) UNIQUE NOT NULL,
     floor_id  INTEGER REFERENCES floors (floor_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS groups
 (
     group_id         SERIAL PRIMARY KEY,
-    group_name       VARCHAR(30),
-    faculty_id       INTEGER REFERENCES facultys (faculty_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    group_name       VARCHAR(30) UNIQUE NOT NULL,
+    faculty_id       INTEGER REFERENCES faculties (faculty_id) ON UPDATE CASCADE ON DELETE CASCADE,
     course_number_id INTEGER REFERENCES course_numbers (course_number_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

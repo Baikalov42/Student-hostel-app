@@ -2,30 +2,17 @@ package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Task;
+import ua.com.foxminded.studenthostel.models.mappers.TaskMapper;
 
 
-import javax.sql.DataSource;
-
-
+@Component
 public class TaskDao {
-    private JdbcTemplate jdbcTemplate;
-    private final RowMapper<Task> taskRowMapper = (resultSet, rowNum) -> {
-
-        Task task = new Task();
-        task.setName(resultSet.getString("task_name"));
-        task.setDescription(resultSet.getString("task_description"));
-        task.setCostInHours(resultSet.getInt("cost"));
-        task.setId(resultSet.getInt("task_id"));
-
-        return task;
-    };
-
     @Autowired
-    public TaskDao(DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private TaskMapper taskMapper;
 
     public void insert(Task task) {
         String query = "" +
@@ -37,9 +24,10 @@ public class TaskDao {
 
     public Task getById(int taskId) {
         String query = "" +
-                "SELECT * FROM tasks " +
+                "SELECT * " +
+                "FROM tasks " +
                 "WHERE task_id = ? ";
-        return jdbcTemplate.queryForObject(query, taskRowMapper, taskId);
+        return jdbcTemplate.queryForObject(query, taskMapper, taskId);
 
     }
 

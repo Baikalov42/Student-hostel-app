@@ -2,14 +2,16 @@ package ua.com.foxminded.studenthostel.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import ua.com.foxminded.studenthostel.dao.*;
 
 import javax.sql.DataSource;
 
 @Configuration
+@ComponentScan(basePackages = "ua.com.foxminded.studenthostel")
 @PropertySource("classpath:db.properties")
 public class SpringConfig {
 
@@ -37,30 +39,9 @@ public class SpringConfig {
 
         return dataSource;
     }
-
     @Bean
-    public TaskDao taskDao() {
-        return new TaskDao(dataSource());
-    }
-
-    @Bean
-    public StudentDao studentDao() {
-        return new StudentDao(dataSource());
-    }
-
-    @Bean
-    public RoomDao roomDao() {
-        return new RoomDao(dataSource());
-    }
-
-    @Bean
-    public FloorDao floorDao() {
-        return new FloorDao(dataSource());
-    }
-
-    @Bean
-    public EquipmentDao equipmentDao() {
-        return new EquipmentDao(dataSource());
+    public JdbcTemplate jdbcTemplate(){
+        return new JdbcTemplate(dataSource());
     }
 
 }

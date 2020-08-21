@@ -2,35 +2,33 @@ package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Floor;
+import ua.com.foxminded.studenthostel.models.Student;
+import ua.com.foxminded.studenthostel.models.mappers.FloorMapper;
 
-import javax.sql.DataSource;
-
+@Component
 public class FloorDao {
 
-    private JdbcTemplate jdbcTemplate;
-
-    private RowMapper<Floor> floorRowMapper = (resultSet, rowNum) -> {
-
-        Floor floor = new Floor();
-        floor.setId(resultSet.getInt("floor_id"));
-        floor.setName(resultSet.getString("floor_name"));
-
-        return floor;
-    };
-
     @Autowired
-    public FloorDao(DataSource dataSource) {
-        jdbcTemplate = new JdbcTemplate(dataSource);
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private FloorMapper floorMapper;
+
+    public void insert(Floor floor) {
+        String query = "" +
+                "INSERT INTO floors (floor_name) " +
+                "VALUES (?)";
+
+        jdbcTemplate.update(query, floor.getName() );
     }
 
     public Floor getById(int floorId) {
         String query = "" +
-                "SELECT * FROM floors " +
+                "SELECT * " +
+                "FROM floors " +
                 "WHERE floor_id = ? ";
 
-        return jdbcTemplate.queryForObject(query, floorRowMapper, floorId);
+        return jdbcTemplate.queryForObject(query, floorMapper, floorId);
     }
-
 }
