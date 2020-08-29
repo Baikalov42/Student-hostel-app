@@ -6,32 +6,30 @@ import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.mappers.EquipmentMapper;
 
+import java.math.BigInteger;
+
 @Component
 public class EquipmentDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private EquipmentMapper equipmentMapper;
 
-    public void checkAndUpdate(Equipment equipment) {
+    public void save(Equipment equipment) {
         String query = "" +
                 "INSERT INTO equipments(equipments_id, equipments_name) " +
-                "VALUES (? , ? ) " +
-                "ON CONFLICT ON CONSTRAINT equipments_pkey DO UPDATE " +
-                "SET equipments_id = excluded.equipments_id, equipments_name = excluded.equipments_name;";
+                "VALUES (? , ? ) ";
 
         jdbcTemplate.update(query, equipment.getId(), equipment.getName());
     }
 
-    public void setToStudent(int studentId, int equipmentId) {
+    public void setToStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "INSERT INTO students_equipments (student_id, equipment_id) " +
                 "VALUES (? , ?)";
         jdbcTemplate.update(query, studentId, equipmentId);
     }
 
-    public void removeFromStudent(int studentId, int equipmentId) {
+    public void removeFromStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "DELETE FROM students_equipments " +
                 "WHERE student_id = ? " +
@@ -39,11 +37,11 @@ public class EquipmentDao {
         jdbcTemplate.update(query, studentId, equipmentId);
     }
 
-    public Equipment getById(int equipmentId) {
+    public Equipment getById(BigInteger equipmentId) {
         String query = "" +
                 "SELECT * FROM equipments " +
                 "WHERE equipments_id = ? ";
 
-        return jdbcTemplate.queryForObject(query, equipmentMapper, equipmentId);
+        return jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
     }
 }

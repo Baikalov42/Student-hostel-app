@@ -1,26 +1,28 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.math.BigInteger;
+
 public enum Faculty {
-    WEB_DESIGN(1,"web design"),
-    DATABASE_ARCHITECTURE(2,"database architecture"),
-    GAME_DEVELOPMENT(3,"game development"),
-    FRONT_END_DEVELOPMENT(4,"front end development"),
-    BECK_END_DEVELOPMENT(5,"beck end development");
+    WEB_DESIGN(BigInteger.valueOf(1), "web design"),
+    DATABASE_ARCHITECTURE(BigInteger.valueOf(2), "database architecture"),
+    GAME_DEVELOPMENT(BigInteger.valueOf(3), "game development"),
+    FRONT_END_DEVELOPMENT(BigInteger.valueOf(4), "front end development"),
+    BECK_END_DEVELOPMENT(BigInteger.valueOf(5), "beck end development");
 
 
     private final String name;
-    private final int id;
+    private final BigInteger id;
 
-    Faculty(int id, String name) {
-        this.id = id;
+    Faculty(BigInteger id, String name) {
         this.name = name;
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 
@@ -41,6 +43,7 @@ public enum Faculty {
     public String toString() {
         return "Faculty{" +
                 "name='" + name + '\'' +
+                ", id=" + id +
                 '}';
     }
 }

@@ -13,7 +13,7 @@ public class EquipmentMapper implements RowMapper<Equipment> {
    @Override
     public Equipment mapRow(ResultSet resultSet, int i) throws SQLException {
 
-        String name = resultSet.getString("equipment_name");
+        String name = resultSet.getString("equipments_name");
         return Equipment.getByName(name);
     }
 }

@@ -1,11 +1,13 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.math.BigInteger;
+
 public class Group {
 
     private String name;
-    private int id;
-    private int facultyId;
-    private int courseNumberId;
+    private BigInteger id;
+    private BigInteger facultyId;
+    private BigInteger courseNumberId;
 
     public String getName() {
         return name;
@@ -15,28 +17,50 @@ public class Group {
         this.name = name;
     }
 
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(BigInteger id) {
         this.id = id;
     }
 
-    public int getFacultyId() {
+    public BigInteger getFacultyId() {
         return facultyId;
     }
 
-    public void setFacultyId(int facultyId) {
+    public void setFacultyId(BigInteger facultyId) {
         this.facultyId = facultyId;
     }
 
-    public int getCourseNumberId() {
+    public BigInteger getCourseNumberId() {
         return courseNumberId;
     }
 
-    public void setCourseNumberId(int courseNumberId) {
+    public void setCourseNumberId(BigInteger courseNumberId) {
         this.courseNumberId = courseNumberId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Group group = (Group) o;
+
+        if (!name.equals(group.name)) return false;
+        if (!id.equals(group.id)) return false;
+        if (!facultyId.equals(group.facultyId)) return false;
+        return courseNumberId.equals(group.courseNumberId);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
+        result = 31 * result + facultyId.hashCode();
+        result = 31 * result + courseNumberId.hashCode();
+        return result;
     }
 
     @Override

@@ -1,23 +1,25 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.math.BigInteger;
+
 public enum Equipment {
 
-    TABLE(1, "table"),
-    BEDSIDE_TABLE(2, "bedside table"),
-    CHAIR(3, "chair"),
-    BED(4, "bed"),
-    MATTRESS(5, "mattress"),
-    LINEN(6, "linen");
+    TABLE(BigInteger.valueOf(1), "table"),
+    BEDSIDE_TABLE(BigInteger.valueOf(2), "bedside table"),
+    CHAIR(BigInteger.valueOf(3), "chair"),
+    BED(BigInteger.valueOf(4), "bed"),
+    MATTRESS(BigInteger.valueOf(5), "mattress"),
+    LINEN(BigInteger.valueOf(6), "linen");
 
     private final String name;
-    private int id;
+    private final BigInteger id;
 
-    Equipment(int id, String name) {
+    Equipment(BigInteger id, String name) {
         this.name = name;
         this.id = id;
     }
 
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 
@@ -42,6 +44,7 @@ public enum Equipment {
     public String toString() {
         return "Equipment{" +
                 "name='" + name + '\'' +
+                ", id=" + id +
                 '}';
     }
 }

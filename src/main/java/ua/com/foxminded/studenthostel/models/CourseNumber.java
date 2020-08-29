@@ -1,16 +1,18 @@
 package ua.com.foxminded.studenthostel.models;
 
+import java.math.BigInteger;
+
 public enum CourseNumber {
-    FIRST(1,"first"),
-    SECOND(2,"second"),
-    THIRD(3,"third"),
-    FOURTH(4,"fourth"),
-    FIFTH(5,"fifth");
+    FIRST(BigInteger.valueOf(1), "first"),
+    SECOND(BigInteger.valueOf(2), "second"),
+    THIRD(BigInteger.valueOf(3), "third"),
+    FOURTH(BigInteger.valueOf(4), "fourth"),
+    FIFTH(BigInteger.valueOf(5), "fifth");
 
     private final String name;
-    private final int id;
+    private final BigInteger id;
 
-    CourseNumber(int id,String name) {
+    CourseNumber(BigInteger id, String name) {
         this.name = name;
         this.id = id;
     }
@@ -19,7 +21,7 @@ public enum CourseNumber {
         return name;
     }
 
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 

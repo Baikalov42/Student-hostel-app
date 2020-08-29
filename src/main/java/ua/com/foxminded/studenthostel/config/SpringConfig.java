@@ -27,7 +27,6 @@ public class SpringConfig {
     @Value("${db.driverClassName}")
     private String driverClassName;
 
-
     @Bean
     public DataSource dataSource() {
 
@@ -39,9 +38,9 @@ public class SpringConfig {
 
         return dataSource;
     }
+
     @Bean
-    public JdbcTemplate jdbcTemplate(){
+    public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
-
 }

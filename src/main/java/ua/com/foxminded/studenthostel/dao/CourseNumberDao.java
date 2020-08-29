@@ -6,28 +6,26 @@ import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.mappers.CourseNumberMapper;
 
+import java.math.BigInteger;
+
 @Component
 public class CourseNumberDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private CourseNumberMapper courseNumberMapper;
 
-    public void checkAndUpdate(CourseNumber courseNumber) {
+    public void save(CourseNumber courseNumber) {
         String query = "" +
                 "INSERT INTO course_numbers(course_number_id, course_number_name) " +
-                "VALUES (? , ? ) " +
-                "ON CONFLICT ON CONSTRAINT course_numbers_pkey DO UPDATE " +
-                "SET course_number_id = excluded.course_number_id, course_number_name = excluded.course_number_name;";
+                "VALUES (? , ? ) ";
 
         jdbcTemplate.update(query, courseNumber.getId(), courseNumber.getName());
     }
 
-    public CourseNumber getById(int courseNumberId) {
+    public CourseNumber getById(BigInteger courseNumberId) {
         String query = "" +
                 "SELECT * FROM course_numbers " +
                 "WHERE course_number_id = ?";
-        return jdbcTemplate.queryForObject(query, courseNumberMapper, courseNumberId);
+        return jdbcTemplate.queryForObject(query, new CourseNumberMapper(), courseNumberId);
     }
 }

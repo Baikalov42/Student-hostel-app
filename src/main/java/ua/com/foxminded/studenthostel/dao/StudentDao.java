@@ -6,21 +6,20 @@ import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.mappers.StudentMapper;
 
+import java.math.BigInteger;
 import java.util.List;
 
-@Component()
-public class StudentDao {
+@Component
+public class  StudentDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private StudentMapper studentMapper;
 
     public void insert(Student student) {
         String firstName = student.getFirstName();
         String lastName = student.getLastName();
-        int groupId = student.getGroupId();
-        int roomId = student.getRoomId();
+        BigInteger groupId = student.getGroupId();
+        BigInteger roomId = student.getRoomId();
         int hours = student.getHoursDebt();
 
         String query = "" +
@@ -30,14 +29,14 @@ public class StudentDao {
         jdbcTemplate.update(query, firstName, lastName, hours, groupId, roomId);
     }
 
-    public Student getById(int studentID) {
+    public Student getById(BigInteger studentId) {
         String query = "" +
                 "SELECT * FROM students " +
                 "WHERE student_id = ? ";
-        return jdbcTemplate.queryForObject(query, studentMapper, studentID);
+        return jdbcTemplate.queryForObject(query, new StudentMapper(), studentId);
     }
 
-    public List<Student> showAllByFloor(int floorId) {
+    public List<Student> showAllByFloor(BigInteger floorId) {
         String query = "" +
                 "SELECT * " +
                 "FROM students " +
@@ -47,21 +46,21 @@ public class StudentDao {
                 "WHERE floors.floor_id = ?;";
 
 
-        return jdbcTemplate.query(query, studentMapper, floorId);
+        return jdbcTemplate.query(query, new StudentMapper(), floorId);
     }
 
-    public List<Student> showByFaculty(int facultyId) {
+    public List<Student> showByFaculty(BigInteger facultyId) {
         String query = "" +
                 "SELECT * " +
                 "FROM students " +
                 "INNER JOIN groups ON students.group_id = groups.group_id " +
-                "INNER JOIN facultys ON groups.faculty_id = facultys.faculty_id " +
-                "WHERE facultys.faculty_id = ? ";
+                "INNER JOIN faculties ON groups.faculty_id = faculties.faculty_id " +
+                "WHERE faculties.faculty_id = ? ";
 
-        return jdbcTemplate.query(query, studentMapper, facultyId);
+        return jdbcTemplate.query(query, new StudentMapper(), facultyId);
     }
 
-    public List<Student> showByCourse(int courseId) {
+    public List<Student> showByCourse(BigInteger courseId) {
         String query = "" +
                 "SELECT * " +
                 "FROM students " +
@@ -69,22 +68,22 @@ public class StudentDao {
                 "INNER JOIN course_numbers ON groups.course_number_id = course_numbers.course_number_id " +
                 "WHERE course_numbers.course_number_id = ? ";
 
-        return jdbcTemplate.query(query, studentMapper, courseId);
+        return jdbcTemplate.query(query, new StudentMapper(), courseId);
     }
 
-    public List<Student> showFromGroupWithDebit(int groupID, int numberOfHoursDebt) {
+    public List<Student> showFromGroupWithDebit(BigInteger groupId, int numberOfHoursDebt) {
         String query = "" +
                 "SELECT * FROM students " +
                 "INNER JOIN groups ON groups.group_id = students.student_id " +
                 "WHERE students.group_id = ? " +
                 "AND students.hours_debt > ? ";
-        return jdbcTemplate.query(query, studentMapper, groupID, numberOfHoursDebt);
+        return jdbcTemplate.query(query, new StudentMapper(), groupId, numberOfHoursDebt);
     }
 
-    public void deleteById(int studentId) {
+    public void deleteById(BigInteger id) {
         String query = "" +
                 "DELETE  from  students " +
                 "WHERE student_id = ? ";
-        jdbcTemplate.update(query, studentId);
+        jdbcTemplate.update(query, id);
     }
 }

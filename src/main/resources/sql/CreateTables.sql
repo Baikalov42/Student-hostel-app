@@ -6,8 +6,8 @@ DROP TABLE IF EXISTS rooms CASCADE;
 DROP TABLE IF EXISTS floors CASCADE;
 DROP TABLE IF EXISTS groups CASCADE;
 DROP TABLE IF EXISTS students CASCADE;
-DROP TABLE IF EXISTS students_equipments cascade;
-DROP TABLE IF EXISTS students_tasks cascade;
+DROP TABLE IF EXISTS students_equipments CASCADE ;
+DROP TABLE IF EXISTS students_tasks CASCADE ;
 
 CREATE TABLE IF NOT EXISTS course_numbers
 (
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS tasks
 (
     task_id          SERIAL PRIMARY KEY,
     task_name        varchar(30) UNIQUE NOT NULL,
-    task_description varchar(30) NOT NULL,
-    cost             INTEGER     NOT NULL
+    task_description varchar(30)        NOT NULL,
+    cost             INTEGER            NOT NULL
 );
 CREATE TABLE IF NOT EXISTS floors
 (
@@ -71,3 +71,4 @@ CREATE TABLE IF NOT EXISTS students_tasks
     student_id INTEGER REFERENCES students (student_id) ON UPDATE CASCADE ON DELETE CASCADE,
     task_id    INTEGER REFERENCES tasks (task_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+

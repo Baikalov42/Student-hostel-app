@@ -22,15 +22,15 @@ values ('mattress');
 INSERT INTO equipments (equipments_name)
 values ('linen');
 
-INSERT INTO facultys (faculty_name)
+INSERT INTO faculties (faculty_name)
 values ('web design');
-INSERT INTO facultys (faculty_name)
+INSERT INTO faculties (faculty_name)
 values ('database architecture');
-INSERT INTO facultys (faculty_name)
+INSERT INTO faculties (faculty_name)
 values ('game development');
-INSERT INTO facultys (faculty_name)
+INSERT INTO faculties (faculty_name)
 values ('front end development');
-INSERT INTO facultys (faculty_name)
+INSERT INTO faculties (faculty_name)
 values ('beck end development');
 
 INSERT INTO floors (floor_name)
