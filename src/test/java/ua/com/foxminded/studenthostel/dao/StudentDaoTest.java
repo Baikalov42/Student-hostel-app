@@ -158,14 +158,28 @@ class StudentDaoTest {
     }
 
     @Test
-    public void deleteById_ShouldDeleteEntry_FromStudentsTable() {
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
-        studentDao.deleteById(BigInteger.valueOf(1));
+        boolean isDeleted = studentDao.deleteById(BigInteger.valueOf(1));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
+        boolean isDeleted = studentDao.deleteById(BigInteger.valueOf(7));
+        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
+
+        Assertions.assertEquals(rowBefore, rowAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }

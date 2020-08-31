@@ -128,14 +128,28 @@ class TaskDaoTest {
     }
 
     @Test
-    public void deleteById_ShouldDeleteEntry_FromTasksTable() {
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
-        taskDao.deleteById(BigInteger.valueOf(4));
+        boolean isDeleted = taskDao.deleteById(BigInteger.valueOf(4));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
+        boolean isDeleted = taskDao.deleteById(BigInteger.valueOf(5));
+        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
+
+        Assertions.assertEquals(rowBefore, rowAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
@@ -42,5 +43,47 @@ public class SpringConfig {
     @Bean
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
+    }
+
+    @Bean
+    public SimpleJdbcInsert floorJdbcInsert() {
+        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate());
+
+        jdbcInsert.withTableName("floors");
+        jdbcInsert.usingGeneratedKeyColumns("floor_id");
+
+        return jdbcInsert;
+    }
+    @Bean
+    public SimpleJdbcInsert groupJdbcInsert() {
+        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate());
+        jdbcInsert.withTableName("groups");
+        jdbcInsert.usingGeneratedKeyColumns("group_id");
+
+        return jdbcInsert;
+    }
+    @Bean
+    public SimpleJdbcInsert roomJdbcInsert() {
+        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate());
+        jdbcInsert.withTableName("rooms");
+        jdbcInsert.usingGeneratedKeyColumns("room_id");
+
+        return jdbcInsert;
+    }
+    @Bean
+    public SimpleJdbcInsert studentJdbcInsert() {
+        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate());
+        jdbcInsert.withTableName("students");
+        jdbcInsert.usingGeneratedKeyColumns("student_id");
+
+        return jdbcInsert;
+    }
+    @Bean
+    public SimpleJdbcInsert taskJdbcInsert() {
+        SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate());
+        jdbcInsert.withTableName("tasks");
+        jdbcInsert.usingGeneratedKeyColumns("task_id");
+
+        return jdbcInsert;
     }
 }

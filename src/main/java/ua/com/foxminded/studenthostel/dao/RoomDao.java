@@ -1,13 +1,17 @@
 package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.mappers.RoomMapper;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class RoomDao {
@@ -15,12 +19,17 @@ public class RoomDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public void insert(Room room) {
+    @Qualifier("roomJdbcInsert")
+    @Autowired
+    private SimpleJdbcInsert roomJdbcInsert;
 
-        String query = "" +
-                "INSERT INTO rooms (room_name, floor_id) " +
-                "VALUES (?, ?)";
-        jdbcTemplate.update(query, room.getName(), room.getFloorId());
+    public BigInteger insert(Room room) {
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("room_name", room.getName());
+        parameters.put("floor_id", room.getFloorId());
+
+        return BigInteger.valueOf(roomJdbcInsert.executeAndReturnKey(parameters).longValue());
     }
 
     public Room getById(BigInteger roomId) {
@@ -41,19 +50,19 @@ public class RoomDao {
         return jdbcTemplate.query(query, new RoomMapper(), equipmentId);
     }
 
-    public void changeRoom(BigInteger newRoomId, BigInteger studentId) {
+    public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) {
         String query = "" +
                 "UPDATE students " +
                 "SET room_id = ? " +
                 "WHERE student_id = ? ";
-        jdbcTemplate.update(query, newRoomId, studentId);
+        return jdbcTemplate.update(query, newRoomId, studentId) == 1;
     }
 
-    public void deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM rooms " +
                 "WHERE room_id  = ? ";
 
-        jdbcTemplate.update(query, id);
+        return jdbcTemplate.update(query, id) == 1;
     }
 }

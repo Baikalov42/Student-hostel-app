@@ -1,32 +1,39 @@
 package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.mappers.StudentMapper;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
-public class  StudentDao {
+public class StudentDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public void insert(Student student) {
-        String firstName = student.getFirstName();
-        String lastName = student.getLastName();
-        BigInteger groupId = student.getGroupId();
-        BigInteger roomId = student.getRoomId();
-        int hours = student.getHoursDebt();
+    @Qualifier("studentJdbcInsert")
+    @Autowired
+    private SimpleJdbcInsert studentJdbcInsert;
 
-        String query = "" +
-                "INSERT INTO students (first_name, last_name, hours_debt, group_id, room_id) " +
-                "VALUES (? , ? , ? , ? , ? )";
+    public BigInteger insert(Student student) {
 
-        jdbcTemplate.update(query, firstName, lastName, hours, groupId, roomId);
+        Map<String, Object> parameters = new HashMap<>();
+
+        parameters.put("first_name", student.getFirstName());
+        parameters.put("last_name", student.getLastName());
+        parameters.put("hours_debt", student.getHoursDebt());
+        parameters.put("group_id", student.getGroupId());
+        parameters.put("room_id", student.getRoomId());
+
+        return BigInteger.valueOf(studentJdbcInsert.executeAndReturnKey(parameters).longValue());
     }
 
     public Student getById(BigInteger studentId) {
@@ -80,10 +87,10 @@ public class  StudentDao {
         return jdbcTemplate.query(query, new StudentMapper(), groupId, numberOfHoursDebt);
     }
 
-    public void deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE  from  students " +
                 "WHERE student_id = ? ";
-        jdbcTemplate.update(query, id);
+        return jdbcTemplate.update(query, id) == 1;
     }
 }

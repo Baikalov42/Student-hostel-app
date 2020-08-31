@@ -22,19 +22,19 @@ public class EquipmentDao {
         jdbcTemplate.update(query, equipment.getId(), equipment.getName());
     }
 
-    public void setToStudent(BigInteger studentId, BigInteger equipmentId) {
+    public boolean setToStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "INSERT INTO students_equipments (student_id, equipment_id) " +
                 "VALUES (? , ?)";
-        jdbcTemplate.update(query, studentId, equipmentId);
+        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
     }
 
-    public void removeFromStudent(BigInteger studentId, BigInteger equipmentId) {
+    public boolean removeFromStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "DELETE FROM students_equipments " +
                 "WHERE student_id = ? " +
                 "AND equipment_id = ?";
-        jdbcTemplate.update(query, studentId, equipmentId);
+        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
     }
 
     public Equipment getById(BigInteger equipmentId) {

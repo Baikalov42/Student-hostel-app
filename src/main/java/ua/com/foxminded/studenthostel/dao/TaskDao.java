@@ -1,12 +1,16 @@
 package ua.com.foxminded.studenthostel.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.Task;
 import ua.com.foxminded.studenthostel.models.mappers.TaskMapper;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Component
@@ -15,12 +19,18 @@ public class TaskDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public void insert(Task task) {
-        String query = "" +
-                "INSERT INTO tasks (task_name, task_description, cost) " +
-                "VALUES (?,?,?)";
+    @Qualifier("taskJdbcInsert")
+    @Autowired
+    private SimpleJdbcInsert taskJdbcInsert;
 
-        jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getCostInHours());
+    public BigInteger insert(Task task) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        parameters.put("task_name", task.getName());
+        parameters.put("task_description", task.getDescription());
+        parameters.put("cost", task.getCostInHours());
+
+        return BigInteger.valueOf(taskJdbcInsert.executeAndReturnKey(parameters).longValue());
     }
 
     public Task getById(BigInteger taskId) {
@@ -32,27 +42,27 @@ public class TaskDao {
 
     }
 
-    public void setToStudent(BigInteger taskId, BigInteger studentId) {
+    public boolean setToStudent(BigInteger taskId, BigInteger studentId) {
         String query = "" +
                 "INSERT INTO students_tasks(student_id, task_id) " +
                 "VALUES (?,?)";
 
-        jdbcTemplate.update(query, studentId, taskId);
+        return jdbcTemplate.update(query, studentId, taskId) == 1;
     }
 
-    public void removeFromStudent(BigInteger studentId, BigInteger taskId) {
+    public boolean removeFromStudent(BigInteger studentId, BigInteger taskId) {
         String query = "" +
                 "DELETE FROM students_tasks " +
                 "WHERE student_id = ? AND task_id = ?";
 
-        jdbcTemplate.update(query, studentId, taskId);
+        return jdbcTemplate.update(query, studentId, taskId) == 1;
     }
 
-    public void deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM tasks " +
                 "WHERE task_id  = ? ";
 
-        jdbcTemplate.update(query, id);
+        return jdbcTemplate.update(query, id) == 1;
     }
 }

@@ -1,7 +1,6 @@
 package ua.com.foxminded.studenthostel.dao;
 
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,15 +112,27 @@ class GroupDaoTest {
     }
 
     @Test
-    public void deleteById_ShouldDeleteEntry_FromGroupsTable() {
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
-        groupDao.deleteById(BigInteger.valueOf(1));
+        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
 
         Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
+        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(2));
+        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
+
+        Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }

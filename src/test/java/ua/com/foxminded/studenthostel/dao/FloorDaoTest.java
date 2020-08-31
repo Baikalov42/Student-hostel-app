@@ -70,15 +70,27 @@ class FloorDaoTest {
     }
 
     @Test
-    public void deleteById_ShouldDeleteEntry_FromFloorsTable() {
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFloorsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "floors");
-        floorDao.deleteById(BigInteger.valueOf(1));
+        boolean isDeleted = floorDao.deleteById(BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "floors");
 
         Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFloorsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "floors");
+        boolean isDeleted = floorDao.deleteById(BigInteger.valueOf(2));
+        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "floors");
+
+        Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }

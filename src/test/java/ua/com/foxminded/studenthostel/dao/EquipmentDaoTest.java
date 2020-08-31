@@ -53,7 +53,7 @@ class EquipmentDaoTest {
     @Test
     public void setToStudent_ShouldMakeEntry_InStudentsEquipmentsTable() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudents.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
@@ -66,30 +66,17 @@ class EquipmentDaoTest {
     @Test
     public void setToStudent_ShouldThrowException_WhenStudentIdOrEquipmentIdNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudents.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Assertions.assertThrows(DataIntegrityViolationException.class, () ->
-                equipmentDao.setToStudent(BigInteger.valueOf(1), BigInteger.valueOf(7)));
+                equipmentDao.setToStudent(BigInteger.valueOf(7), BigInteger.valueOf(7)));
 
         Assertions.assertThrows(DataIntegrityViolationException.class, () ->
                 equipmentDao.setToStudent(BigInteger.valueOf(1), BigInteger.valueOf(7)));
 
     }
 
-    @Test
-    public void setToStudent_ShouldDeleteEntry_InStudentsEquipmentsTable() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudents.sql"));
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsEquipmentsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-        equipmentDao.removeFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
-        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-
-        Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
-    }
 
     @Test
     public void getById_ShouldReturnEquipment_WhenEntryIsExist() {
@@ -105,5 +92,33 @@ class EquipmentDaoTest {
 
         Assertions.assertThrows(EmptyResultDataAccessException.class,
                 () -> equipmentDao.getById(BigInteger.valueOf(1)));
+    }
+    @Test
+    public void removeFromStudent_ShouldReturnTrue_WhenEntryIsDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
+        boolean isRemoved = equipmentDao.removeFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
+
+        Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
+        Assertions.assertTrue(isRemoved);
+    }
+    @Test
+    public void removeFromStudent_ShouldReturnFalse_WhenEntryIsNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
+        boolean isRemoved = equipmentDao.removeFromStudent(BigInteger.valueOf(2), BigInteger.valueOf(1));
+        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
+
+        Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
+        Assertions.assertFalse(isRemoved);
     }
 }

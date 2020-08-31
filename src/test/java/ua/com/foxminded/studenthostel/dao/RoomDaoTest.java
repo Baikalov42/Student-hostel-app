@@ -97,7 +97,7 @@ class RoomDaoTest {
     }
 
     @Test
-    public void changeRoom_ShouldChangeRoomOnStudent_WhenStudentIsExist() {
+    public void changeRoom_ShouldReturnTrue_WhenRoomIsChanged() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -105,10 +105,11 @@ class RoomDaoTest {
         Student expect = studentDao.getById(BigInteger.valueOf(1));
         expect.setRoomId(newRoomId);
 
-        roomDao.changeRoom(newRoomId, expect.getId());
+        boolean isChanged =  roomDao.changeRoom(newRoomId, expect.getId());
         Student actual = studentDao.getById(BigInteger.valueOf(1));
 
         Assertions.assertEquals(expect, actual);
+        Assertions.assertTrue(isChanged);
     }
 
     @Test
@@ -121,14 +122,27 @@ class RoomDaoTest {
     }
 
     @Test
-    public void deleteById_ShouldDeleteEntry_FromRoomsTable() {
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
-        roomDao.deleteById(BigInteger.valueOf(1));
+        boolean isDeleted = roomDao.deleteById(BigInteger.valueOf(1));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
+        boolean isDeleted = roomDao.deleteById(BigInteger.valueOf(3));
+        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
+
+        Assertions.assertEquals(rowBefore , rowAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }
