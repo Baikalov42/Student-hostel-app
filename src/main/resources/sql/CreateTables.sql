@@ -6,24 +6,24 @@ DROP TABLE IF EXISTS rooms CASCADE;
 DROP TABLE IF EXISTS floors CASCADE;
 DROP TABLE IF EXISTS groups CASCADE;
 DROP TABLE IF EXISTS students CASCADE;
-DROP TABLE IF EXISTS students_equipments CASCADE ;
-DROP TABLE IF EXISTS students_tasks CASCADE ;
+DROP TABLE IF EXISTS students_equipments CASCADE;
+DROP TABLE IF EXISTS students_tasks CASCADE;
 
 CREATE TABLE IF NOT EXISTS course_numbers
 (
     course_number_id   BIGSERIAL PRIMARY KEY,
-    course_number_name VARCHAR(30) UNIQUE NOT NULL
+    course_number_name VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS equipments
 (
     equipments_id   BIGSERIAL PRIMARY KEY,
-    equipments_name varchar(30) UNIQUE NOT NULL
+    equipments_name varchar(30)  NOT NULL
 );
 CREATE TABLE IF NOT EXISTS faculties
 (
     faculty_id   BIGSERIAL PRIMARY KEY,
-    faculty_name varchar(30) UNIQUE NOT NULL
+    faculty_name varchar(30) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS tasks
 (

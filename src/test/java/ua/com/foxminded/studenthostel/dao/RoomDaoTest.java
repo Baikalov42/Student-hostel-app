@@ -14,11 +14,14 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringJUnitConfig(SpringConfig.class)
 class RoomDaoTest {
@@ -92,8 +95,24 @@ class RoomDaoTest {
     public void getById_ShouldThrowException_WhenIdNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-        Assertions.assertThrows(EmptyResultDataAccessException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> roomDao.getById(BigInteger.valueOf(10)));
+    }
+
+    @Test
+    public void getAll_ShouldReturnListOfRooms() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Room room = new Room();
+        room.setFloorId(BigInteger.valueOf(1));
+        room.setName("testroomtwo");
+        room.setId(BigInteger.valueOf(2));
+
+        List<Room> list = new ArrayList<>();
+        list.add(room);
+
+        Assertions.assertEquals(list, roomDao.getAll(1,1));
     }
 
     @Test
@@ -105,7 +124,7 @@ class RoomDaoTest {
         Student expect = studentDao.getById(BigInteger.valueOf(1));
         expect.setRoomId(newRoomId);
 
-        boolean isChanged =  roomDao.changeRoom(newRoomId, expect.getId());
+        boolean isChanged = roomDao.changeRoom(newRoomId, expect.getId());
         Student actual = studentDao.getById(BigInteger.valueOf(1));
 
         Assertions.assertEquals(expect, actual);
@@ -133,6 +152,7 @@ class RoomDaoTest {
         Assertions.assertEquals(rowBefore - 1, rowAfter);
         Assertions.assertTrue(isDeleted);
     }
+
     @Test
     public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
@@ -142,7 +162,7 @@ class RoomDaoTest {
         boolean isDeleted = roomDao.deleteById(BigInteger.valueOf(3));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
 
-        Assertions.assertEquals(rowBefore , rowAfter);
+        Assertions.assertEquals(rowBefore, rowAfter);
         Assertions.assertFalse(isDeleted);
     }
 }

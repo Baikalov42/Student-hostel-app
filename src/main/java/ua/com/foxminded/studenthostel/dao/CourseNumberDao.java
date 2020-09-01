@@ -1,31 +1,14 @@
 package ua.com.foxminded.studenthostel.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
-import ua.com.foxminded.studenthostel.models.mappers.CourseNumberMapper;
 
 import java.math.BigInteger;
+import java.util.List;
 
-@Component
-public class CourseNumberDao {
+public interface CourseNumberDao {
+    void save(CourseNumber courseNumber);
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    CourseNumber getById(BigInteger courseNumberId);
 
-    public void save(CourseNumber courseNumber) {
-        String query = "" +
-                "INSERT INTO course_numbers(course_number_id, course_number_name) " +
-                "VALUES (? , ? ) ";
-
-        jdbcTemplate.update(query, courseNumber.getId(), courseNumber.getName());
-    }
-
-    public CourseNumber getById(BigInteger courseNumberId) {
-        String query = "" +
-                "SELECT * FROM course_numbers " +
-                "WHERE course_number_id = ?";
-        return jdbcTemplate.queryForObject(query, new CourseNumberMapper(), courseNumberId);
-    }
+    List<CourseNumber> getAll(long limit, long offset);
 }

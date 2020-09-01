@@ -14,10 +14,13 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringJUnitConfig(SpringConfig.class)
 class EquipmentDaoTest {
@@ -41,42 +44,30 @@ class EquipmentDaoTest {
     }
 
     @Test
-    public void save_ShouldMakeEntry_InEquipmentsTable() {
-        Equipment equipment = Equipment.TABLE;
-        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
-        equipmentDao.save(equipment);
-        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
-        Assertions.assertEquals(rowNumberBefore + 1, rowNumberAfter);
-
-    }
-
-    @Test
-    public void setToStudent_ShouldMakeEntry_InStudentsEquipmentsTable() {
+    public void assignToStudent_ShouldMakeEntry_InStudentsEquipmentsTable() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-        equipmentDao.setToStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        equipmentDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
 
         Assertions.assertEquals(rowNumberBefore + 1, rowNumberAfter);
     }
 
     @Test
-    public void setToStudent_ShouldThrowException_WhenStudentIdOrEquipmentIdNotExist() {
+    public void assignToStudent_ShouldThrowException_WhenStudentIdOrEquipmentIdNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Assertions.assertThrows(DataIntegrityViolationException.class, () ->
-                equipmentDao.setToStudent(BigInteger.valueOf(7), BigInteger.valueOf(7)));
+                equipmentDao.assignToStudent(BigInteger.valueOf(7), BigInteger.valueOf(7)));
 
         Assertions.assertThrows(DataIntegrityViolationException.class, () ->
-                equipmentDao.setToStudent(BigInteger.valueOf(1), BigInteger.valueOf(7)));
-
+                equipmentDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(7)));
     }
-
 
     @Test
     public void getById_ShouldReturnEquipment_WhenEntryIsExist() {
@@ -90,9 +81,21 @@ class EquipmentDaoTest {
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
 
-        Assertions.assertThrows(EmptyResultDataAccessException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> equipmentDao.getById(BigInteger.valueOf(1)));
     }
+
+    @Test
+    public void getAll_ShouldReturnListOfEquipments() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        List<Equipment> list = new ArrayList<>();
+        list.add(Equipment.MATTRESS);
+
+        Assertions.assertEquals(list, equipmentDao.getAll(1, 4));
+    }
+
     @Test
     public void removeFromStudent_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
@@ -107,6 +110,7 @@ class EquipmentDaoTest {
         Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
         Assertions.assertTrue(isRemoved);
     }
+
     @Test
     public void removeFromStudent_ShouldReturnFalse_WhenEntryIsNotDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
@@ -118,7 +122,7 @@ class EquipmentDaoTest {
         boolean isRemoved = equipmentDao.removeFromStudent(BigInteger.valueOf(2), BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
 
-        Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
+        Assertions.assertEquals(rowNumberBefore, rowNumberAfter);
         Assertions.assertFalse(isRemoved);
     }
 }

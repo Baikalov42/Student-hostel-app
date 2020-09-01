@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.sql.DataSource;
@@ -97,12 +98,23 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(EmptyResultDataAccessException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> studentDao.getById(BigInteger.valueOf(10)));
+    }
+    @Test
+    public void getAll_ShouldReturnListOfStudents() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        List<Student> list = new ArrayList<>();
+        list.add(new Student(BigInteger.valueOf(3),"firstnamethree", "lastnamethree",
+                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+
+        Assertions.assertEquals(list, studentDao.getAll(1,2));
     }
 
     @Test
-    public void showAllByFloor_ShouldReturnListOfStudents_WhenDataIsExist() {
+    public void getAllByFloor_ShouldReturnListOfStudents_WhenDataIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -116,7 +128,7 @@ class StudentDaoTest {
         expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
                 10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
 
-        Assertions.assertEquals(expect, studentDao.showAllByFloor(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByFloor(BigInteger.valueOf(1)));
     }
 
     @Test
@@ -134,12 +146,12 @@ class StudentDaoTest {
         expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
                 6, BigInteger.valueOf(1), BigInteger.valueOf(2)));
 
-        Assertions.assertEquals(expect, studentDao.showByFaculty(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByFaculty(BigInteger.valueOf(1)));
 
     }
 
     @Test
-    public void showByCourse_ShouldReturnListOfStudents_WhenDataIsExist() {
+    public void getAllByCourse_ShouldReturnListOfStudents_WhenDataIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -153,7 +165,7 @@ class StudentDaoTest {
         expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
                 6, BigInteger.valueOf(1), BigInteger.valueOf(2)));
 
-        Assertions.assertEquals(expect, studentDao.showByCourse(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByCourse(BigInteger.valueOf(1)));
 
     }
 

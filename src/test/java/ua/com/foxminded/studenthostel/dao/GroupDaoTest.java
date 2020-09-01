@@ -14,10 +14,13 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Group;
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringJUnitConfig(SpringConfig.class)
 class GroupDaoTest {
@@ -97,7 +100,7 @@ class GroupDaoTest {
         Group expectGroup = new Group();
 
         expectGroup.setId(BigInteger.valueOf(1));
-        expectGroup.setName("testname");
+        expectGroup.setName("testname1");
         expectGroup.setFacultyId(BigInteger.valueOf(1));
         expectGroup.setCourseNumberId(BigInteger.valueOf(1));
 
@@ -107,8 +110,24 @@ class GroupDaoTest {
 
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
-        Assertions.assertThrows(EmptyResultDataAccessException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> groupDao.getById(BigInteger.valueOf(1)));
+    }
+    @Test
+    public void getAll_ShouldReturnListOfGroups(){
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Group group = new Group();
+        group.setId(BigInteger.valueOf(2));
+        group.setName("testname2");
+        group.setCourseNumberId(BigInteger.valueOf(1));
+        group.setFacultyId(BigInteger.valueOf(1));
+
+        List<Group> list = new ArrayList<>();
+        list.add(group);
+        Assertions.assertEquals(list, groupDao.getAll(1,1));
+
     }
 
     @Test
@@ -129,7 +148,7 @@ class GroupDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
-        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(2));
+        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(4));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
 
         Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
