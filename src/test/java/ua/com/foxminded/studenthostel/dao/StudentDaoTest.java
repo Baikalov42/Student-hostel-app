@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -206,6 +205,30 @@ class StudentDaoTest {
 
         Assertions.assertEquals(expect, actual);
         Assertions.assertTrue(isChanged);
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);;
+
+        Student newValues = new Student(BigInteger.valueOf(1), "newfirstname", "newlastname",
+                10, BigInteger.valueOf(1), BigInteger.valueOf(1));;
+
+        boolean isUpdated = studentDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, studentDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Student newValues = new Student(BigInteger.valueOf(7), "newfirstname", "newlastname",
+                10, BigInteger.valueOf(1), BigInteger.valueOf(1));;;
+
+        Assertions.assertFalse(studentDao.update(newValues));
     }
 
     @Test

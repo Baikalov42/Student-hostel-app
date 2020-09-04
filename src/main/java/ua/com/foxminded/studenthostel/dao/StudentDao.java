@@ -24,5 +24,7 @@ public interface StudentDao {
 
     boolean changeDebt(int newHoursDebt, BigInteger studentId);
 
+    boolean update(Student student);
+
     boolean deleteById(BigInteger id);
 }

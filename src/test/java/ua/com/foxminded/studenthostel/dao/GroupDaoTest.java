@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -127,7 +126,36 @@ class GroupDaoTest {
         List<Group> list = new ArrayList<>();
         list.add(group);
         Assertions.assertEquals(list, groupDao.getAll(1,1));
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        Group newValues = new Group();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+        newValues.setCourseNumberId(BigInteger.valueOf(1));
+        newValues.setFacultyId(BigInteger.valueOf(1));
+
+        boolean isUpdated = groupDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, groupDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Group newValues = new Group();
+        newValues.setId(BigInteger.valueOf(4));
+        newValues.setName("newname");
+        newValues.setCourseNumberId(BigInteger.valueOf(1));
+        newValues.setFacultyId(BigInteger.valueOf(1));
+
+        Assertions.assertFalse(groupDao.update(newValues));
     }
 
     @Test

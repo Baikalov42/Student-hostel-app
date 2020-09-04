@@ -75,6 +75,18 @@ public class RoomDaoImpl implements RoomDao {
     }
 
     @Override
+    public boolean update(Room room) {
+        String query = "" +
+                "UPDATE rooms " +
+                "SET " +
+                "room_name = ? ," +
+                "floor_id = ? " +
+                "WHERE room_id = ? ";
+
+        return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM rooms " +

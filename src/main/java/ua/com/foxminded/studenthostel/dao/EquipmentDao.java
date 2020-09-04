@@ -16,5 +16,7 @@ public interface EquipmentDao {
 
     List<Equipment> getAll(long limit, long offset);
 
+    boolean update(Equipment equipment);
+
     boolean deleteById(BigInteger id);
 }

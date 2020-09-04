@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -85,6 +84,32 @@ class FloorDaoTest {
 
         list.add(floor);
         Assertions.assertEquals(list, floorDao.getAll(1, 2));
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFloorsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Floor newValues = new Floor();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+
+        boolean isUpdated = floorDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, floorDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFloorsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Floor newValues = new Floor();
+        newValues.setId(BigInteger.valueOf(7));
+        newValues.setName("newname");
+
+        Assertions.assertFalse(floorDao.update(newValues));
     }
 
     @Test

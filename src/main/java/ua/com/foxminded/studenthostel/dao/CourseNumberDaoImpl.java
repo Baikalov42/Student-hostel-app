@@ -55,7 +55,18 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "FROM course_numbers " +
                 "ORDER BY course_number_id " +
                 "LIMIT ? OFFSET ?";
+
         return jdbcTemplate.query(query, new CourseNumberMapper(), limit, offset);
+    }
+
+    @Override
+    public boolean update(CourseNumber courseNumber) {
+        String query = "" +
+                "UPDATE course_numbers " +
+                "SET course_number_name = ? " +
+                "WHERE course_number_id = ? ";
+
+        return jdbcTemplate.update(query, courseNumber.getName(), courseNumber.getId()) == 1;
     }
 
     @Override

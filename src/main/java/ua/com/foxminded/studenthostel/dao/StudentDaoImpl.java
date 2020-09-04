@@ -133,6 +133,22 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
+    public boolean update(Student student) {
+        String query = "" +
+                "UPDATE students " +
+                "SET " +
+                "first_name = ? ," +
+                "last_name = ? ," +
+                "hours_debt = ? ," +
+                "group_id = ? ," +
+                "room_id = ? " +
+                "WHERE student_id = ? ";
+
+        return jdbcTemplate.update(query, student.getFirstName(), student.getLastName(),
+                student.getHoursDebt(), student.getGroupId(), student.getRoomId(), student.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE  from  students " +

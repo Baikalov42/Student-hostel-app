@@ -64,6 +64,15 @@ public class GroupDaoImpl implements GroupDao {
     }
 
     @Override
+    public boolean update(Group group) {
+        String query = "" +
+                "UPDATE groups " +
+                "SET group_name = ?" +
+                "WHERE group_id = ?";
+        return jdbcTemplate.update(query, group.getName(), group.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM groups " +

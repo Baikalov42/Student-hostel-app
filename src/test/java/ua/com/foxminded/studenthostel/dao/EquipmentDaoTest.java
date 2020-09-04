@@ -163,6 +163,32 @@ class EquipmentDaoTest {
         Assertions.assertEquals(rowNumberBefore, rowNumberAfter);
         Assertions.assertFalse(isRemoved);
     }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Equipment newValues = new Equipment();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+
+        boolean isUpdated = equipmentDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, equipmentDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Equipment newValues = new Equipment();
+        newValues.setId(BigInteger.valueOf(7));
+        newValues.setName("newname");
+
+        Assertions.assertFalse(equipmentDao.update(newValues));
+    }
 
     @Test
     public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {

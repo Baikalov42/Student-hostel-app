@@ -84,6 +84,18 @@ public class TaskDaoImpl implements TaskDao {
     }
 
     @Override
+    public boolean update(Task task) {
+        String query = "" +
+                "UPDATE  tasks " +
+                "SET " +
+                "task_name = ? ," +
+                "task_description = ? " +
+                "WHERE task_id = ? ";
+
+        return jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM tasks " +

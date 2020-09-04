@@ -62,6 +62,16 @@ public class FloorDaoImpl implements FloorDao {
     }
 
     @Override
+    public boolean update(Floor floor) {
+        String query = "" +
+                "UPDATE floors " +
+                "SET floor_name = ? " +
+                "WHERE floor_id = ? ";
+
+        return jdbcTemplate.update(query, floor.getName(), floor.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM floors " +

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -143,6 +142,36 @@ class TaskDaoTest {
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Task newValues = new Task();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+        newValues.setDescription("newdescription");
+        newValues.setCostInHours(1);
+
+        boolean isUpdated = taskDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, taskDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Task newValues = new Task();
+        newValues.setId(BigInteger.valueOf(3));
+        newValues.setName("newname");
+        newValues.setDescription("newdescription");
+        newValues.setCostInHours(1);
+
+        Assertions.assertFalse(taskDao.update(newValues));
     }
 
     @Test

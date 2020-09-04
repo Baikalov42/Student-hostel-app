@@ -40,6 +40,16 @@ public class EquipmentDaoImpl implements EquipmentDao {
     }
 
     @Override
+    public boolean update(Equipment equipment) {
+        String query = "" +
+                "UPDATE equipments " +
+                "SET equipment_name = ? " +
+                "WHERE equipment_id = ? ";
+
+        return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
+    }
+
+    @Override
     public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "INSERT INTO students_equipments (student_id, equipment_id) " +

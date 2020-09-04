@@ -12,5 +12,7 @@ public interface GroupDao {
 
     List<Group> getAll(long limit, long offset);
 
+    boolean update(Group group);
+
     boolean deleteById(BigInteger id);
 }

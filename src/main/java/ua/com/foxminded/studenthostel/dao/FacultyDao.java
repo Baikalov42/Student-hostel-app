@@ -1,5 +1,6 @@
 package ua.com.foxminded.studenthostel.dao;
 
+
 import ua.com.foxminded.studenthostel.models.Faculty;
 
 import java.math.BigInteger;
@@ -11,6 +12,8 @@ public interface FacultyDao {
     Faculty getById(BigInteger facultyId);
 
     List<Faculty> getAll(long limit, long offset);
+
+    boolean update(Faculty faculty);
 
     boolean deleteById(BigInteger id);
 }

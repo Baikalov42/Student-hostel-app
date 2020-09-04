@@ -14,9 +14,9 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
-import ua.com.foxminded.studenthostel.models.Equipment;
 
 import javax.sql.DataSource;
+import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +104,34 @@ class CourseNumberDaoTest {
         courseNumbers.add(courseNumber);
         Assertions.assertEquals(courseNumbers, courseNumberDao.getAll(1, 3));
     }
+
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        CourseNumber newValues = new CourseNumber();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("updated");
+
+        boolean isUpdated = courseNumberDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, courseNumberDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        CourseNumber newValues = new CourseNumber();
+        newValues.setId(BigInteger.valueOf(7));
+        newValues.setName("updated");
+
+        Assertions.assertFalse(courseNumberDao.update(newValues));
+    }
+
     @Test
     public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));

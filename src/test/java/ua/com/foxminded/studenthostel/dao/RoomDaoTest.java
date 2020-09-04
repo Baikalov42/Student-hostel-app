@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -16,7 +15,6 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Room;
-import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
@@ -129,6 +127,34 @@ class RoomDaoTest {
         list.add(room);
 
         Assertions.assertEquals(list, roomDao.getAllByEquipment(BigInteger.valueOf(1)));
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Room newValues = new Room();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+        newValues.setFloorId(BigInteger.valueOf(1));
+
+        boolean isUpdated = roomDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, roomDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Room newValues = new Room();
+        newValues.setId(BigInteger.valueOf(4));
+        newValues.setName("newname");
+        newValues.setFloorId(BigInteger.valueOf(1));
+
+        Assertions.assertFalse(roomDao.update(newValues));
     }
 
     @Test

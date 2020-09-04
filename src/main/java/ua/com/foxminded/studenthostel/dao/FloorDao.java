@@ -1,5 +1,6 @@
 package ua.com.foxminded.studenthostel.dao;
 
+
 import ua.com.foxminded.studenthostel.models.Floor;
 
 import java.math.BigInteger;
@@ -11,6 +12,8 @@ public interface FloorDao {
     Floor getById(BigInteger floorId);
 
     List<Floor> getAll(long limit, long offset);
+
+    boolean update(Floor floor);
 
     boolean deleteById(BigInteger id);
 }

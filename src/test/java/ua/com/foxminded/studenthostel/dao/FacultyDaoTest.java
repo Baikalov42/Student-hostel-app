@@ -13,7 +13,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
-import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Faculty;
 
 import javax.sql.DataSource;
@@ -101,6 +100,32 @@ class FacultyDaoTest {
         list.add(faculty);
 
         Assertions.assertEquals(list, facultyDao.getAll(1, 3));
+    }
+    @Test
+    public void update_ShouldUpdateEntry_WhenDataExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Faculty newValues = new Faculty();
+        newValues.setId(BigInteger.valueOf(1));
+        newValues.setName("newname");
+
+        boolean isUpdated = facultyDao.update(newValues);
+
+        Assertions.assertTrue(isUpdated);
+        Assertions.assertEquals(newValues, facultyDao.getById(BigInteger.valueOf(1)));
+    }
+
+    @Test
+    public void update_ShouldReturnFalse_WhenDataNotExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Faculty newValues = new Faculty();
+        newValues.setId(BigInteger.valueOf(7));
+        newValues.setName("newname");
+
+        Assertions.assertFalse(facultyDao.update(newValues));
     }
     @Test
     public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {

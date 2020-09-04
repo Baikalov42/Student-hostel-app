@@ -62,6 +62,16 @@ public class FacultyDaoImpl implements FacultyDao {
     }
 
     @Override
+    public boolean update(Faculty faculty) {
+        String query = "" +
+                "UPDATE faculties " +
+                "SET faculty_name = ? " +
+                "WHERE faculty_id = ? ";
+
+        return jdbcTemplate.update(query, faculty.getName(), faculty.getId()) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM faculties " +
