@@ -73,7 +73,7 @@ class FloorDaoTest {
     }
 
     @Test
-    public void getAll_ShouldReturnListOfFloor() {
+    public void getAll_ShouldReturnListOfFloor_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFloorsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 

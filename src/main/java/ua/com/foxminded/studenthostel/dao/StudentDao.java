@@ -20,5 +20,9 @@ public interface StudentDao {
 
     List<Student> getAllWithDebitByGroup(BigInteger groupId, int numberOfHoursDebt);
 
+    boolean changeRoom(BigInteger newRoomId, BigInteger studentId);
+
+    boolean changeDebt(int newHoursDebt, BigInteger studentId);
+
     boolean deleteById(BigInteger id);
 }

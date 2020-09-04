@@ -12,18 +12,18 @@ DROP TABLE IF EXISTS students_tasks CASCADE;
 CREATE TABLE IF NOT EXISTS course_numbers
 (
     course_number_id   BIGSERIAL PRIMARY KEY,
-    course_number_name VARCHAR(30) NOT NULL
+    course_number_name VARCHAR(30) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS equipments
 (
-    equipments_id   BIGSERIAL PRIMARY KEY,
-    equipments_name varchar(30)  NOT NULL
+    equipment_id   BIGSERIAL PRIMARY KEY,
+    equipment_name varchar(30) UNIQUE NOT NULL
 );
 CREATE TABLE IF NOT EXISTS faculties
 (
     faculty_id   BIGSERIAL PRIMARY KEY,
-    faculty_name varchar(30) NOT NULL
+    faculty_name varchar(30) UNIQUE NOT NULL
 );
 CREATE TABLE IF NOT EXISTS tasks
 (
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS students
 CREATE TABLE IF NOT EXISTS students_equipments
 (
     student_id   BIGINT REFERENCES students (student_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    equipment_id BIGINT REFERENCES equipments (equipments_id) ON UPDATE CASCADE ON DELETE CASCADE
+    equipment_id BIGINT REFERENCES equipments (equipment_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS students_tasks
 (

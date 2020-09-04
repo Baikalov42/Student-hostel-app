@@ -2,45 +2,48 @@ package ua.com.foxminded.studenthostel.models;
 
 import java.math.BigInteger;
 
-public enum CourseNumber {
-    FIRST(BigInteger.valueOf(1), "first"),
-    SECOND(BigInteger.valueOf(2), "second"),
-    THIRD(BigInteger.valueOf(3), "third"),
-    FOURTH(BigInteger.valueOf(4), "fourth"),
-    FIFTH(BigInteger.valueOf(5), "fifth");
+public class CourseNumber {
 
-    private final String name;
-    private final BigInteger id;
-
-    CourseNumber(BigInteger id, String name) {
-        this.name = name;
-        this.id = id;
-    }
+    private String name;
+    private BigInteger id;
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public BigInteger getId() {
         return id;
     }
 
-    public static CourseNumber getByName(String name) {
-        CourseNumber result = null;
-        for (CourseNumber courseNumber : CourseNumber.values()) {
-            if (courseNumber.name.equals(name)) {
-                result = courseNumber;
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("incorrect value");
-        }
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CourseNumber that = (CourseNumber) o;
+
+        if (!name.equals(that.name)) return false;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return "CourseNumber{" +
+        return "CourseNumber1{" +
                 "name='" + name + '\'' +
                 ", id=" + id +
                 '}';

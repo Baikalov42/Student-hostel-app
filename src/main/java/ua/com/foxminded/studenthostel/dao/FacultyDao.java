@@ -6,9 +6,11 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface FacultyDao {
-    void save(Faculty faculty);
+    BigInteger insert(Faculty faculty);
 
     Faculty getById(BigInteger facultyId);
 
     List<Faculty> getAll(long limit, long offset);
+
+    boolean deleteById(BigInteger id);
 }

@@ -4,12 +4,15 @@ package ua.com.foxminded.studenthostel.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.mappers.EquipmentMapper;
 
 import java.math.BigInteger;
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -19,13 +22,21 @@ public class EquipmentDaoImpl implements EquipmentDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void save(Equipment equipment) {
-        String query = "" +
-                "INSERT INTO equipments(equipments_id, equipments_name) " +
-                "VALUES (? , ? ) " +
-                "ON CONFLICT (equipments_id) DO NOTHING";
+    public BigInteger insert(Equipment equipment) {
 
-        jdbcTemplate.update(query, equipment.getId(), equipment.getName());
+        String query = "" +
+                "INSERT INTO equipments(equipment_name) " +
+                "VALUES ( ? )";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(query, new String[]{"equipment_id"});
+            ps.setString(1, equipment.getName());
+            return ps;
+        }, keyHolder);
+
+        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -37,7 +48,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
     }
 
     @Override
-    public boolean removeFromStudent(BigInteger studentId, BigInteger equipmentId) {
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
         String query = "" +
                 "DELETE FROM students_equipments " +
                 "WHERE student_id = ? " +
@@ -49,7 +60,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
     public Equipment getById(BigInteger equipmentId) {
         String query = "" +
                 "SELECT * FROM equipments " +
-                "WHERE equipments_id = ? ";
+                "WHERE equipment_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
         } catch (EmptyResultDataAccessException e) {
@@ -62,8 +73,17 @@ public class EquipmentDaoImpl implements EquipmentDao {
         String query = "" +
                 "SELECT * " +
                 "FROM equipments " +
-                "ORDER BY equipments_id " +
+                "ORDER BY equipment_id " +
                 "LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, new EquipmentMapper(), limit, offset);
+    }
+
+    @Override
+    public boolean deleteById(BigInteger id) {
+        String query = "" +
+                "DELETE FROM equipments " +
+                "WHERE equipment_id = ? ";
+
+        return jdbcTemplate.update(query, id) == 1;
     }
 }

@@ -2,41 +2,42 @@ package ua.com.foxminded.studenthostel.models;
 
 import java.math.BigInteger;
 
-public enum Equipment {
+public class Equipment {
 
-    TABLE(BigInteger.valueOf(1), "table"),
-    BEDSIDE_TABLE(BigInteger.valueOf(2), "bedside table"),
-    CHAIR(BigInteger.valueOf(3), "chair"),
-    BED(BigInteger.valueOf(4), "bed"),
-    MATTRESS(BigInteger.valueOf(5), "mattress"),
-    LINEN(BigInteger.valueOf(6), "linen");
+    private String name;
+    private BigInteger id;
 
-    private final String name;
-    private final BigInteger id;
+    public String getName() {
+        return name;
+    }
 
-    Equipment(BigInteger id, String name) {
+    public void setName(String name) {
         this.name = name;
-        this.id = id;
     }
 
     public BigInteger getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public void setId(BigInteger id) {
+        this.id = id;
     }
 
-    public static Equipment getByName(String name) {
-        Equipment result = null;
-        for (Equipment equipment : Equipment.values()) {
-            if (equipment.name.equals(name)) {
-                result = equipment;
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("incorrect name");
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Equipment equipment = (Equipment) o;
+
+        if (!name.equals(equipment.name)) return false;
+        return id.equals(equipment.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
     }
 

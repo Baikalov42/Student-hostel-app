@@ -14,7 +14,5 @@ public interface RoomDao {
 
     List<Room> getAllByEquipment(BigInteger equipmentId);
 
-    boolean changeRoom(BigInteger newRoomId, BigInteger studentId);
-
     boolean deleteById(BigInteger id);
 }

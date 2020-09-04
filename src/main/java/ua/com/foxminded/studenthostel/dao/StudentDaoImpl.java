@@ -115,6 +115,24 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
+    public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) {
+        String query = "" +
+                "UPDATE students " +
+                "SET room_id = ? " +
+                "WHERE student_id = ? ";
+        return jdbcTemplate.update(query, newRoomId, studentId) == 1;
+    }
+
+    @Override
+    public boolean changeDebt(int newHoursDebt, BigInteger studentId) {
+        String query = "" +
+                "UPDATE students " +
+                "SET hours_debt = ? " +
+                "WHERE student_id = ? ";
+        return jdbcTemplate.update(query, newHoursDebt, studentId) == 1;
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE  from  students " +

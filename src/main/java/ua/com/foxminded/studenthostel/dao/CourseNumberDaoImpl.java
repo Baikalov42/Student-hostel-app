@@ -3,12 +3,15 @@ package ua.com.foxminded.studenthostel.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.mappers.CourseNumberMapper;
 
 import java.math.BigInteger;
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -18,13 +21,19 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void save(CourseNumber courseNumber) {
+    public BigInteger insert(CourseNumber courseNumber) {
         String query = "" +
-                "INSERT INTO course_numbers(course_number_id, course_number_name) " +
-                "VALUES (? , ? ) " +
-                "ON CONFLICT (course_number_id) DO NOTHING";
+                "INSERT INTO course_numbers(course_number_name) " +
+                "VALUES ( ? )";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(query, courseNumber.getId(), courseNumber.getName());
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(query, new String[]{"course_number_id"});
+            ps.setString(1, courseNumber.getName());
+            return ps;
+        }, keyHolder);
+
+        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -47,5 +56,14 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "ORDER BY course_number_id " +
                 "LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, new CourseNumberMapper(), limit, offset);
+    }
+
+    @Override
+    public boolean deleteById(BigInteger id) {
+        String query = "" +
+                "DELETE FROM course_numbers " +
+                "WHERE course_number_id = ? ";
+
+        return jdbcTemplate.update(query, id) == 1;
     }
 }

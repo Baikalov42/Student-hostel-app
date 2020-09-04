@@ -15,12 +15,12 @@ public class StudentMapper implements RowMapper<Student> {
 
         Student student = new Student();
 
-        student.setId(BigInteger.valueOf(resultSet.getInt("student_id")));
+        student.setId(BigInteger.valueOf(resultSet.getLong("student_id")));
         student.setFirstName(resultSet.getString("first_name"));
         student.setLastName(resultSet.getString("last_name"));
         student.setHoursDebt(resultSet.getInt("hours_debt"));
-        student.setGroupId(BigInteger.valueOf(resultSet.getInt("group_id")));
-        student.setRoomId(BigInteger.valueOf(resultSet.getInt("room_id")));
+        student.setGroupId(BigInteger.valueOf(resultSet.getLong("group_id")));
+        student.setRoomId(BigInteger.valueOf(resultSet.getLong("room_id")));
 
         return student;
     }

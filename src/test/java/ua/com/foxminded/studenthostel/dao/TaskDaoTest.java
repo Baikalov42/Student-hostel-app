@@ -85,7 +85,7 @@ class TaskDaoTest {
                 () -> taskDao.getById(BigInteger.valueOf(10)));
     }
     @Test
-    public void getAll_ShouldReturnListOfTasks(){
+    public void getAll_ShouldReturnListOfTasks_WhenConditionCompleted(){
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 

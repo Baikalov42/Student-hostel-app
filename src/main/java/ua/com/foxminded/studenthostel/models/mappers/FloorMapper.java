@@ -15,7 +15,7 @@ public class FloorMapper implements RowMapper<Floor> {
     public Floor mapRow(ResultSet resultSet, int i) throws SQLException {
         Floor floor = new Floor();
 
-        floor.setId(BigInteger.valueOf(resultSet.getInt("floor_id")));
+        floor.setId(BigInteger.valueOf(resultSet.getLong("floor_id")));
         floor.setName(resultSet.getString("floor_name"));
 
         return floor;

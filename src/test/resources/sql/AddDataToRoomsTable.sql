@@ -18,3 +18,12 @@ VALUES (2, 'testroomtwo', 1);
 
 INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
 VALUES (1, 'testfirstname', 'testlastname', 10, 1, 1);
+
+INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
+VALUES (6, 'secondfirstname', 'secondlastname', 10, 1, 2);
+
+INSERT INTO equipments (equipment_id, equipment_name)
+VALUES (1, 'testname');
+
+INSERT INTO students_equipments (student_id, equipment_id)
+VALUES (6, 1);

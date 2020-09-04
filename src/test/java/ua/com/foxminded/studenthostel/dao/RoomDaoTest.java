@@ -49,7 +49,7 @@ class RoomDaoTest {
 
     @Test
     public void insert_ShouldMakeEntry_InRoomsTable() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room room = new Room();
@@ -66,7 +66,7 @@ class RoomDaoTest {
 
     @Test
     public void insert_ShouldThrowException_WhenFloorIdNotExist() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room room = new Room();
@@ -80,7 +80,7 @@ class RoomDaoTest {
 
     @Test
     public void getById_ShouldReturnRoom_WhenEntryIsExist() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room expectRoom = new Room();
@@ -93,15 +93,15 @@ class RoomDaoTest {
 
     @Test
     public void getById_ShouldThrowException_WhenIdNotExist() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
         Assertions.assertThrows(DaoException.class,
                 () -> roomDao.getById(BigInteger.valueOf(10)));
     }
 
     @Test
-    public void getAll_ShouldReturnListOfRooms() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+    public void getAll_ShouldReturnListOfRooms_WhenConditionCompleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room room = new Room();
@@ -112,37 +112,28 @@ class RoomDaoTest {
         List<Room> list = new ArrayList<>();
         list.add(room);
 
-        Assertions.assertEquals(list, roomDao.getAll(1,1));
+        Assertions.assertEquals(list, roomDao.getAll(1, 1));
     }
 
     @Test
-    public void changeRoom_ShouldReturnTrue_WhenRoomIsChanged() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+    public void getAllByEquipment_ShouldReturnListOfRRoms__WhenConditionCompleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        BigInteger newRoomId = BigInteger.valueOf(2);
-        Student expect = studentDao.getById(BigInteger.valueOf(1));
-        expect.setRoomId(newRoomId);
+        Room room = new Room();
+        room.setId(BigInteger.valueOf(2));
+        room.setName("testroomtwo");
+        room.setFloorId(BigInteger.valueOf(1));
 
-        boolean isChanged = roomDao.changeRoom(newRoomId, expect.getId());
-        Student actual = studentDao.getById(BigInteger.valueOf(1));
+        List<Room> list = new ArrayList<>();
+        list.add(room);
 
-        Assertions.assertEquals(expect, actual);
-        Assertions.assertTrue(isChanged);
-    }
-
-    @Test
-    public void changeRoom_ShouldThrowException_WhenNewRoomIdNotExist() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        Assertions.assertThrows(DataIntegrityViolationException.class,
-                () -> roomDao.changeRoom(BigInteger.valueOf(10), BigInteger.valueOf(1)));
+        Assertions.assertEquals(list, roomDao.getAllByEquipment(BigInteger.valueOf(1)));
     }
 
     @Test
     public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
@@ -155,7 +146,7 @@ class RoomDaoTest {
 
     @Test
     public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomTable.sql"));
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");

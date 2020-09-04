@@ -6,13 +6,15 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface EquipmentDao {
-    void save(Equipment equipment);
+    BigInteger insert(Equipment equipment);
 
     boolean assignToStudent(BigInteger studentId, BigInteger equipmentId);
 
-    boolean removeFromStudent(BigInteger studentId, BigInteger equipmentId);
+    boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId);
 
     Equipment getById(BigInteger equipmentId);
 
     List<Equipment> getAll(long limit, long offset);
+
+    boolean deleteById(BigInteger id);
 }

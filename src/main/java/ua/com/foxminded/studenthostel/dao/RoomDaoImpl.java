@@ -67,20 +67,11 @@ public class RoomDaoImpl implements RoomDao {
     public List<Room> getAllByEquipment(BigInteger equipmentId) {
         String query = "" +
                 "SELECT * FROM equipments " +
-                "INNER JOIN students_equipments ON equipments.equipments_id = students_equipments.equipment_id " +
+                "INNER JOIN students_equipments ON equipments.equipment_id = students_equipments.equipment_id " +
                 "INNER JOIN students ON students_equipments.student_id = students.student_id " +
                 "INNER JOIN rooms ON students.room_id = rooms.room_id " +
-                "WHERE equipments_id = ? ";
+                "WHERE equipments.equipment_id = ? ";
         return jdbcTemplate.query(query, new RoomMapper(), equipmentId);
-    }
-
-    @Override
-    public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) {
-        String query = "" +
-                "UPDATE students " +
-                "SET room_id = ? " +
-                "WHERE student_id = ? ";
-        return jdbcTemplate.update(query, newRoomId, studentId) == 1;
     }
 
     @Override

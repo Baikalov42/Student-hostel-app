@@ -2,40 +2,42 @@ package ua.com.foxminded.studenthostel.models;
 
 import java.math.BigInteger;
 
-public enum Faculty {
-    WEB_DESIGN(BigInteger.valueOf(1), "web design"),
-    DATABASE_ARCHITECTURE(BigInteger.valueOf(2), "database architecture"),
-    GAME_DEVELOPMENT(BigInteger.valueOf(3), "game development"),
-    FRONT_END_DEVELOPMENT(BigInteger.valueOf(4), "front end development"),
-    BECK_END_DEVELOPMENT(BigInteger.valueOf(5), "beck end development");
+public class Faculty {
 
-
-    private final String name;
-    private final BigInteger id;
-
-    Faculty(BigInteger id, String name) {
-        this.name = name;
-        this.id = id;
-    }
+    private String name;
+    private BigInteger id;
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public BigInteger getId() {
         return id;
     }
 
-    public static Faculty getByName(String name) {
-        Faculty result = null;
-        for (Faculty faculty : Faculty.values()) {
-            if (faculty.name.equals(name)) {
-                result = faculty;
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("incorrect value");
-        }
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Faculty faculty = (Faculty) o;
+
+        if (!name.equals(faculty.name)) return false;
+        return id.equals(faculty.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
     }
 

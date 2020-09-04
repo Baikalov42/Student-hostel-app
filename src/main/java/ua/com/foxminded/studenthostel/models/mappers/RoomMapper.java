@@ -16,8 +16,8 @@ public class RoomMapper implements RowMapper<Room> {
         Room room = new Room();
 
         room.setName(resultSet.getString("room_name"));
-        room.setFloorId(BigInteger.valueOf(resultSet.getInt("floor_id")));
-        room.setId(BigInteger.valueOf(resultSet.getInt("room_id")));
+        room.setFloorId(BigInteger.valueOf(resultSet.getLong("floor_id")));
+        room.setId(BigInteger.valueOf(resultSet.getLong("room_id")));
 
         return room;
     }

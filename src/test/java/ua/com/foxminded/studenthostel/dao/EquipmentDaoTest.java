@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -44,16 +44,47 @@ class EquipmentDaoTest {
     }
 
     @Test
+    public void insert_ShouldMakeEntry_InEquipmentsTable() {
+        Equipment equipment = new Equipment();
+        equipment.setName("table");
+
+        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+        equipmentDao.insert(equipment);
+        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+
+        Assertions.assertEquals(rowNumberBefore + 1, rowNumberAfter);
+    }
+
+    @Test
+    public void insert_ShouldReturnId_WhenEntryIsInserted() {
+        Equipment equipment = new Equipment();
+        equipment.setName("table");
+        Assertions.assertEquals(BigInteger.valueOf(1), equipmentDao.insert(equipment));
+    }
+
+    @Test
+    public void insert_ShouldThrowException_WhenNameNotUnique() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Equipment equipment = new Equipment();
+        equipment.setName("table");
+
+        Assertions.assertThrows(DuplicateKeyException.class, () -> equipmentDao.insert(equipment));
+    }
+
+    @Test
     public void assignToStudent_ShouldMakeEntry_InStudentsEquipmentsTable() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-        equipmentDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        boolean isAssign = equipmentDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
 
         Assertions.assertEquals(rowNumberBefore + 1, rowNumberAfter);
+        Assertions.assertTrue(isAssign);
     }
 
     @Test
@@ -74,7 +105,10 @@ class EquipmentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Equipment equipment = Equipment.TABLE;
+        Equipment equipment = new Equipment();
+        equipment.setId(BigInteger.valueOf(1));
+        equipment.setName("table");
+
         Assertions.assertEquals(equipment, equipmentDao.getById(BigInteger.valueOf(1)));
     }
 
@@ -86,25 +120,29 @@ class EquipmentDaoTest {
     }
 
     @Test
-    public void getAll_ShouldReturnListOfEquipments() {
+    public void getAll_ShouldReturnListOfEquipments_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        Equipment equipment = new Equipment();
+        equipment.setId(BigInteger.valueOf(5));
+        equipment.setName("mattress");
+
         List<Equipment> list = new ArrayList<>();
-        list.add(Equipment.MATTRESS);
+        list.add(equipment);
 
         Assertions.assertEquals(list, equipmentDao.getAll(1, 4));
     }
 
     @Test
-    public void removeFromStudent_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void unassignFromStudent_ShouldReturnTrue_WhenEntryIsDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsEquipmentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-        boolean isRemoved = equipmentDao.removeFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        boolean isRemoved = equipmentDao.unassignFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
 
         Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
@@ -112,17 +150,43 @@ class EquipmentDaoTest {
     }
 
     @Test
-    public void removeFromStudent_ShouldReturnFalse_WhenEntryIsNotDeleted() {
+    public void unassignFromStudent_ShouldReturnFalse_WhenEntryIsNotDeleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsEquipmentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
-        boolean isRemoved = equipmentDao.removeFromStudent(BigInteger.valueOf(2), BigInteger.valueOf(1));
+        boolean isRemoved = equipmentDao.unassignFromStudent(BigInteger.valueOf(2), BigInteger.valueOf(1));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_equipments");
 
         Assertions.assertEquals(rowNumberBefore, rowNumberAfter);
         Assertions.assertFalse(isRemoved);
+    }
+
+    @Test
+    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+        boolean isDeleted = equipmentDao.deleteById(BigInteger.valueOf(6));
+        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+
+        Assertions.assertEquals(rowBefore - 1, rowAfter);
+        Assertions.assertTrue(isDeleted);
+    }
+
+    @Test
+    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToEquipmentsTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+        boolean isDeleted = equipmentDao.deleteById(BigInteger.valueOf(7));
+        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
+
+        Assertions.assertEquals(rowBefore, rowAfter);
+        Assertions.assertFalse(isDeleted);
     }
 }

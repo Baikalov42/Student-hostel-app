@@ -114,7 +114,7 @@ class GroupDaoTest {
                 () -> groupDao.getById(BigInteger.valueOf(1)));
     }
     @Test
-    public void getAll_ShouldReturnListOfGroups(){
+    public void getAll_ShouldReturnListOfGroups_WhenConditionCompleted(){
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 

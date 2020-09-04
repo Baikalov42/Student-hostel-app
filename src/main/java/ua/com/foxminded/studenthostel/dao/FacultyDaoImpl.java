@@ -3,12 +3,15 @@ package ua.com.foxminded.studenthostel.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.mappers.FacultyMapper;
 
 import java.math.BigInteger;
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -18,13 +21,22 @@ public class FacultyDaoImpl implements FacultyDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void save(Faculty faculty) {
-        String query = "" +
-                "INSERT INTO faculties (faculty_id, faculty_name) " +
-                "VALUES (? , ? ) " +
-                "ON CONFLICT (faculty_id) DO NOTHING ";
+    public BigInteger insert(Faculty faculty) {
 
-        jdbcTemplate.update(query, faculty.getId(), faculty.getName());
+        String query = "" +
+                "INSERT INTO faculties (faculty_name) " +
+                "VALUES (?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(query, new String[]{"faculty_id"});
+            ps.setString(1, faculty.getName());
+            return ps;
+        }, keyHolder);
+
+        return BigInteger.valueOf(keyHolder.getKey().longValue());
+
     }
 
     @Override
@@ -47,5 +59,14 @@ public class FacultyDaoImpl implements FacultyDao {
                 "ORDER BY faculty_id " +
                 "LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, new FacultyMapper(), limit, offset);
+    }
+
+    @Override
+    public boolean deleteById(BigInteger id) {
+        String query = "" +
+                "DELETE FROM faculties " +
+                "WHERE faculty_id = ? ";
+
+        return jdbcTemplate.update(query, id) == 1;
     }
 }
