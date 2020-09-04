@@ -1,11 +1,11 @@
 package ua.com.foxminded.studenthostel.models;
 
-import java.util.List;
+import java.math.BigInteger;
 
 public class Floor {
 
     private String name;
-    private List<Room> rooms;
+    private BigInteger id;
 
     public String getName() {
         return name;
@@ -15,19 +15,37 @@ public class Floor {
         this.name = name;
     }
 
-    public List<Room> getRooms() {
-        return rooms;
+    public BigInteger getId() {
+        return id;
     }
 
-    public void setRooms(List<Room> rooms) {
-        this.rooms = rooms;
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Floor floor = (Floor) o;
+
+        if (!name.equals(floor.name)) return false;
+        return id.equals(floor.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
+        return result;
     }
 
     @Override
     public String toString() {
         return "Floor{" +
                 "name='" + name + '\'' +
-                ", rooms=" + rooms +
+                ", id=" + id +
                 '}';
     }
 }

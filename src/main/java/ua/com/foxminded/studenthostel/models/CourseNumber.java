@@ -1,40 +1,51 @@
 package ua.com.foxminded.studenthostel.models;
 
-public enum CourseNumber {
-    FIRST(1),
-    SECOND(2),
-    THIRD(3),
-    FOURTH(4),
-    FIFTH(5);
+import java.math.BigInteger;
 
-    private final int number;
+public class CourseNumber {
 
-    CourseNumber(int number) {
-        this.number = number;
+    private String name;
+    private BigInteger id;
+
+    public String getName() {
+        return name;
     }
 
-    public int getNumber() {
-        return number;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public CourseNumber getByNumber(int value) {
-        CourseNumber result = null;
+    public BigInteger getId() {
+        return id;
+    }
 
-        for (CourseNumber constant : CourseNumber.values()) {
-            if (constant.getNumber() == value) {
-                result = constant;
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("incorrect name");
-        }
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CourseNumber that = (CourseNumber) o;
+
+        if (!name.equals(that.name)) return false;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return "CourseNumber{" +
-                "number=" + number +
+        return "CourseNumber1{" +
+                "name='" + name + '\'' +
+                ", id=" + id +
                 '}';
     }
 }

@@ -1,17 +1,37 @@
 package ua.com.foxminded.studenthostel.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
 
 public class Student {
 
+    private BigInteger id;
     private String firstName;
     private String lastName;
     private int hoursDebt;
-    private Group group;
-    private Room room;
-    private List<Equipment> equipments = new ArrayList<>();
-    private List<Task> tasks = new ArrayList<>();
+    private BigInteger groupId;
+    private BigInteger roomId;
+
+    public Student() {
+    }
+
+    public Student(BigInteger id, String firstName, String lastName,
+                   int hoursDebt, BigInteger groupId, BigInteger roomId) {
+
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.hoursDebt = hoursDebt;
+        this.groupId = groupId;
+        this.roomId = roomId;
+    }
+
+    public BigInteger getId() {
+        return id;
+    }
+
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -37,48 +57,57 @@ public class Student {
         this.hoursDebt = hoursDebt;
     }
 
-    public Group getGroup() {
-        return group;
+    public BigInteger getGroupId() {
+        return groupId;
     }
 
-    public void setGroup(Group group) {
-        this.group = group;
+    public void setGroupId(BigInteger groupId) {
+        this.groupId = groupId;
     }
 
-    public List<Equipment> getEquipments() {
-        return equipments;
+    public BigInteger getRoomId() {
+        return roomId;
     }
 
-    public void setEquipments(List<Equipment> equipments) {
-        this.equipments = equipments;
+    public void setRoomId(BigInteger roomId) {
+        this.roomId = roomId;
     }
 
-    public Room getRoom() {
-        return room;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Student student = (Student) o;
+
+        if (hoursDebt != student.hoursDebt) return false;
+        if (!id.equals(student.id)) return false;
+        if (!firstName.equals(student.firstName)) return false;
+        if (!lastName.equals(student.lastName)) return false;
+        if (!groupId.equals(student.groupId)) return false;
+        return roomId.equals(student.roomId);
     }
 
-    public void setRoom(Room room) {
-        this.room = room;
-    }
-
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + firstName.hashCode();
+        result = 31 * result + lastName.hashCode();
+        result = 31 * result + hoursDebt;
+        result = 31 * result + groupId.hashCode();
+        result = 31 * result + roomId.hashCode();
+        return result;
     }
 
     @Override
     public String toString() {
         return "Student{" +
-                "firstName='" + firstName + '\'' +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", hoursDebt=" + hoursDebt +
-                ", group=" + group +
-                ", room=" + room +
-                ", equipments=" + equipments +
-                ", tasks=" + tasks +
+                ", groupId=" + groupId +
+                ", roomId=" + roomId +
                 '}';
     }
 }

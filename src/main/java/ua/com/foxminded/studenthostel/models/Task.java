@@ -1,13 +1,20 @@
 package ua.com.foxminded.studenthostel.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
 
 public class Task {
+    private BigInteger id;
     private String name;
     private String description;
     private int costInHours;
-    private List<Student> executors = new ArrayList<>();
+
+    public BigInteger getId() {
+        return id;
+    }
+
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -33,21 +40,35 @@ public class Task {
         this.costInHours = costInHours;
     }
 
-    public List<Student> getExecutors() {
-        return executors;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Task task = (Task) o;
+
+        if (costInHours != task.costInHours) return false;
+        if (!id.equals(task.id)) return false;
+        if (!name.equals(task.name)) return false;
+        return description.equals(task.description);
     }
 
-    public void setExecutors(List<Student> executors) {
-        this.executors = executors;
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + description.hashCode();
+        result = 31 * result + costInHours;
+        return result;
     }
 
     @Override
     public String toString() {
         return "Task{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", costInHours=" + costInHours +
-                ", executors=" + executors +
                 '}';
     }
 }
