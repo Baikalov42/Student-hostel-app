@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan(basePackages = "ua.com.foxminded.studenthostel")
+@ComponentScan(basePackages = "ua.com.foxminded.studenthostel.dao")
 @PropertySource("classpath:db.properties")
 public class SpringConfig {
 

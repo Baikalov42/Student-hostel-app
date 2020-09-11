@@ -119,7 +119,7 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Assertions.assertThrows(DataIntegrityViolationException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(3)));
+                () -> taskDao.assignToStudent(BigInteger.valueOf(3), BigInteger.valueOf(1)));
     }
 
     @Test
@@ -128,7 +128,7 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Assertions.assertThrows(DataIntegrityViolationException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(2), BigInteger.valueOf(1)));
+                () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(2)));
     }
 
 

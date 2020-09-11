@@ -16,7 +16,6 @@ import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 
 import javax.sql.DataSource;
-import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;

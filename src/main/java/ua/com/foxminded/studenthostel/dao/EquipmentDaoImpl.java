@@ -89,6 +89,15 @@ public class EquipmentDaoImpl implements EquipmentDao {
     }
 
     @Override
+    public List<Equipment> getAllByStudent(BigInteger studentId) {
+        String query = "" +
+                "SELECT * " +
+                "FROM students_equipments " +
+                "WHERE student_id = ? ";
+        return jdbcTemplate.query(query, new EquipmentMapper(), studentId);
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM equipments " +

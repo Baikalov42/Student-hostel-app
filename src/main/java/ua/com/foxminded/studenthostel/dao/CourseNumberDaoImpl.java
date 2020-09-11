@@ -17,8 +17,13 @@ import java.util.List;
 @Repository
 public class CourseNumberDaoImpl implements CourseNumberDao {
 
-    @Autowired
+
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public CourseNumberDaoImpl (JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public BigInteger insert(CourseNumber courseNumber) {

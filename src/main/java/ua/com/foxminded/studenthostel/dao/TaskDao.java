@@ -1,5 +1,6 @@
 package ua.com.foxminded.studenthostel.dao;
 
+
 import ua.com.foxminded.studenthostel.models.Task;
 
 import java.math.BigInteger;
@@ -12,7 +13,9 @@ public interface TaskDao {
 
     List<Task> getAll(long limit, long offset);
 
-    boolean assignToStudent(BigInteger taskId, BigInteger studentId);
+    List<Task> getAllByStudent(BigInteger studentId);
+
+    boolean assignToStudent(BigInteger studentId, BigInteger taskId);
 
     boolean removeFromStudent(BigInteger studentId, BigInteger taskId);
 

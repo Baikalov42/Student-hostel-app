@@ -8,7 +8,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Task;
+import ua.com.foxminded.studenthostel.models.mappers.EquipmentMapper;
 import ua.com.foxminded.studenthostel.models.mappers.TaskMapper;
 
 import java.math.BigInteger;
@@ -63,10 +65,18 @@ public class TaskDaoImpl implements TaskDao {
                 "LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, new TaskMapper(), limit, offset);
     }
+    @Override
+    public List<Task> getAllByStudent(BigInteger studentId) {
+        String query = "" +
+                "SELECT * " +
+                "FROM students_tasks " +
+                "WHERE student_id = ? ";
+        return jdbcTemplate.query(query, new TaskMapper(), studentId);
+    }
 
 
     @Override
-    public boolean assignToStudent(BigInteger taskId, BigInteger studentId) {
+    public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
         String query = "" +
                 "INSERT INTO students_tasks(student_id, task_id) " +
                 "VALUES (?,?)";
