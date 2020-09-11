@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FacultyDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Faculty;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -21,14 +21,13 @@ public class FacultyService {
 
     public BigInteger insert(Faculty faculty) throws ValidationException {
 
-        PatternValidator.validateName(faculty.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(faculty.getName(), NAME_PATTERN);
         return facultyDao.insert(faculty);
     }
 
-    public Faculty getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public Faculty getById(BigInteger id) throws ValidationException {
+
+        ValidationsUtils.validateId(id);
         return facultyDao.getById(id);
     }
 
@@ -39,12 +38,12 @@ public class FacultyService {
 
     public boolean update(Faculty faculty) throws ValidationException {
 
-        PatternValidator.validateName(faculty.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(faculty.getName(), NAME_PATTERN);
         return facultyDao.update(faculty);
     }
 
 
-    public boolean deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id)  {
         return facultyDao.deleteById(id);
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.service.EquipmentService;
 
@@ -18,7 +19,12 @@ public class EquipmentController {
 
     @GetMapping("/findEquipment")
     public String getEquipmentById(@RequestParam("id") long id, Model model) {
-        Equipment equipment = equipmentService.getById(BigInteger.valueOf(id));
+        Equipment equipment = null;
+        try {
+            equipment = equipmentService.getById(BigInteger.valueOf(id));
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
 
         model.addAttribute("id", equipment.getId().longValue());
         model.addAttribute("name", equipment.getName());

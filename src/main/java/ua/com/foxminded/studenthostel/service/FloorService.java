@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Floor;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -21,14 +21,13 @@ public class FloorService {
 
     public BigInteger insert(Floor floor) throws ValidationException {
 
-        PatternValidator.validateName(floor.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(floor.getName(), NAME_PATTERN);
         return floorDao.insert(floor);
     }
 
-    public Floor getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public Floor getById(BigInteger id) throws ValidationException {
+
+        ValidationsUtils.validateId(id);
         return floorDao.getById(id);
     }
 
@@ -38,13 +37,12 @@ public class FloorService {
     }
 
     public boolean update(Floor floor) throws ValidationException {
-        PatternValidator.validateName(floor.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(floor.getName(), NAME_PATTERN);
         return floorDao.update(floor);
     }
 
 
-    public boolean deleteById(BigInteger id) {
-
+    public boolean deleteById(BigInteger id) throws ValidationException {
         return floorDao.deleteById(id);
     }
 }

@@ -8,7 +8,7 @@ import ua.com.foxminded.studenthostel.dao.GroupDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.dto.GroupDTO;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,15 +29,14 @@ public class GroupService {
 
     public BigInteger insert(Group group) throws ValidationException {
 
-        PatternValidator.validateName(group.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(group.getName(), NAME_PATTERN);
         return groupDao.insert(group);
     }
 
 
-    public GroupDTO getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public GroupDTO getById(BigInteger id) throws ValidationException {
+
+        ValidationsUtils.validateId(id);
         Group group = groupDao.getById(id);
         return getDTO(group);
     }
@@ -55,7 +54,8 @@ public class GroupService {
 
 
     public boolean update(Group group) throws ValidationException {
-        PatternValidator.validateName(group.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(group.getName(), NAME_PATTERN);
+
         return groupDao.update(group);
     }
 

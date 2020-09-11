@@ -7,7 +7,7 @@ import ua.com.foxminded.studenthostel.dao.RoomDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.dto.RoomDTO;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -25,15 +25,14 @@ public class RoomService {
     FloorDao floorDao;
 
     public BigInteger insert(Room room) throws ValidationException {
-        PatternValidator.validateName(room.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(room.getName(), NAME_PATTERN);
         return roomDao.insert(room);
     }
 
-    public RoomDTO getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public RoomDTO getById(BigInteger id) throws ValidationException {
+        ValidationsUtils.validateId(id);
         Room room = roomDao.getById(id);
+
         return getDTO(room);
     }
 
@@ -59,7 +58,7 @@ public class RoomService {
     }
 
     public boolean update(Room room) throws ValidationException {
-        PatternValidator.validateName(room.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(room.getName(), NAME_PATTERN);
         return roomDao.update(room);
     }
 

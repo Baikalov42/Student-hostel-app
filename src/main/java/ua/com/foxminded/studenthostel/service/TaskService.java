@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Task;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -18,14 +18,12 @@ public class TaskService {
     TaskDao taskDao;
 
     public BigInteger insert(Task task) throws ValidationException {
-        PatternValidator.validateName(task.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(task.getName(), NAME_PATTERN);
         return taskDao.insert(task);
     }
 
-    public Task getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public Task getById(BigInteger id) throws ValidationException {
+        ValidationsUtils.validateId(id);
         return taskDao.getById(id);
     }
 
@@ -42,7 +40,7 @@ public class TaskService {
     }
 
     public boolean update(Task task) throws ValidationException {
-        PatternValidator.validateName(task.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(task.getName(), NAME_PATTERN);
         return taskDao.update(task);
     }
 

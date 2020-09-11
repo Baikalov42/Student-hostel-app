@@ -12,7 +12,7 @@ import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -44,18 +44,17 @@ public class StudentService {
 
 
     public BigInteger insert(Student student) throws ValidationException {
-        PatternValidator.validateName(student.getFirstName(),NAME_PATTERN);
-        PatternValidator.validateName(student.getLastName(), NAME_PATTERN);
-        PatternValidator.validaHoursDebt(student.getHoursDebt(), MAX_HOURS_DEBT, MIN_HOURS_DEBT);
+        ValidationsUtils.validateName(student.getFirstName(), NAME_PATTERN);
+        ValidationsUtils.validateName(student.getLastName(), NAME_PATTERN);
+        ValidationsUtils.validaHoursDebt(student.getHoursDebt(), MAX_HOURS_DEBT, MIN_HOURS_DEBT);
 
         return studentDao.insert(student);
     }
 
-    public StudentDTO getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public StudentDTO getById(BigInteger id) throws ValidationException {
+        ValidationsUtils.validateId(id);
         Student student = studentDao.getById(id);
+
         return getDTO(student);
     }
 
@@ -64,23 +63,31 @@ public class StudentService {
         return getDTOS(students);
     }
 
-    public List<StudentDTO> getAllByFloor(BigInteger floorId) {
+    public List<StudentDTO> getAllByFloor(BigInteger floorId) throws ValidationException {
+        ValidationsUtils.validateId(floorId);
         List<Student> students = studentDao.getAllByFloor(floorId);
+
         return getDTOS(students);
     }
 
-    public List<StudentDTO> getAllByFaculty(BigInteger facultyId) {
+    public List<StudentDTO> getAllByFaculty(BigInteger facultyId) throws ValidationException {
+        ValidationsUtils.validateId(facultyId);
         List<Student> students = studentDao.getAllByFaculty(facultyId);
+
         return getDTOS(students);
     }
 
-    public List<StudentDTO> getAllByCourse(BigInteger courseId) {
+    public List<StudentDTO> getAllByCourse(BigInteger courseId) throws ValidationException {
+        ValidationsUtils.validateId(courseId);
         List<Student> students = studentDao.getAllByCourse(courseId);
+
         return getDTOS(students);
     }
 
-    public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int numberOfHoursDebt) {
-        List<Student> students = studentDao.getAllWithDebitByGroup(groupId, numberOfHoursDebt);
+    public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int hoursDebt) throws ValidationException {
+        ValidationsUtils.validateId(groupId);
+        List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
+
         return getDTOS(students);
     }
 
@@ -93,9 +100,10 @@ public class StudentService {
     }
 
     public boolean update(Student student) throws ValidationException {
-        PatternValidator.validateName(student.getFirstName(),NAME_PATTERN);
-        PatternValidator.validateName(student.getLastName(), NAME_PATTERN);
-        PatternValidator.validaHoursDebt(student.getHoursDebt(), MAX_HOURS_DEBT, MIN_HOURS_DEBT);
+        ValidationsUtils.validateName(student.getFirstName(), NAME_PATTERN);
+        ValidationsUtils.validateName(student.getLastName(), NAME_PATTERN);
+        ValidationsUtils.validaHoursDebt(student.getHoursDebt(), MAX_HOURS_DEBT, MIN_HOURS_DEBT);
+
         return studentDao.update(student);
     }
 

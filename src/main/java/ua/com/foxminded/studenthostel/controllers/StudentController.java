@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
 import ua.com.foxminded.studenthostel.service.StudentService;
 
@@ -17,7 +18,12 @@ public class StudentController {
 
     @GetMapping("/getstudent")
     public String getStudentById(@RequestParam("id") long id, Model model) {
-        StudentDTO studentDTO = studentService.getById(BigInteger.valueOf(id));
+        StudentDTO studentDTO = null;
+        try {
+            studentDTO = studentService.getById(BigInteger.valueOf(id));
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
         model.addAttribute("name", studentDTO.getFirstName());
         model.addAttribute("lastname", studentDTO.getLastName());
         model.addAttribute("hours", studentDTO.getHoursDebt());

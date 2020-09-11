@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -20,14 +20,12 @@ public class CourseNumberService {
     private CourseNumberDao courseNumberDao;
 
     public BigInteger insert(CourseNumber courseNumber) throws ValidationException {
-        PatternValidator.validateName(courseNumber.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(courseNumber.getName(), NAME_PATTERN);
         return courseNumberDao.insert(courseNumber);
     }
 
-    public CourseNumber getById(BigInteger id) {
-        if (id == null || id.longValue() == 0) {
-            throw new IllegalArgumentException("id can't be null");
-        }
+    public CourseNumber getById(BigInteger id) throws ValidationException {
+        ValidationsUtils.validateId(id);
         return courseNumberDao.getById(id);
     }
 
@@ -37,7 +35,7 @@ public class CourseNumberService {
 
     public boolean update(CourseNumber courseNumber) throws ValidationException {
 
-        PatternValidator.validateName(courseNumber.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(courseNumber.getName(), NAME_PATTERN);
         return courseNumberDao.update(courseNumber);
     }
 

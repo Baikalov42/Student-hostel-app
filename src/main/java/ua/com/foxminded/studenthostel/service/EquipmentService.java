@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.EquipmentDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Equipment;
-import ua.com.foxminded.studenthostel.service.utils.PatternValidator;
+import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -20,7 +20,7 @@ public class EquipmentService {
 
 
     public BigInteger insert(Equipment equipment) throws ValidationException {
-        PatternValidator.validateName(equipment.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(equipment.getName(), NAME_PATTERN);
         return equipmentDao.insert(equipment);
     }
 
@@ -29,15 +29,14 @@ public class EquipmentService {
     }
 
 
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId)   {
         return equipmentDao.unassignFromStudent(studentId, equipmentId);
     }
 
 
-    public Equipment getById(BigInteger equipmentId) {
-        if (equipmentId == null || equipmentId.longValue() == 0) {
-            throw new IllegalArgumentException();
-        }
+    public Equipment getById(BigInteger equipmentId) throws ValidationException {
+
+        ValidationsUtils.validateId(equipmentId);
         return equipmentDao.getById(equipmentId);
     }
 
@@ -47,7 +46,7 @@ public class EquipmentService {
     }
 
     public boolean update(Equipment equipment) throws ValidationException {
-        PatternValidator.validateName(equipment.getName(), NAME_PATTERN);
+        ValidationsUtils.validateName(equipment.getName(), NAME_PATTERN);
         return equipmentDao.update(equipment);
     }
 
