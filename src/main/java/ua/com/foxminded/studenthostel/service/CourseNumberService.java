@@ -3,13 +3,17 @@ package ua.com.foxminded.studenthostel.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
+import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
+
 
 import java.math.BigInteger;
 import java.util.List;
+
 
 @Service
 public class CourseNumberService {
@@ -19,8 +23,12 @@ public class CourseNumberService {
     @Autowired
     private CourseNumberDao courseNumberDao;
 
+    @Autowired
+    private ValidatorEntity<CourseNumber> validatorEntity;
+
     public BigInteger insert(CourseNumber courseNumber) throws ValidationException {
-        ValidationsUtils.validateName(courseNumber.getName(), NAME_PATTERN);
+
+        validatorEntity.validate(courseNumber);
         return courseNumberDao.insert(courseNumber);
     }
 

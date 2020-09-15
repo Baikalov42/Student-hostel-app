@@ -1,10 +1,13 @@
 package ua.com.foxminded.studenthostel.models;
 
+import javax.validation.constraints.Size;
 import java.math.BigInteger;
 
 public class CourseNumber {
 
+    @Size(min = 2, max = 30)
     private String name;
+
     private BigInteger id;
 
     public String getName() {

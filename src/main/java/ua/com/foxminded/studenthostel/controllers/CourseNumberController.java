@@ -27,9 +27,24 @@ public class CourseNumberController {
             e.printStackTrace();
         }
 
-         model.addAttribute(courseNumber);
+        model.addAttribute(courseNumber);
 
         return "first/course-number";
+    }
+
+    @GetMapping("/courseNumber/insert")
+    public String insert(@RequestParam("name") String name, Model model) {
+        CourseNumber courseNumber = new CourseNumber();
+        courseNumber.setName(name);
+        BigInteger id = null;
+        try {
+            id = courseNumberService.insert(courseNumber);
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("newID", id);
+
+        return "courseNumber/insertResult";
     }
 
 }
