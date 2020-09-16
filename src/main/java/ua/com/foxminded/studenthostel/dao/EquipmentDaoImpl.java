@@ -40,33 +40,6 @@ public class EquipmentDaoImpl implements EquipmentDao {
     }
 
     @Override
-    public boolean update(Equipment equipment) {
-        String query = "" +
-                "UPDATE equipments " +
-                "SET equipment_name = ? " +
-                "WHERE equipment_id = ? ";
-
-        return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
-    }
-
-    @Override
-    public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
-        String query = "" +
-                "INSERT INTO students_equipments (student_id, equipment_id) " +
-                "VALUES (? , ?)";
-        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
-    }
-
-    @Override
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
-        String query = "" +
-                "DELETE FROM students_equipments " +
-                "WHERE student_id = ? " +
-                "AND equipment_id = ?";
-        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
-    }
-
-    @Override
     public Equipment getById(BigInteger equipmentId) {
         String query = "" +
                 "SELECT * FROM equipments " +
@@ -95,6 +68,42 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "FROM students_equipments " +
                 "WHERE student_id = ? ";
         return jdbcTemplate.query(query, new EquipmentMapper(), studentId);
+    }
+
+    @Override
+    public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
+        String query = "" +
+                "INSERT INTO students_equipments (student_id, equipment_id) " +
+                "VALUES (? , ?)";
+        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+    }
+
+    @Override
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
+        String query = "" +
+                "DELETE FROM students_equipments " +
+                "WHERE student_id = ? " +
+                "AND equipment_id = ?";
+        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+    }
+
+    @Override
+    public boolean update(Equipment equipment) {
+        String query = "" +
+                "UPDATE equipments " +
+                "SET equipment_name = ? " +
+                "WHERE equipment_id = ? ";
+
+        return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
+    }
+
+    @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM equipments";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
     }
 
     @Override

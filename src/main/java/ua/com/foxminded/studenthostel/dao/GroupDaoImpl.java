@@ -73,6 +73,15 @@ public class GroupDaoImpl implements GroupDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM groups";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean deleteById(BigInteger id) {
         String query = "" +
                 "DELETE FROM groups " +

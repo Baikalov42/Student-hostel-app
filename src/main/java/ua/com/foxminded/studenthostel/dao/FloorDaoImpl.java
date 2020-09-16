@@ -62,6 +62,15 @@ public class FloorDaoImpl implements FloorDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM floors";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean update(Floor floor) {
         String query = "" +
                 "UPDATE floors " +

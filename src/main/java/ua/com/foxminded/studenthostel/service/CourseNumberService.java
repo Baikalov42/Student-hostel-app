@@ -3,11 +3,10 @@ package ua.com.foxminded.studenthostel.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
-import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
 
 
@@ -18,37 +17,55 @@ import java.util.List;
 @Service
 public class CourseNumberService {
 
-    private static final String NAME_PATTERN = "[A-Z][a-z]{3,29}";
-
     @Autowired
     private CourseNumberDao courseNumberDao;
 
     @Autowired
-    private ValidatorEntity<CourseNumber> validatorEntity;
+    private ValidatorEntity<CourseNumber> validator;
 
     public BigInteger insert(CourseNumber courseNumber) throws ValidationException {
 
-        validatorEntity.validate(courseNumber);
+        validator.validateEntity(courseNumber);
         return courseNumberDao.insert(courseNumber);
     }
 
     public CourseNumber getById(BigInteger id) throws ValidationException {
-        ValidationsUtils.validateId(id);
+
+        validator.validateId(id);
         return courseNumberDao.getById(id);
     }
 
-    public List<CourseNumber> getAll(long limit, long offset) {
+    public List<CourseNumber> getAll(long limit, long offset) throws ValidationException {
+        long countOfEntries = courseNumberDao.getEntriesCount().longValue();
+        if (countOfEntries <= offset) {
+            throw new ValidationException("offset is greater than the number of entries");
+        }
         return courseNumberDao.getAll(limit, offset);
     }
 
     public boolean update(CourseNumber courseNumber) throws ValidationException {
 
-        ValidationsUtils.validateName(courseNumber.getName(), NAME_PATTERN);
+        validator.validateEntity(courseNumber);
+        validator.validateId(courseNumber.getId());
+        validateForExist(courseNumber.getId());
+
         return courseNumberDao.update(courseNumber);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id) throws ValidationException {
+
+        validator.validateId(id);
+        validateForExist(id);
+
         return courseNumberDao.deleteById(id);
+    }
+
+    private void validateForExist(BigInteger id) throws ValidationException {
+        try {
+            courseNumberDao.getById(id);
+        } catch (DaoException ex) {
+            throw new ValidationException("id = " + id + " not exist", ex);
+        }
     }
 
 }

@@ -5,10 +5,11 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.dao.FacultyDao;
 import ua.com.foxminded.studenthostel.dao.GroupDao;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.dto.GroupDTO;
-import ua.com.foxminded.studenthostel.service.utils.ValidationsUtils;
+import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -17,50 +18,71 @@ import java.util.List;
 @Service
 public class GroupService {
 
-    private static final String NAME_PATTERN = "[A-Z]{3}[-][0-9]{4}";
+    @Autowired
+    private GroupDao groupDao;
+    @Autowired
+    private FacultyDao facultyDao;
+    @Autowired
+    private CourseNumberDao courseNumberDao;
 
     @Autowired
-    GroupDao groupDao;
-    @Autowired
-    FacultyDao facultyDao;
-    @Autowired
-    CourseNumberDao courseNumberDao;
+    private ValidatorEntity<Group> validator;
 
 
     public BigInteger insert(Group group) throws ValidationException {
 
-        ValidationsUtils.validateName(group.getName(), NAME_PATTERN);
+        validator.validateEntity(group);
         return groupDao.insert(group);
     }
 
 
     public GroupDTO getById(BigInteger id) throws ValidationException {
 
-        ValidationsUtils.validateId(id);
+        validator.validateId(id);
         Group group = groupDao.getById(id);
         return getDTO(group);
     }
 
-    public List<GroupDTO> getAll(long limit, long offset) {
+    public List<GroupDTO> getAll(long limit, long offset) throws ValidationException {
+        long countOfEntries = groupDao.getEntriesCount().longValue();
+
+        if (countOfEntries <= offset) {
+            throw new ValidationException("offset is greater than the number of entries");
+        }
 
         List<Group> groups = groupDao.getAll(limit, offset);
-        List<GroupDTO> groupsDTO = new ArrayList<>();
+        List<GroupDTO> groupDTOS = new ArrayList<>();
 
         for (Group group : groups) {
-            groupsDTO.add(getDTO(group));
+            groupDTOS.add(getDTO(group));
         }
-        return groupsDTO;
+        return groupDTOS;
     }
 
 
     public boolean update(Group group) throws ValidationException {
-        ValidationsUtils.validateName(group.getName(), NAME_PATTERN);
+
+        validator.validateEntity(group);
+        validator.validateId(group.getId());
+        validateForExist(group.getId());
 
         return groupDao.update(group);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public boolean deleteById(BigInteger id) throws ValidationException {
+
+        validator.validateId(id);
+        validateForExist(id);
+
         return groupDao.deleteById(id);
+    }
+
+    private void validateForExist(BigInteger id) throws ValidationException {
+        try {
+            groupDao.getById(id);
+        } catch (DaoException ex) {
+            throw new ValidationException("id = " + id + " not exist", ex);
+        }
     }
 
     GroupDTO getDTO(Group group) {

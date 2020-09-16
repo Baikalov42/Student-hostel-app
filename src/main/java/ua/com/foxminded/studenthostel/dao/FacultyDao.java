@@ -13,6 +13,8 @@ public interface FacultyDao {
 
     List<Faculty> getAll(long limit, long offset);
 
+    BigInteger getEntriesCount();
+
     boolean update(Faculty faculty);
 
     boolean deleteById(BigInteger id);

@@ -133,6 +133,25 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM students";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
+    public Integer getStudentsCountByRoom(BigInteger roomID) {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM students " +
+                "WHERE room_id = ?";
+
+        return jdbcTemplate.queryForObject(query, Integer.class, roomID);
+    }
+
+    @Override
     public boolean update(Student student) {
         String query = "" +
                 "UPDATE students " +

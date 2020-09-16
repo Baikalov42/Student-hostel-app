@@ -103,6 +103,13 @@ class CourseNumberDaoTest {
         courseNumbers.add(courseNumber);
         Assertions.assertEquals(courseNumbers, courseNumberDao.getAll(1, 3));
     }
+    @Test
+    public void getEntriesCount_ShouldReturn_CountOfEntries() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Assertions.assertEquals(BigInteger.valueOf(5), courseNumberDao.getEntriesCount());
+    }
 
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {

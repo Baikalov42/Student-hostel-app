@@ -62,6 +62,15 @@ public class FacultyDaoImpl implements FacultyDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM faculties";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean update(Faculty faculty) {
         String query = "" +
                 "UPDATE faculties " +

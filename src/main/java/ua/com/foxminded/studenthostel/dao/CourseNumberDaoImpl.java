@@ -61,6 +61,15 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM course_numbers";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean update(CourseNumber courseNumber) {
         String query = "" +
                 "UPDATE course_numbers " +

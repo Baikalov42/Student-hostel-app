@@ -15,5 +15,7 @@ public interface FloorDao {
 
     boolean update(Floor floor);
 
+    BigInteger getEntriesCount();
+
     boolean deleteById(BigInteger id);
 }

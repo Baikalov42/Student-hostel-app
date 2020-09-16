@@ -75,6 +75,15 @@ public class RoomDaoImpl implements RoomDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM rooms ";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean update(Room room) {
         String query = "" +
                 "UPDATE rooms " +

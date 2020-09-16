@@ -65,6 +65,7 @@ public class TaskDaoImpl implements TaskDao {
                 "LIMIT ? OFFSET ?";
         return jdbcTemplate.query(query, new TaskMapper(), limit, offset);
     }
+
     @Override
     public List<Task> getAllByStudent(BigInteger studentId) {
         String query = "" +
@@ -91,6 +92,15 @@ public class TaskDaoImpl implements TaskDao {
                 "WHERE student_id = ? AND task_id = ?";
 
         return jdbcTemplate.update(query, studentId, taskId) == 1;
+    }
+
+    @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM tasks";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
     }
 
     @Override

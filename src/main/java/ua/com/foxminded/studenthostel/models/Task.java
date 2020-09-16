@@ -1,11 +1,27 @@
 package ua.com.foxminded.studenthostel.models;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.math.BigInteger;
 
+@NotNull
 public class Task {
+
+    private static final String NAME_PATTERN = "[\\w\\s]{3,29}";
+
     private BigInteger id;
+
+    @Pattern(regexp = NAME_PATTERN)
     private String name;
+
+    @Size(min = 10, max = 30)
     private String description;
+
+    @Min(1)
+    @Max(10)
     private int costInHours;
 
     public BigInteger getId() {

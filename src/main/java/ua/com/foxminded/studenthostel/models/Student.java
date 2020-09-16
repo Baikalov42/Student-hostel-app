@@ -1,14 +1,30 @@
 package ua.com.foxminded.studenthostel.models;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import java.math.BigInteger;
 
 public class Student {
 
+    private static final String NAME_PATTERN = "[A-Z][a-z]{1,29}";
+
     private BigInteger id;
+
+    @Pattern(regexp = NAME_PATTERN)
     private String firstName;
+
+    @Pattern(regexp = NAME_PATTERN)
     private String lastName;
+
+    @Min(value = 0)
+    @Max(value = 40)
     private int hoursDebt;
+
+    @Min(value = 1)
     private BigInteger groupId;
+
+    @Min(value = 1)
     private BigInteger roomId;
 
     public Student() {

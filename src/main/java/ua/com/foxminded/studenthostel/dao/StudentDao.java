@@ -24,6 +24,10 @@ public interface StudentDao {
 
     boolean changeDebt(int newHoursDebt, BigInteger studentId);
 
+    BigInteger getEntriesCount();
+
+    Integer getStudentsCountByRoom(BigInteger roomID);
+
     boolean update(Student student);
 
     boolean deleteById(BigInteger id);
