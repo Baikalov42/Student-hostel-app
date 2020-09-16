@@ -85,7 +85,7 @@ public class RoomService {
         return roomDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateForExist(BigInteger id) throws ValidationException {
         try {
             roomDao.getById(id);
         } catch (DaoException ex) {

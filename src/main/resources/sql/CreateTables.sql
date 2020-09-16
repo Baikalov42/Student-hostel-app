@@ -59,16 +59,19 @@ CREATE TABLE IF NOT EXISTS students
     last_name  varchar(30),
     hours_debt INTEGER,
     group_id   BIGINT REFERENCES groups (group_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    room_id    BIGINT REFERENCES rooms (room_id) ON UPDATE CASCADE ON DELETE CASCADE
+    room_id    BIGINT REFERENCES rooms (room_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (first_name, last_name)
 );
 CREATE TABLE IF NOT EXISTS students_equipments
 (
     student_id   BIGINT REFERENCES students (student_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    equipment_id BIGINT REFERENCES equipments (equipment_id) ON UPDATE CASCADE ON DELETE CASCADE
+    equipment_id BIGINT REFERENCES equipments (equipment_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (student_id, equipment_id)
 );
 CREATE TABLE IF NOT EXISTS students_tasks
 (
     student_id BIGINT REFERENCES students (student_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    task_id    BIGINT REFERENCES tasks (task_id) ON UPDATE CASCADE ON DELETE CASCADE
+    task_id    BIGINT REFERENCES tasks (task_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE (student_id, task_id)
 );
 

@@ -74,7 +74,7 @@ public class EquipmentService {
         return equipmentDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateForExist(BigInteger id) throws ValidationException {
         try {
             equipmentDao.getById(id);
         } catch (DaoException ex) {

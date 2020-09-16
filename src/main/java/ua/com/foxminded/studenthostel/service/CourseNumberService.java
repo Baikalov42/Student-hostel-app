@@ -60,7 +60,7 @@ public class CourseNumberService {
         return courseNumberDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateForExist(BigInteger id) throws ValidationException {
         try {
             courseNumberDao.getById(id);
         } catch (DaoException ex) {

@@ -11,6 +11,7 @@ import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Student;
+import ua.com.foxminded.studenthostel.models.Task;
 import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
 
@@ -39,6 +40,8 @@ public class StudentService {
     private RoomService roomService;
     @Autowired
     private GroupService groupService;
+    @Autowired
+    private TaskService taskService;
     @Autowired
     private ValidatorEntity<Student> validator;
 
@@ -125,6 +128,27 @@ public class StudentService {
         return studentDao.update(student);
     }
 
+    public int acceptHoursAndUpdate(BigInteger studentId, BigInteger taskId) throws ValidationException {
+        validator.validateId(studentId, taskId);
+
+        validateExistence(studentId);
+        taskService.validateTaskForExist(taskId);
+        taskService.isStudentTaskRelationExist(studentId, taskId);
+
+        Student student = studentDao.getById(studentId);
+        Task task = taskDao.getById(taskId);
+
+        int newHoursDebt = student.getHoursDebt() - task.getCostInHours();
+        if (newHoursDebt < 0) {
+            newHoursDebt = 0;
+        }
+        student.setHoursDebt(newHoursDebt);
+
+        taskDao.removeFromStudent(studentId, taskId);
+        studentDao.update(student);
+        return newHoursDebt;
+    }
+
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
@@ -156,7 +180,7 @@ public class StudentService {
         return studentDTOS;
     }
 
-    private void validateExistence(BigInteger studentId) throws ValidationException {
+    protected void validateExistence(BigInteger studentId) throws ValidationException {
         try {
             studentDao.getById(studentId);
         } catch (DaoException ex) {

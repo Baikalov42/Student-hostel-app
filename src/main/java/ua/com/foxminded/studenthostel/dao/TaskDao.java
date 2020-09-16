@@ -19,6 +19,8 @@ public interface TaskDao {
 
     boolean removeFromStudent(BigInteger studentId, BigInteger taskId);
 
+    boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId);
+
     BigInteger getEntriesCount();
 
     boolean update(Task task);

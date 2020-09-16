@@ -77,7 +77,7 @@ public class GroupService {
         return groupDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateForExist(BigInteger id) throws ValidationException {
         try {
             groupDao.getById(id);
         } catch (DaoException ex) {

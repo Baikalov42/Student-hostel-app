@@ -61,7 +61,7 @@ public class FloorService {
         return floorDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateForExist(BigInteger id) throws ValidationException {
         try {
             floorDao.getById(id);
         } catch (DaoException ex) {

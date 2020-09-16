@@ -83,8 +83,9 @@ class TaskDaoTest {
         Assertions.assertThrows(DaoException.class,
                 () -> taskDao.getById(BigInteger.valueOf(10)));
     }
+
     @Test
-    public void getAll_ShouldReturnListOfTasks_WhenConditionCompleted(){
+    public void getAll_ShouldReturnListOfTasks_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -97,7 +98,7 @@ class TaskDaoTest {
         List<Task> list = new ArrayList<>();
         list.add(task);
 
-        Assertions.assertEquals(list, taskDao.getAll(1,1));
+        Assertions.assertEquals(list, taskDao.getAll(1, 1));
     }
 
     @Test
@@ -143,6 +144,15 @@ class TaskDaoTest {
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
     }
+
+    @Test
+    public void isStudentTaskRelationExist_ShouldReturnTrue_WhenEntryExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Assertions.assertTrue(taskDao.isStudentTaskRelationExist(BigInteger.valueOf(1), BigInteger.valueOf(4)));
+    }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));

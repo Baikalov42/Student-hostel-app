@@ -95,6 +95,15 @@ public class TaskDaoImpl implements TaskDao {
     }
 
     @Override
+    public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
+        String query = "" +
+                "SELECT count(*) FROM students_tasks " +
+                "WHERE student_id = ? AND task_id = ?";
+
+        return jdbcTemplate.queryForObject(query, Integer.class, studentId, taskId) == 1;
+    }
+
+    @Override
     public BigInteger getEntriesCount() {
         String query = "" +
                 "SELECT count(*) " +

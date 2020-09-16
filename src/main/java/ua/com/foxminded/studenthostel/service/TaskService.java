@@ -52,11 +52,23 @@ public class TaskService {
         return taskDao.removeFromStudent(studentId, taskId);
     }
 
+    public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) throws ValidationException {
+
+        validator.validateId(studentId, taskId);
+
+        if (!taskDao.isStudentTaskRelationExist(studentId, taskId)) {
+            throw new ValidationException(
+                    "Relation student id = " + studentId + " and task id = " + taskId + " not exist");
+        }
+        return true;
+    }
+
+
     public boolean update(Task task) throws ValidationException {
 
         validator.validateEntity(task);
         validator.validateId(task.getId());
-        validateForExist(task.getId());
+        validateTaskForExist(task.getId());
 
         return taskDao.update(task);
     }
@@ -64,12 +76,12 @@ public class TaskService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateTaskForExist(id);
 
         return taskDao.deleteById(id);
     }
 
-    private void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateTaskForExist(BigInteger id) throws ValidationException {
         try {
             taskDao.getById(id);
         } catch (DaoException ex) {
