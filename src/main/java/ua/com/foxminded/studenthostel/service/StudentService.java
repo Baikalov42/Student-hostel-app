@@ -43,6 +43,12 @@ public class StudentService {
     @Autowired
     private TaskService taskService;
     @Autowired
+    private CourseNumberService courseNumberService;
+    @Autowired
+    private FacultyService facultyService;
+    @Autowired
+    private FloorService floorService;
+    @Autowired
     private ValidatorEntity<Student> validator;
 
 
@@ -73,30 +79,32 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByFloor(BigInteger floorId) throws ValidationException {
-
         validator.validateId(floorId);
+        floorService.validateForExist(floorId);
         List<Student> students = studentDao.getAllByFloor(floorId);
 
         return getDTOS(students);
     }
 
     public List<StudentDTO> getAllByFaculty(BigInteger facultyId) throws ValidationException {
-
+        facultyService.validateForExist(facultyId);
         validator.validateId(facultyId);
         List<Student> students = studentDao.getAllByFaculty(facultyId);
 
         return getDTOS(students);
     }
 
-    public List<StudentDTO> getAllByCourse(BigInteger courseId) throws ValidationException {
-        validator.validateId(courseId);
-        List<Student> students = studentDao.getAllByCourse(courseId);
+    public List<StudentDTO> getAllByCourse(BigInteger courseNumberId) throws ValidationException {
+        validator.validateId(courseNumberId);
+        courseNumberService.validateForExist(courseNumberId);
+        List<Student> students = studentDao.getAllByCourse(courseNumberId);
 
         return getDTOS(students);
     }
 
     public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int hoursDebt) throws ValidationException {
 
+        groupService.validateForExist(groupId);
         validator.validateId(groupId);
         List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
 
