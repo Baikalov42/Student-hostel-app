@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.dao.FacultyDao;
 import ua.com.foxminded.studenthostel.dao.GroupDao;
-import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.dto.GroupDTO;
@@ -24,40 +24,39 @@ public class GroupService {
     private FacultyDao facultyDao;
     @Autowired
     private CourseNumberDao courseNumberDao;
-
     @Autowired
     private ValidatorEntity<Group> validator;
 
 
-    public BigInteger insert(Group group) throws ValidationException {
+    public BigInteger insert(Group group) {
 
         validator.validate(group);
         return groupDao.insert(group);
     }
 
-    public Group getById(BigInteger id) throws ValidationException {
+    public Group getById(BigInteger id) {
 
         validator.validateId(id);
         return groupDao.getById(id);
     }
 
-    public GroupDTO getDTOById(BigInteger id) throws ValidationException {
+    public GroupDTO getDTOById(BigInteger id) {
 
         Group group = getById(id);
         return getDTO(group);
     }
 
-    public List<Group> getAll(long limit, long offset) throws ValidationException {
+    public List<Group> getAll(long limit, long offset) {
         List<Group> result = groupDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
-            throw new ValidationException(
+            throw new NotFoundException(
                     "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
 
-    public List<GroupDTO> getAllDTO(long limit, long offset) throws ValidationException {
+    public List<GroupDTO> getAllDTO(long limit, long offset) {
         List<Group> groups = getAll(limit, offset);
         List<GroupDTO> groupDTOS = new ArrayList<>(groups.size());
 
@@ -67,7 +66,7 @@ public class GroupService {
         return groupDTOS;
     }
 
-    public boolean update(Group group) throws ValidationException {
+    public boolean update(Group group) {
 
         validator.validate(group);
         validator.validateId(group.getId());
@@ -76,7 +75,7 @@ public class GroupService {
         return groupDao.update(group);
     }
 
-    public boolean deleteById(BigInteger id) throws ValidationException {
+    public boolean deleteById(BigInteger id) {
 
         validator.validateId(id);
         validateExistence(id);
@@ -84,10 +83,10 @@ public class GroupService {
         return groupDao.deleteById(id);
     }
 
-     void validateExistence(BigInteger id) throws ValidationException {
+    void validateExistence(BigInteger id) {
         try {
             groupDao.getById(id);
-        } catch (DaoException ex) {
+        } catch (NotFoundException ex) {
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

@@ -55,8 +55,7 @@ public class GroupDaoImpl implements GroupDao {
                 "WHERE group_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new GroupMapper(), groupId);
-        } catch (
-                EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException(groupId.toString(), e);
         }
     }

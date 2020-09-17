@@ -3,7 +3,7 @@ package ua.com.foxminded.studenthostel.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.EquipmentDao;
-import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
@@ -21,13 +21,13 @@ public class EquipmentService {
     @Autowired
     private ValidatorEntity<Equipment> validator;
 
-    public BigInteger insert(Equipment equipment) throws ValidationException {
+    public BigInteger insert(Equipment equipment) {
 
         validator.validate(equipment);
         return equipmentDao.insert(equipment);
     }
 
-    public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) throws ValidationException {
+    public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
 
         validator.validateId(studentId, equipmentId);
         validateExistence(equipmentId);
@@ -36,8 +36,7 @@ public class EquipmentService {
         return equipmentDao.assignToStudent(studentId, equipmentId);
     }
 
-
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) throws ValidationException {
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
 
         validator.validateId(studentId, equipmentId);
         validateExistence(equipmentId);
@@ -47,24 +46,24 @@ public class EquipmentService {
     }
 
 
-    public Equipment getById(BigInteger equipmentId) throws ValidationException {
+    public Equipment getById(BigInteger equipmentId) {
 
         validator.validateId(equipmentId);
         return equipmentDao.getById(equipmentId);
     }
 
 
-    public List<Equipment> getAll(long limit, long offset) throws ValidationException {
+    public List<Equipment> getAll(long limit, long offset) {
         List<Equipment> result = equipmentDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
-            throw new ValidationException(
+            throw new NotFoundException(
                     "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
 
-    public boolean update(Equipment equipment) throws ValidationException {
+    public boolean update(Equipment equipment) {
 
         validator.validate(equipment);
         validator.validateId(equipment.getId());
@@ -73,8 +72,7 @@ public class EquipmentService {
         return equipmentDao.update(equipment);
     }
 
-
-    public boolean deleteById(BigInteger id) throws ValidationException {
+    public boolean deleteById(BigInteger id) {
 
         validator.validateId(id);
         validateExistence(id);
@@ -82,10 +80,10 @@ public class EquipmentService {
         return equipmentDao.deleteById(id);
     }
 
-    protected void validateExistence(BigInteger id) throws ValidationException {
+    void validateExistence(BigInteger id) {
         try {
             equipmentDao.getById(id);
-        } catch (DaoException ex) {
+        } catch (NotFoundException ex) {
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.dao.RoomDao;
-import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.dto.RoomDTO;
@@ -22,39 +22,41 @@ public class RoomService {
     @Autowired
     private FloorDao floorDao;
     @Autowired
+    private EquipmentService equipmentService;
+    @Autowired
     private ValidatorEntity<Room> validator;
 
-
-    public BigInteger insert(Room room) throws ValidationException {
+    public BigInteger insert(Room room) {
 
         validator.validate(room);
         return roomDao.insert(room);
     }
 
-    public Room getById(BigInteger id) throws ValidationException {
+    public Room getById(BigInteger id) {
 
         validator.validateId(id);
         return roomDao.getById(id);
     }
 
-    public RoomDTO getDTOById(BigInteger id) throws ValidationException {
+    public RoomDTO getDTOById(BigInteger id) {
 
         Room room = getById(id);
         return getDTO(room);
     }
 
 
-    public List<Room> getAll(long limit, long offset) throws ValidationException {
+    public List<Room> getAll(long limit, long offset) {
 
         List<Room> result = roomDao.getAll(limit, offset);
+
         if (result.isEmpty()) {
-            throw new ValidationException(
+            throw new NotFoundException(
                     "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
 
-    public List<RoomDTO> getAllDTO(long limit, long offset) throws ValidationException {
+    public List<RoomDTO> getAllDTO(long limit, long offset) {
 
         List<Room> rooms = getAll(limit, offset);
         List<RoomDTO> roomDTOS = new ArrayList<>();
@@ -66,10 +68,16 @@ public class RoomService {
     }
 
 
-    public List<RoomDTO> getAllByEquipment(BigInteger equipmentId) throws ValidationException {
+    public List<RoomDTO> getAllByEquipment(BigInteger equipmentId) {
         validator.validateId(equipmentId);
+        equipmentService.validateExistence(equipmentId);
 
         List<Room> rooms = roomDao.getAllByEquipment(equipmentId);
+
+        if (rooms.isEmpty()) {
+            throw new NotFoundException(
+                    "Result with equipment id=" + equipmentId + " is empty");
+        }
         List<RoomDTO> roomDTOS = new ArrayList<>();
 
         for (Room room : rooms) {
@@ -78,7 +86,7 @@ public class RoomService {
         return roomDTOS;
     }
 
-    public boolean update(Room room) throws ValidationException {
+    public boolean update(Room room) {
         validator.validate(room);
         validator.validateId(room.getId());
         validateExistence(room.getId());
@@ -86,7 +94,7 @@ public class RoomService {
         return roomDao.update(room);
     }
 
-    public boolean deleteById(BigInteger id) throws ValidationException {
+    public boolean deleteById(BigInteger id) {
 
         validator.validateId(id);
         validateExistence(id);
@@ -94,10 +102,10 @@ public class RoomService {
         return roomDao.deleteById(id);
     }
 
-    void validateExistence(BigInteger id) throws ValidationException {
+    void validateExistence(BigInteger id) {
         try {
             roomDao.getById(id);
-        } catch (DaoException ex) {
+        } catch (NotFoundException ex) {
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

@@ -3,7 +3,7 @@ package ua.com.foxminded.studenthostel.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FacultyDao;
-import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
@@ -20,29 +20,29 @@ public class FacultyService {
     @Autowired
     private ValidatorEntity<Faculty> validator;
 
-    public BigInteger insert(Faculty faculty) throws ValidationException {
+    public BigInteger insert(Faculty faculty) {
 
         validator.validate(faculty);
         return facultyDao.insert(faculty);
     }
 
-    public Faculty getById(BigInteger id) throws ValidationException {
+    public Faculty getById(BigInteger id) {
 
         validator.validateId(id);
         return facultyDao.getById(id);
     }
 
 
-    public List<Faculty> getAll(long limit, long offset) throws ValidationException {
+    public List<Faculty> getAll(long limit, long offset) {
         List<Faculty> result = facultyDao.getAll(limit, offset);
         if (result.isEmpty()) {
-            throw new ValidationException(
+            throw new NotFoundException(
                     "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
 
-    public boolean update(Faculty faculty) throws ValidationException {
+    public boolean update(Faculty faculty) {
 
         validator.validate(faculty);
         validator.validateId(faculty.getId());
@@ -51,8 +51,7 @@ public class FacultyService {
         return facultyDao.update(faculty);
     }
 
-
-    public boolean deleteById(BigInteger id) throws ValidationException {
+    public boolean deleteById(BigInteger id) {
 
         validator.validateId(id);
         validateExistence(id);
@@ -60,10 +59,10 @@ public class FacultyService {
         return facultyDao.deleteById(id);
     }
 
-    protected void validateExistence(BigInteger id) throws ValidationException {
+    void validateExistence(BigInteger id) {
         try {
             facultyDao.getById(id);
-        } catch (DaoException ex) {
+        } catch (NotFoundException ex) {
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }
