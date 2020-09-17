@@ -54,59 +54,84 @@ public class StudentService {
 
     public BigInteger insert(Student student) throws ValidationException {
 
-        validator.validateEntity(student);
+        validator.validate(student);
         validateRoomVacancy(student.getRoomId());
 
         return studentDao.insert(student);
     }
 
-    public StudentDTO getById(BigInteger id) throws ValidationException {
+    public Student getById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        Student student = studentDao.getById(id);
+        return studentDao.getById(id);
+    }
 
+    public StudentDTO getDTOById(BigInteger id) throws ValidationException {
+
+        Student student = getById(id);
         return getDTO(student);
     }
 
-    public List<StudentDTO> getAll(long limit, long offset) throws ValidationException {
-        long countOfEntries = studentDao.getEntriesCount().longValue();
+    public List<Student> getAll(long limit, long offset) throws ValidationException {
 
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        List<Student> result = studentDao.getAll(limit, offset);
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        List<Student> students = studentDao.getAll(limit, offset);
-        return getDTOS(students);
+        return result;
+    }
+
+    public List<StudentDTO> getAllDTO(long limit, long offset) throws ValidationException {
+
+        List<Student> result = getAll(limit, offset);
+        return getDTOS(result);
     }
 
     public List<StudentDTO> getAllByFloor(BigInteger floorId) throws ValidationException {
         validator.validateId(floorId);
-        floorService.validateForExist(floorId);
+        floorService.validateExistence(floorId);
         List<Student> students = studentDao.getAllByFloor(floorId);
 
         return getDTOS(students);
     }
 
     public List<StudentDTO> getAllByFaculty(BigInteger facultyId) throws ValidationException {
-        facultyService.validateForExist(facultyId);
+        facultyService.validateExistence(facultyId);
         validator.validateId(facultyId);
         List<Student> students = studentDao.getAllByFaculty(facultyId);
+
+        if (students.isEmpty()) {
+            throw new ValidationException(
+                    "Result with faculty id=" + facultyId + " is empty");
+        }
 
         return getDTOS(students);
     }
 
     public List<StudentDTO> getAllByCourse(BigInteger courseNumberId) throws ValidationException {
         validator.validateId(courseNumberId);
-        courseNumberService.validateForExist(courseNumberId);
+        courseNumberService.validateExistence(courseNumberId);
         List<Student> students = studentDao.getAllByCourse(courseNumberId);
+
+        if (students.isEmpty()) {
+            throw new ValidationException(
+                    "Result with faculty id=" + courseNumberId + " is empty");
+        }
 
         return getDTOS(students);
     }
 
     public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int hoursDebt) throws ValidationException {
 
-        groupService.validateForExist(groupId);
+        groupService.validateExistence(groupId);
         validator.validateId(groupId);
         List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
+
+        if (students.isEmpty()) {
+            throw new ValidationException(
+                    "Result with group id=" + groupId + " and debt=" + hoursDebt + " is empty");
+        }
 
         return getDTOS(students);
     }
@@ -114,6 +139,10 @@ public class StudentService {
     public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) throws ValidationException {
 
         validator.validateId(newRoomId, studentId);
+
+        validateExistence(studentId);
+        roomService.validateExistence(newRoomId);
+
         validateRoomVacancy(newRoomId);
 
         return studentDao.changeRoom(newRoomId, studentId);
@@ -130,7 +159,7 @@ public class StudentService {
     public boolean update(Student student) throws ValidationException {
 
         validateExistence(student.getId());
-        validator.validateEntity(student);
+        validator.validate(student);
         validator.validateId(student.getId());
 
         return studentDao.update(student);
@@ -140,8 +169,12 @@ public class StudentService {
         validator.validateId(studentId, taskId);
 
         validateExistence(studentId);
-        taskService.validateTaskForExist(taskId);
-        taskService.isStudentTaskRelationExist(studentId, taskId);
+        taskService.validateExistence(taskId);
+
+        if (!taskService.isStudentTaskRelationExist(studentId, taskId)) {
+            throw new ValidationException(
+                    "Relation student id = " + studentId + " and task id = " + taskId + " not exist");
+        }
 
         Student student = studentDao.getById(studentId);
         Task task = taskDao.getById(taskId);
@@ -152,7 +185,7 @@ public class StudentService {
         }
         student.setHoursDebt(newHoursDebt);
 
-        taskDao.removeFromStudent(studentId, taskId);
+        taskDao.unassignFromStudent(studentId, taskId);
         studentDao.update(student);
         return newHoursDebt;
     }

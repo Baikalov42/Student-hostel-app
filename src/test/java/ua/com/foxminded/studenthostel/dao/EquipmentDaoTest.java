@@ -15,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 
 import javax.sql.DataSource;
@@ -70,7 +71,7 @@ class EquipmentDaoTest {
         Equipment equipment = new Equipment();
         equipment.setName("table");
 
-        Assertions.assertThrows(DuplicateKeyException.class, () -> equipmentDao.insert(equipment));
+        Assertions.assertThrows(DaoException.class, () -> equipmentDao.insert(equipment));
     }
 
     @Test
@@ -93,10 +94,10 @@ class EquipmentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class, () ->
+        Assertions.assertThrows(DaoException.class, () ->
                 equipmentDao.assignToStudent(BigInteger.valueOf(7), BigInteger.valueOf(7)));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class, () ->
+        Assertions.assertThrows(DaoException.class, () ->
                 equipmentDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(7)));
     }
 
@@ -115,7 +116,7 @@ class EquipmentDaoTest {
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> equipmentDao.getById(BigInteger.valueOf(1)));
     }
 

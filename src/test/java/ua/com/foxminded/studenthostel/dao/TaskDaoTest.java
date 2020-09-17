@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Task;
 
 import javax.sql.DataSource;
@@ -80,7 +81,7 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> taskDao.getById(BigInteger.valueOf(10)));
     }
 
@@ -119,7 +120,7 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> taskDao.assignToStudent(BigInteger.valueOf(3), BigInteger.valueOf(1)));
     }
 
@@ -128,7 +129,7 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(2)));
     }
 
@@ -139,7 +140,7 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
-        taskDao.removeFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(4));
+        taskDao.unassignFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(4));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);

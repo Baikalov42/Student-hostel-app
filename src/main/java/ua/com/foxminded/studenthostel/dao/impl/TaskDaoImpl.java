@@ -1,16 +1,17 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
-import ua.com.foxminded.studenthostel.models.Equipment;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Task;
-import ua.com.foxminded.studenthostel.models.mappers.EquipmentMapper;
 import ua.com.foxminded.studenthostel.models.mappers.TaskMapper;
 
 import java.math.BigInteger;
@@ -28,18 +29,21 @@ public class TaskDaoImpl implements TaskDao {
         String query = "" +
                 "INSERT INTO tasks (task_name, task_description, cost) " +
                 "VALUES (?,?,?)";
-
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"task_id"});
-            ps.setString(1, task.getName());
-            ps.setString(2, task.getDescription());
-            ps.setInt(3, task.getCostInHours());
 
-            return ps;
-        }, keyHolder);
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"task_id"});
+                ps.setString(1, task.getName());
+                ps.setString(2, task.getDescription());
+                ps.setInt(3, task.getCostInHours());
 
+                return ps;
+            }, keyHolder);
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(task.toString(), ex);
+        }
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
@@ -51,8 +55,9 @@ public class TaskDaoImpl implements TaskDao {
                 "WHERE task_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new TaskMapper(), taskId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(taskId.toString(), ex);
         }
     }
 
@@ -71,6 +76,7 @@ public class TaskDaoImpl implements TaskDao {
         String query = "" +
                 "SELECT * " +
                 "FROM students_tasks " +
+                "INNER JOIN tasks ON students_tasks.task_id = tasks.task_id " +
                 "WHERE student_id = ? ";
         return jdbcTemplate.query(query, new TaskMapper(), studentId);
     }
@@ -81,17 +87,25 @@ public class TaskDaoImpl implements TaskDao {
         String query = "" +
                 "INSERT INTO students_tasks(student_id, task_id) " +
                 "VALUES (?,?)";
+        try {
+            return jdbcTemplate.update(query, studentId, taskId) == 1;
 
-        return jdbcTemplate.update(query, studentId, taskId) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException("task id=" + taskId + " student id=" + studentId, ex);
+        }
     }
 
     @Override
-    public boolean removeFromStudent(BigInteger studentId, BigInteger taskId) {
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) {
         String query = "" +
                 "DELETE FROM students_tasks " +
                 "WHERE student_id = ? AND task_id = ?";
+        try {
+            return jdbcTemplate.update(query, studentId, taskId) == 1;
 
-        return jdbcTemplate.update(query, studentId, taskId) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException("task id=" + taskId + " student id=" + studentId, ex);
+        }
     }
 
     @Override
@@ -120,8 +134,12 @@ public class TaskDaoImpl implements TaskDao {
                 "task_name = ? ," +
                 "task_description = ? " +
                 "WHERE task_id = ? ";
+        try {
+            return jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getId()) == 1;
 
-        return jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(task.toString(), ex);
+        }
     }
 
     @Override
@@ -129,7 +147,10 @@ public class TaskDaoImpl implements TaskDao {
         String query = "" +
                 "DELETE FROM tasks " +
                 "WHERE task_id  = ? ";
-
-        return jdbcTemplate.update(query, id) == 1;
+        try {
+            return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

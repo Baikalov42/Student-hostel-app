@@ -17,38 +17,46 @@ import java.util.List;
 @Service
 public class RoomService {
 
-
     @Autowired
     private RoomDao roomDao;
-
     @Autowired
     private FloorDao floorDao;
-
     @Autowired
     private ValidatorEntity<Room> validator;
 
+
     public BigInteger insert(Room room) throws ValidationException {
 
-        validator.validateEntity(room);
+        validator.validate(room);
         return roomDao.insert(room);
     }
 
-    public RoomDTO getById(BigInteger id) throws ValidationException {
+    public Room getById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        Room room = roomDao.getById(id);
+        return roomDao.getById(id);
+    }
 
+    public RoomDTO getDTOById(BigInteger id) throws ValidationException {
+
+        Room room = getById(id);
         return getDTO(room);
     }
 
 
-    public List<RoomDTO> getAll(long limit, long offset) throws ValidationException {
-        long countOfEntries = roomDao.getEntriesCount().longValue();
+    public List<Room> getAll(long limit, long offset) throws ValidationException {
 
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        List<Room> result = roomDao.getAll(limit, offset);
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        List<Room> rooms = roomDao.getAll(limit, offset);
+        return result;
+    }
+
+    public List<RoomDTO> getAllDTO(long limit, long offset) throws ValidationException {
+
+        List<Room> rooms = getAll(limit, offset);
         List<RoomDTO> roomDTOS = new ArrayList<>();
 
         for (Room room : rooms) {
@@ -56,6 +64,7 @@ public class RoomService {
         }
         return roomDTOS;
     }
+
 
     public List<RoomDTO> getAllByEquipment(BigInteger equipmentId) throws ValidationException {
         validator.validateId(equipmentId);
@@ -70,9 +79,9 @@ public class RoomService {
     }
 
     public boolean update(Room room) throws ValidationException {
-        validator.validateEntity(room);
+        validator.validate(room);
         validator.validateId(room.getId());
-        validateForExist(room.getId());
+        validateExistence(room.getId());
 
         return roomDao.update(room);
     }
@@ -80,12 +89,12 @@ public class RoomService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateExistence(id);
 
         return roomDao.deleteById(id);
     }
 
-    protected void validateForExist(BigInteger id) throws ValidationException {
+    void validateExistence(BigInteger id) throws ValidationException {
         try {
             roomDao.getById(id);
         } catch (DaoException ex) {
@@ -94,7 +103,6 @@ public class RoomService {
     }
 
     RoomDTO getDTO(Room room) {
-
         RoomDTO roomDTO = new RoomDTO();
 
         roomDTO.setId(room.getId());

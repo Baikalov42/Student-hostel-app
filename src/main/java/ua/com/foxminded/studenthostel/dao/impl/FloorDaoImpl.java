@@ -1,13 +1,16 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.models.mappers.FloorMapper;
 
@@ -28,12 +31,17 @@ public class FloorDaoImpl implements FloorDao {
                 "INSERT INTO floors (floor_name) " +
                 "VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"floor_id"});
+                ps.setString(1, floor.getName());
+                return ps;
+            }, keyHolder);
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"floor_id"});
-            ps.setString(1, floor.getName());
-            return ps;
-        }, keyHolder);
+        } catch (
+                DataAccessException ex) {
+            throw new DaoException(floor.toString(), ex);
+        }
 
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
@@ -46,8 +54,8 @@ public class FloorDaoImpl implements FloorDao {
                 "WHERE floor_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new FloorMapper(), floorId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException("failed to get object", ex);
         }
     }
 
@@ -76,8 +84,12 @@ public class FloorDaoImpl implements FloorDao {
                 "UPDATE floors " +
                 "SET floor_name = ? " +
                 "WHERE floor_id = ? ";
+        try {
+            return jdbcTemplate.update(query, floor.getName(), floor.getId()) == 1;
 
-        return jdbcTemplate.update(query, floor.getName(), floor.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(floor.toString(), ex);
+        }
     }
 
     @Override
@@ -85,7 +97,11 @@ public class FloorDaoImpl implements FloorDao {
         String query = "" +
                 "DELETE FROM floors " +
                 "WHERE floor_id  = ? ";
+        try {
+            return jdbcTemplate.update(query, id) == 1;
 
-        return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

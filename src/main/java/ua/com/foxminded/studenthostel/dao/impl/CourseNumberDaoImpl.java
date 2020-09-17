@@ -1,12 +1,15 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.mappers.CourseNumberMapper;
 
@@ -28,11 +31,16 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "VALUES ( ? )";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"course_number_id"});
-            ps.setString(1, courseNumber.getName());
-            return ps;
-        }, keyHolder);
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"course_number_id"});
+                ps.setString(1, courseNumber.getName());
+                return ps;
+            }, keyHolder);
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(courseNumber.toString(), ex);
+        }
 
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
@@ -44,8 +52,8 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "WHERE course_number_id = ?";
         try {
             return jdbcTemplate.queryForObject(query, new CourseNumberMapper(), courseNumberId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(courseNumberId.toString(), ex);
         }
     }
 
@@ -75,8 +83,11 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "UPDATE course_numbers " +
                 "SET course_number_name = ? " +
                 "WHERE course_number_id = ? ";
-
-        return jdbcTemplate.update(query, courseNumber.getName(), courseNumber.getId()) == 1;
+        try {
+            return jdbcTemplate.update(query, courseNumber.getName(), courseNumber.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(courseNumber.toString(), ex);
+        }
     }
 
     @Override
@@ -85,6 +96,10 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "DELETE FROM course_numbers " +
                 "WHERE course_number_id = ? ";
 
-        return jdbcTemplate.update(query, id) == 1;
+        try {
+            return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

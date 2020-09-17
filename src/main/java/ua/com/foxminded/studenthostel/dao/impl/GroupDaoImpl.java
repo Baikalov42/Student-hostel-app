@@ -1,13 +1,16 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.GroupDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.mappers.GroupMapper;
 
@@ -28,14 +31,19 @@ public class GroupDaoImpl implements GroupDao {
                 "VALUES (? , ? , ? )";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"group_id"});
-            ps.setString(1, group.getName());
-            ps.setLong(2, group.getFacultyId().longValue());
-            ps.setLong(3, group.getCourseNumberId().longValue());
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"group_id"});
+                ps.setString(1, group.getName());
+                ps.setLong(2, group.getFacultyId().longValue());
+                ps.setLong(3, group.getCourseNumberId().longValue());
 
-            return ps;
-        }, keyHolder);
+                return ps;
+            }, keyHolder);
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(group.toString(), ex);
+        }
 
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
@@ -49,7 +57,7 @@ public class GroupDaoImpl implements GroupDao {
             return jdbcTemplate.queryForObject(query, new GroupMapper(), groupId);
         } catch (
                 EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+            throw new NotFoundException(groupId.toString(), e);
         }
     }
 
@@ -69,7 +77,11 @@ public class GroupDaoImpl implements GroupDao {
                 "UPDATE groups " +
                 "SET group_name = ?" +
                 "WHERE group_id = ?";
-        return jdbcTemplate.update(query, group.getName(), group.getId()) == 1;
+        try {
+            return jdbcTemplate.update(query, group.getName(), group.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(group.toString(), ex);
+        }
     }
 
     @Override
@@ -86,7 +98,11 @@ public class GroupDaoImpl implements GroupDao {
         String query = "" +
                 "DELETE FROM groups " +
                 "WHERE group_id  = ? ";
+        try {
+            return jdbcTemplate.update(query, id) == 1;
 
-        return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

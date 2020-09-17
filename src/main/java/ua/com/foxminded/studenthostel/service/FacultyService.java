@@ -22,7 +22,7 @@ public class FacultyService {
 
     public BigInteger insert(Faculty faculty) throws ValidationException {
 
-        validator.validateEntity(faculty);
+        validator.validate(faculty);
         return facultyDao.insert(faculty);
     }
 
@@ -34,19 +34,19 @@ public class FacultyService {
 
 
     public List<Faculty> getAll(long limit, long offset) throws ValidationException {
-
-        long countOfEntries = facultyDao.getEntriesCount().longValue();
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        List<Faculty> result = facultyDao.getAll(limit, offset);
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        return facultyDao.getAll(limit, offset);
+        return result;
     }
 
     public boolean update(Faculty faculty) throws ValidationException {
 
-        validator.validateEntity(faculty);
+        validator.validate(faculty);
         validator.validateId(faculty.getId());
-        validateForExist(faculty.getId());
+        validateExistence(faculty.getId());
 
         return facultyDao.update(faculty);
     }
@@ -55,12 +55,12 @@ public class FacultyService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateExistence(id);
 
         return facultyDao.deleteById(id);
     }
 
-    protected void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateExistence(BigInteger id) throws ValidationException {
         try {
             facultyDao.getById(id);
         } catch (DaoException ex) {

@@ -1,13 +1,16 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.EquipmentDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.mappers.EquipmentMapper;
 
@@ -29,12 +32,17 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "VALUES ( ? )";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"equipment_id"});
+                ps.setString(1, equipment.getName());
+                return ps;
+            }, keyHolder);
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"equipment_id"});
-            ps.setString(1, equipment.getName());
-            return ps;
-        }, keyHolder);
+        } catch (
+                DataAccessException ex) {
+            throw new DaoException(equipment.toString(), ex);
+        }
 
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
@@ -46,8 +54,8 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "WHERE equipment_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(equipmentId.toString(), ex);
         }
     }
 
@@ -75,7 +83,12 @@ public class EquipmentDaoImpl implements EquipmentDao {
         String query = "" +
                 "INSERT INTO students_equipments (student_id, equipment_id) " +
                 "VALUES (? , ?)";
-        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+        try {
+            return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(
+                    "student id =" + studentId + " equipment id =" + equipmentId, ex);
+        }
     }
 
     @Override
@@ -84,7 +97,13 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "DELETE FROM students_equipments " +
                 "WHERE student_id = ? " +
                 "AND equipment_id = ?";
-        return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+        try {
+            return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(
+                    "student id =" + studentId + " equipment id =" + equipmentId, ex);
+        }
     }
 
     @Override
@@ -93,8 +112,11 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "UPDATE equipments " +
                 "SET equipment_name = ? " +
                 "WHERE equipment_id = ? ";
-
-        return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
+        try {
+            return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(equipment.toString(), ex);
+        }
     }
 
     @Override
@@ -111,7 +133,10 @@ public class EquipmentDaoImpl implements EquipmentDao {
         String query = "" +
                 "DELETE FROM equipments " +
                 "WHERE equipment_id = ? ";
-
-        return jdbcTemplate.update(query, id) == 1;
+        try {
+            return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

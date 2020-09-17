@@ -31,27 +31,35 @@ public class GroupService {
 
     public BigInteger insert(Group group) throws ValidationException {
 
-        validator.validateEntity(group);
+        validator.validate(group);
         return groupDao.insert(group);
     }
 
-
-    public GroupDTO getById(BigInteger id) throws ValidationException {
+    public Group getById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        Group group = groupDao.getById(id);
+        return groupDao.getById(id);
+    }
+
+    public GroupDTO getDTOById(BigInteger id) throws ValidationException {
+
+        Group group = getById(id);
         return getDTO(group);
     }
 
-    public List<GroupDTO> getAll(long limit, long offset) throws ValidationException {
-        long countOfEntries = groupDao.getEntriesCount().longValue();
+    public List<Group> getAll(long limit, long offset) throws ValidationException {
+        List<Group> result = groupDao.getAll(limit, offset);
 
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
+        return result;
+    }
 
-        List<Group> groups = groupDao.getAll(limit, offset);
-        List<GroupDTO> groupDTOS = new ArrayList<>();
+    public List<GroupDTO> getAllDTO(long limit, long offset) throws ValidationException {
+        List<Group> groups = getAll(limit, offset);
+        List<GroupDTO> groupDTOS = new ArrayList<>(groups.size());
 
         for (Group group : groups) {
             groupDTOS.add(getDTO(group));
@@ -59,12 +67,11 @@ public class GroupService {
         return groupDTOS;
     }
 
-
     public boolean update(Group group) throws ValidationException {
 
-        validator.validateEntity(group);
+        validator.validate(group);
         validator.validateId(group.getId());
-        validateForExist(group.getId());
+        validateExistence(group.getId());
 
         return groupDao.update(group);
     }
@@ -72,12 +79,12 @@ public class GroupService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateExistence(id);
 
         return groupDao.deleteById(id);
     }
 
-    protected void validateForExist(BigInteger id) throws ValidationException {
+     void validateExistence(BigInteger id) throws ValidationException {
         try {
             groupDao.getById(id);
         } catch (DaoException ex) {

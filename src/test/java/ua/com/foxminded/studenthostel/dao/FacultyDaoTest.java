@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Faculty;
 
 import javax.sql.DataSource;
@@ -66,7 +67,7 @@ class FacultyDaoTest {
         Faculty faculty = new Faculty();
         faculty.setName("web design");
 
-        Assertions.assertThrows(DuplicateKeyException.class, () -> facultyDao.insert(faculty));
+        Assertions.assertThrows(DaoException.class, () -> facultyDao.insert(faculty));
     }
 
     @Test
@@ -83,7 +84,7 @@ class FacultyDaoTest {
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> facultyDao.getById(BigInteger.valueOf(1)));
     }
 

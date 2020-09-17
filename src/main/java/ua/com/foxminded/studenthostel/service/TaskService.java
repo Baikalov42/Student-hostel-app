@@ -16,13 +16,14 @@ public class TaskService {
 
     @Autowired
     private TaskDao taskDao;
-
+    @Autowired
+    StudentService studentService;
     @Autowired
     private ValidatorEntity<Task> validator;
 
     public BigInteger insert(Task task) throws ValidationException {
 
-        validator.validateEntity(task);
+        validator.validate(task);
         return taskDao.insert(task);
     }
 
@@ -32,43 +33,44 @@ public class TaskService {
     }
 
     public List<Task> getAll(long limit, long offset) throws ValidationException {
-        long countOfEntries = taskDao.getEntriesCount().longValue();
-
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        List<Task> result = taskDao.getAll(limit, offset);
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        return taskDao.getAll(limit, offset);
+        return result;
     }
 
     public boolean assignToStudent(BigInteger studentId, BigInteger taskId) throws ValidationException {
 
         validator.validateId(studentId, taskId);
+        validateExistence(taskId);
+        studentService.validateExistence(studentId);
+
         return taskDao.assignToStudent(studentId, taskId);
     }
 
-    public boolean removeFromStudent(BigInteger studentId, BigInteger taskId) throws ValidationException {
+    public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) throws ValidationException {
 
         validator.validateId(studentId, taskId);
-        return taskDao.removeFromStudent(studentId, taskId);
+        validateExistence(taskId);
+        studentService.validateExistence(studentId);
+
+        return taskDao.unassignFromStudent(studentId, taskId);
     }
 
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) throws ValidationException {
 
         validator.validateId(studentId, taskId);
-
-        if (!taskDao.isStudentTaskRelationExist(studentId, taskId)) {
-            throw new ValidationException(
-                    "Relation student id = " + studentId + " and task id = " + taskId + " not exist");
-        }
-        return true;
+        return taskDao.isStudentTaskRelationExist(studentId, taskId);
     }
 
 
     public boolean update(Task task) throws ValidationException {
 
-        validator.validateEntity(task);
+        validator.validate(task);
         validator.validateId(task.getId());
-        validateTaskForExist(task.getId());
+        validateExistence(task.getId());
 
         return taskDao.update(task);
     }
@@ -76,12 +78,12 @@ public class TaskService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateTaskForExist(id);
+        validateExistence(id);
 
         return taskDao.deleteById(id);
     }
 
-    protected void validateTaskForExist(BigInteger id) throws ValidationException {
+    protected void validateExistence(BigInteger id) throws ValidationException {
         try {
             taskDao.getById(id);
         } catch (DaoException ex) {

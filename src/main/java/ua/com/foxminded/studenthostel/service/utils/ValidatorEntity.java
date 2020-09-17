@@ -19,7 +19,7 @@ public class ValidatorEntity<T> {
         return factory.getValidator();
     }
 
-    public void validateEntity(@Valid T t) throws ValidationException {
+    public void validate(@Valid T t) throws ValidationException {
         Set<ConstraintViolation<T>> validates = getValidatorInstance().validate(t);
         if (!validates.isEmpty()) {
             throw new ValidationException("some problems " + validates.iterator().next());

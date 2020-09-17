@@ -17,7 +17,7 @@ public interface TaskDao {
 
     boolean assignToStudent(BigInteger studentId, BigInteger taskId);
 
-    boolean removeFromStudent(BigInteger studentId, BigInteger taskId);
+    boolean unassignFromStudent(BigInteger studentId, BigInteger taskId);
 
     boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId);
 

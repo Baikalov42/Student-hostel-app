@@ -25,7 +25,7 @@ public class CourseNumberService {
 
     public BigInteger insert(CourseNumber courseNumber) throws ValidationException {
 
-        validator.validateEntity(courseNumber);
+        validator.validate(courseNumber);
         return courseNumberDao.insert(courseNumber);
     }
 
@@ -36,18 +36,19 @@ public class CourseNumberService {
     }
 
     public List<CourseNumber> getAll(long limit, long offset) throws ValidationException {
-        long countOfEntries = courseNumberDao.getEntriesCount().longValue();
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        List<CourseNumber> result = courseNumberDao.getAll(limit, offset);
+        if(result.isEmpty()){
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        return courseNumberDao.getAll(limit, offset);
+        return result;
     }
 
     public boolean update(CourseNumber courseNumber) throws ValidationException {
 
-        validator.validateEntity(courseNumber);
+        validator.validate(courseNumber);
         validator.validateId(courseNumber.getId());
-        validateForExist(courseNumber.getId());
+        validateExistence(courseNumber.getId());
 
         return courseNumberDao.update(courseNumber);
     }
@@ -55,12 +56,12 @@ public class CourseNumberService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateExistence(id);
 
         return courseNumberDao.deleteById(id);
     }
 
-    protected void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateExistence(BigInteger id) throws ValidationException {
         try {
             courseNumberDao.getById(id);
         } catch (DaoException ex) {

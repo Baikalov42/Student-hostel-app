@@ -16,19 +16,23 @@ public class EquipmentService {
 
     @Autowired
     private EquipmentDao equipmentDao;
-
+    @Autowired
+    private StudentService studentService;
     @Autowired
     private ValidatorEntity<Equipment> validator;
 
     public BigInteger insert(Equipment equipment) throws ValidationException {
 
-        validator.validateEntity(equipment);
+        validator.validate(equipment);
         return equipmentDao.insert(equipment);
     }
 
     public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) throws ValidationException {
 
         validator.validateId(studentId, equipmentId);
+        validateExistence(equipmentId);
+        studentService.validateExistence(studentId);
+
         return equipmentDao.assignToStudent(studentId, equipmentId);
     }
 
@@ -36,6 +40,9 @@ public class EquipmentService {
     public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) throws ValidationException {
 
         validator.validateId(studentId, equipmentId);
+        validateExistence(equipmentId);
+        studentService.validateExistence(studentId);
+
         return equipmentDao.unassignFromStudent(studentId, equipmentId);
     }
 
@@ -48,19 +55,20 @@ public class EquipmentService {
 
 
     public List<Equipment> getAll(long limit, long offset) throws ValidationException {
+        List<Equipment> result = equipmentDao.getAll(limit, offset);
 
-        long countOfEntries = equipmentDao.getEntriesCount().longValue();
-        if (countOfEntries <= offset) {
-            throw new ValidationException("offset is greater than the number of entries");
+        if (result.isEmpty()) {
+            throw new ValidationException(
+                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
-        return equipmentDao.getAll(limit, offset);
+        return result;
     }
 
     public boolean update(Equipment equipment) throws ValidationException {
 
-        validator.validateEntity(equipment);
+        validator.validate(equipment);
         validator.validateId(equipment.getId());
-        validateForExist(equipment.getId());
+        validateExistence(equipment.getId());
 
         return equipmentDao.update(equipment);
     }
@@ -69,17 +77,16 @@ public class EquipmentService {
     public boolean deleteById(BigInteger id) throws ValidationException {
 
         validator.validateId(id);
-        validateForExist(id);
+        validateExistence(id);
 
         return equipmentDao.deleteById(id);
     }
 
-    protected void validateForExist(BigInteger id) throws ValidationException {
+    protected void validateExistence(BigInteger id) throws ValidationException {
         try {
             equipmentDao.getById(id);
         } catch (DaoException ex) {
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }
-
 }
