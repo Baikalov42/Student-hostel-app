@@ -55,6 +55,10 @@ public class StudentService {
     public BigInteger insert(Student student) {
 
         validator.validate(student);
+
+        groupService.validateExistence(student.getGroupId());
+        roomService.validateExistence(student.getRoomId());
+
         validateRoomVacancy(student.getRoomId());
 
         return studentDao.insert(student);
@@ -89,8 +93,10 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByFloor(BigInteger floorId) {
+
         validator.validateId(floorId);
         floorService.validateExistence(floorId);
+
         List<Student> students = studentDao.getAllByFloor(floorId);
 
         if (students.isEmpty()) {
@@ -101,8 +107,10 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByFaculty(BigInteger facultyId) {
-        facultyService.validateExistence(facultyId);
+
         validator.validateId(facultyId);
+        facultyService.validateExistence(facultyId);
+
         List<Student> students = studentDao.getAllByFaculty(facultyId);
 
         if (students.isEmpty()) {
@@ -114,8 +122,10 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByCourse(BigInteger courseNumberId) {
+
         validator.validateId(courseNumberId);
         courseNumberService.validateExistence(courseNumberId);
+
         List<Student> students = studentDao.getAllByCourse(courseNumberId);
 
         if (students.isEmpty()) {
@@ -128,8 +138,9 @@ public class StudentService {
 
     public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int hoursDebt) {
 
-        groupService.validateExistence(groupId);
         validator.validateId(groupId);
+        groupService.validateExistence(groupId);
+
         List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
 
         if (students.isEmpty()) {
@@ -161,9 +172,12 @@ public class StudentService {
 
     public boolean update(Student student) {
 
-        validateExistence(student.getId());
         validator.validate(student);
         validator.validateId(student.getId());
+
+        validateExistence(student.getId());
+        groupService.validateExistence(student.getGroupId());
+        roomService.validateExistence(student.getRoomId());
 
         return studentDao.update(student);
     }
@@ -196,6 +210,8 @@ public class StudentService {
     public boolean deleteById(BigInteger id) {
 
         validator.validateId(id);
+        validateExistence(id);
+
         return studentDao.deleteById(id);
     }
 
@@ -234,7 +250,7 @@ public class StudentService {
 
     private void validateRoomVacancy(BigInteger roomId) {
 
-        if (studentDao.getStudentsCountByRoom(roomId) == MAX_STUDENTS_IN_ROOM) {
+        if (studentDao.getStudentsCountByRoom(roomId) >= MAX_STUDENTS_IN_ROOM) {
             throw new ValidationException("no more than 4 student in one room");
         }
     }

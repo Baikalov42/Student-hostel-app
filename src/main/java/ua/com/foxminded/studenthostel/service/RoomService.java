@@ -24,11 +24,15 @@ public class RoomService {
     @Autowired
     private EquipmentService equipmentService;
     @Autowired
+    private FloorService floorService;
+    @Autowired
     private ValidatorEntity<Room> validator;
 
     public BigInteger insert(Room room) {
 
         validator.validate(room);
+        floorService.validateExistence(room.getFloorId());
+
         return roomDao.insert(room);
     }
 
@@ -89,7 +93,9 @@ public class RoomService {
     public boolean update(Room room) {
         validator.validate(room);
         validator.validateId(room.getId());
+
         validateExistence(room.getId());
+        floorService.validateExistence(room.getFloorId());
 
         return roomDao.update(room);
     }

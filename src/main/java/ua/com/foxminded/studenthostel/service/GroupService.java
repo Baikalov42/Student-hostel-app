@@ -25,12 +25,20 @@ public class GroupService {
     @Autowired
     private CourseNumberDao courseNumberDao;
     @Autowired
+    private FacultyService facultyService;
+    @Autowired
+    private CourseNumberService courseNumberService;
+    @Autowired
     private ValidatorEntity<Group> validator;
 
 
     public BigInteger insert(Group group) {
 
         validator.validate(group);
+
+        facultyService.validateExistence(group.getFacultyId());
+        courseNumberService.validateExistence(group.getCourseNumberId());
+
         return groupDao.insert(group);
     }
 
@@ -70,7 +78,10 @@ public class GroupService {
 
         validator.validate(group);
         validator.validateId(group.getId());
+
         validateExistence(group.getId());
+        facultyService.validateExistence(group.getFacultyId());
+        courseNumberService.validateExistence(group.getCourseNumberId());
 
         return groupDao.update(group);
     }

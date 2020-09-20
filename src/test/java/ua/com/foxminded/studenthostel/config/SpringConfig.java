@@ -12,8 +12,10 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
+
 @Configuration
 @ComponentScan(basePackages = "ua.com.foxminded.studenthostel.dao")
+@ComponentScan(basePackages = "ua.com.foxminded.studenthostel.service")
 @PropertySource("classpath:db.properties")
 public class SpringConfig {
 
@@ -46,6 +48,5 @@ public class SpringConfig {
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
-
 
 }

@@ -8,8 +8,9 @@ import java.math.BigInteger;
 @NotNull
 public class Faculty {
 
-    private static final String NAME_PATTERN = "[A-Z][a-z\\s]{3,29}";
+    private static final String NAME_PATTERN = "[A-Z](\\s?[a-zA-Z0-9]+)*";
 
+    @NotNull
     @Size(min = 4, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String name;

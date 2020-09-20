@@ -10,6 +10,7 @@ public class CourseNumber {
 
     private static final String NAME_PATTERN = "[A-Z][a-z]{3,29}";
 
+    @NotNull
     @Size(min = 4, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String name;

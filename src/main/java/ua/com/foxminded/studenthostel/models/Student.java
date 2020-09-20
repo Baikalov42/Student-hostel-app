@@ -2,7 +2,9 @@ package ua.com.foxminded.studenthostel.models;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.math.BigInteger;
 
 public class Student {
@@ -11,19 +13,26 @@ public class Student {
 
     private BigInteger id;
 
+    @NotNull
+    @Size(min = 2, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String firstName;
 
+    @NotNull
+    @Size(min = 2, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String lastName;
 
+    @NotNull
     @Min(value = 0)
     @Max(value = 40)
     private int hoursDebt;
 
+    @NotNull
     @Min(value = 1)
     private BigInteger groupId;
 
+    @NotNull
     @Min(value = 1)
     private BigInteger roomId;
 
@@ -34,6 +43,16 @@ public class Student {
                    int hoursDebt, BigInteger groupId, BigInteger roomId) {
 
         this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.hoursDebt = hoursDebt;
+        this.groupId = groupId;
+        this.roomId = roomId;
+    }
+
+    public Student(String firstName, String lastName,
+                   int hoursDebt, BigInteger groupId, BigInteger roomId) {
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.hoursDebt = hoursDebt;

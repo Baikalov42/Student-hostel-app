@@ -197,7 +197,6 @@ public class StudentDaoImpl implements StudentDao {
                 "WHERE student_id = ? ";
         try {
             return jdbcTemplate.update(query, id) == 1;
-
         } catch (DataAccessException ex) {
             throw new DaoException(id.toString(), ex);
         }

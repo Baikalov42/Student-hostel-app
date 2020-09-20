@@ -10,18 +10,23 @@ import java.math.BigInteger;
 @NotNull
 public class Task {
 
-    private static final String NAME_PATTERN = "[\\w\\s]{3,29}";
+    private static final String NAME_PATTERN = "[A-Z](\\s?[a-zA-Z0-9]+)*";
 
     private BigInteger id;
 
+    @Size(min = 3, max = 30)
+    @NotNull
     @Pattern(regexp = NAME_PATTERN)
     private String name;
 
+    @Pattern(regexp = NAME_PATTERN)
+    @NotNull
     @Size(min = 10, max = 30)
     private String description;
 
     @Min(1)
     @Max(10)
+    @NotNull
     private int costInHours;
 
     public BigInteger getId() {
