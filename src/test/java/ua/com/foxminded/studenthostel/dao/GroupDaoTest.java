@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -14,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Group;
 
 import javax.sql.DataSource;
@@ -73,7 +73,7 @@ class GroupDaoTest {
         group.setCourseNumberId(BigInteger.valueOf(1));
         group.setFacultyId(BigInteger.valueOf(2));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class, () -> groupDao.insert(group));
+        Assertions.assertThrows(DaoException.class, () -> groupDao.insert(group));
     }
 
     @Test
@@ -88,7 +88,7 @@ class GroupDaoTest {
         group.setCourseNumberId(BigInteger.valueOf(2));
         group.setFacultyId(BigInteger.valueOf(1));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class, () -> groupDao.insert(group));
+        Assertions.assertThrows(DaoException.class, () -> groupDao.insert(group));
     }
 
     @Test
@@ -109,7 +109,7 @@ class GroupDaoTest {
 
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> groupDao.getById(BigInteger.valueOf(1)));
     }
     @Test

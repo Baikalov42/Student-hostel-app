@@ -1,13 +1,16 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.mappers.StudentMapper;
 
@@ -29,17 +32,21 @@ public class StudentDaoImpl implements StudentDao {
 
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"student_id"});
-            ps.setString(1, student.getFirstName());
-            ps.setString(2, student.getLastName());
-            ps.setInt(3, student.getHoursDebt());
-            ps.setLong(4, student.getGroupId().longValue());
-            ps.setLong(5, student.getRoomId().longValue());
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"student_id"});
+                ps.setString(1, student.getFirstName());
+                ps.setString(2, student.getLastName());
+                ps.setInt(3, student.getHoursDebt());
+                ps.setLong(4, student.getGroupId().longValue());
+                ps.setLong(5, student.getRoomId().longValue());
 
-            return ps;
-        }, keyHolder);
+                return ps;
+            }, keyHolder);
 
+        } catch (DataAccessException ex) {
+            throw new DaoException(student.toString(), ex);
+        }
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
@@ -50,8 +57,9 @@ public class StudentDaoImpl implements StudentDao {
                 "WHERE student_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new StudentMapper(), studentId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(studentId.toString(), ex);
         }
     }
 
@@ -120,7 +128,13 @@ public class StudentDaoImpl implements StudentDao {
                 "UPDATE students " +
                 "SET room_id = ? " +
                 "WHERE student_id = ? ";
-        return jdbcTemplate.update(query, newRoomId, studentId) == 1;
+        try {
+            return jdbcTemplate.update(query, newRoomId, studentId) == 1;
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(
+                    "room id=" + newRoomId + " student id=" + studentId, ex);
+        }
     }
 
     @Override
@@ -129,7 +143,30 @@ public class StudentDaoImpl implements StudentDao {
                 "UPDATE students " +
                 "SET hours_debt = ? " +
                 "WHERE student_id = ? ";
-        return jdbcTemplate.update(query, newHoursDebt, studentId) == 1;
+        try {
+            return jdbcTemplate.update(query, newHoursDebt, studentId) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException("new hours=" + newHoursDebt + " student id=" + studentId, ex);
+        }
+    }
+
+    @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM students";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
+    public Integer getStudentsCountByRoom(BigInteger roomID) {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM students " +
+                "WHERE room_id = ?";
+
+        return jdbcTemplate.queryForObject(query, Integer.class, roomID);
     }
 
     @Override
@@ -144,8 +181,13 @@ public class StudentDaoImpl implements StudentDao {
                 "room_id = ? " +
                 "WHERE student_id = ? ";
 
-        return jdbcTemplate.update(query, student.getFirstName(), student.getLastName(),
-                student.getHoursDebt(), student.getGroupId(), student.getRoomId(), student.getId()) == 1;
+        try {
+            return jdbcTemplate.update(query, student.getFirstName(), student.getLastName(),
+                    student.getHoursDebt(), student.getGroupId(), student.getRoomId(), student.getId()) == 1;
+
+        } catch (DataAccessException ex) {
+            throw new DaoException(student.toString(), ex);
+        }
     }
 
     @Override
@@ -153,6 +195,10 @@ public class StudentDaoImpl implements StudentDao {
         String query = "" +
                 "DELETE  from  students " +
                 "WHERE student_id = ? ";
-        return jdbcTemplate.update(query, id) == 1;
+        try {
+            return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

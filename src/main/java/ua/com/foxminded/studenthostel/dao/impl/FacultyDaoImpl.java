@@ -1,12 +1,15 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.FacultyDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.mappers.FacultyMapper;
 
@@ -28,13 +31,16 @@ public class FacultyDaoImpl implements FacultyDao {
                 "VALUES (?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"faculty_id"});
+                ps.setString(1, faculty.getName());
+                return ps;
+            }, keyHolder);
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"faculty_id"});
-            ps.setString(1, faculty.getName());
-            return ps;
-        }, keyHolder);
-
+        } catch (DataAccessException ex) {
+            throw new DaoException(faculty.toString(), ex);
+        }
         return BigInteger.valueOf(keyHolder.getKey().longValue());
 
     }
@@ -46,8 +52,8 @@ public class FacultyDaoImpl implements FacultyDao {
                 "WHERE faculty_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new FacultyMapper(), facultyId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(facultyId.toString(), ex);
         }
     }
 
@@ -62,13 +68,26 @@ public class FacultyDaoImpl implements FacultyDao {
     }
 
     @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM faculties";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
+    }
+
+    @Override
     public boolean update(Faculty faculty) {
         String query = "" +
                 "UPDATE faculties " +
                 "SET faculty_name = ? " +
                 "WHERE faculty_id = ? ";
+        try {
+            return jdbcTemplate.update(query, faculty.getName(), faculty.getId()) == 1;
 
-        return jdbcTemplate.update(query, faculty.getName(), faculty.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(faculty.toString(), ex);
+        }
     }
 
     @Override
@@ -76,7 +95,11 @@ public class FacultyDaoImpl implements FacultyDao {
         String query = "" +
                 "DELETE FROM faculties " +
                 "WHERE faculty_id = ? ";
+        try {
+            return jdbcTemplate.update(query, id) == 1;
 
-        return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

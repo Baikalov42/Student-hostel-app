@@ -13,6 +13,8 @@ public interface CourseNumberDao {
 
     List<CourseNumber> getAll(long limit, long offset);
 
+    BigInteger getEntriesCount();
+
     boolean update(CourseNumber courseNumber);
 
     boolean deleteById(BigInteger id);

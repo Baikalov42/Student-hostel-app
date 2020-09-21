@@ -12,6 +12,8 @@ public interface GroupDao {
 
     List<Group> getAll(long limit, long offset);
 
+    BigInteger getEntriesCount();
+
     boolean update(Group group);
 
     boolean deleteById(BigInteger id);

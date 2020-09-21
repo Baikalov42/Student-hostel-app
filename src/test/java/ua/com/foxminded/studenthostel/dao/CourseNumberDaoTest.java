@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -13,10 +12,10 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 
 import javax.sql.DataSource;
-import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +68,7 @@ class CourseNumberDaoTest {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setName("first");
 
-        Assertions.assertThrows(DuplicateKeyException.class, () -> courseNumberDao.insert(courseNumber));
+        Assertions.assertThrows(DaoException.class, () -> courseNumberDao.insert(courseNumber));
     }
 
     @Test
@@ -87,7 +86,7 @@ class CourseNumberDaoTest {
     @Test
     public void getById_ShouldThrowException_WhenEntityNotExist() {
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> courseNumberDao.getById(BigInteger.valueOf(1)));
     }
 
@@ -102,7 +101,15 @@ class CourseNumberDaoTest {
         courseNumber.setName("fourth");
 
         courseNumbers.add(courseNumber);
+
         Assertions.assertEquals(courseNumbers, courseNumberDao.getAll(1, 3));
+    }
+    @Test
+    public void getEntriesCount_ShouldReturn_CountOfEntries() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Assertions.assertEquals(BigInteger.valueOf(5), courseNumberDao.getEntriesCount());
     }
 
     @Test

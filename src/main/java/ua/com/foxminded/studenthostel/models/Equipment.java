@@ -1,10 +1,20 @@
 package ua.com.foxminded.studenthostel.models;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.math.BigInteger;
 
+@NotNull
 public class Equipment {
 
+    private static final String NAME_PATTERN = "[A-Z](\\s?[a-zA-Z0-9]+)*";
+
+    @NotNull
+    @Size(min = 4, max = 30)
+    @Pattern(regexp = NAME_PATTERN)
     private String name;
+
     private BigInteger id;
 
     public String getName() {

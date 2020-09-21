@@ -11,7 +11,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
-import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Floor;
 
 import javax.sql.DataSource;
@@ -68,7 +68,7 @@ class FloorDaoTest {
 
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
-        Assertions.assertThrows(DaoException.class, () -> floorDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertThrows(NotFoundException.class, () -> floorDao.getById(BigInteger.valueOf(1)));
     }
 
     @Test

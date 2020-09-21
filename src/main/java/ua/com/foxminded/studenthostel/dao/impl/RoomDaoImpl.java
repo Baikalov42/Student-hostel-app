@@ -1,13 +1,16 @@
-package ua.com.foxminded.studenthostel.dao;
+package ua.com.foxminded.studenthostel.dao.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ua.com.foxminded.studenthostel.dao.RoomDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.mappers.RoomMapper;
 
@@ -28,15 +31,18 @@ public class RoomDaoImpl implements RoomDao {
                 "VALUES (?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(query, new String[]{"room_id"});
+                ps.setString(1, room.getName());
+                ps.setLong(2, room.getFloorId().longValue());
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, new String[]{"room_id"});
-            ps.setString(1, room.getName());
-            ps.setLong(2, room.getFloorId().longValue());
+                return ps;
+            }, keyHolder);
 
-            return ps;
-        }, keyHolder);
-
+        } catch (DataAccessException ex) {
+            throw new DaoException(room.toString(), ex);
+        }
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
@@ -48,8 +54,9 @@ public class RoomDaoImpl implements RoomDao {
                 "WHERE room_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new RoomMapper(), roomId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new DaoException("failed to get object");
+
+        } catch (EmptyResultDataAccessException ex) {
+            throw new NotFoundException(roomId.toString(), ex);
         }
     }
 
@@ -60,6 +67,7 @@ public class RoomDaoImpl implements RoomDao {
                 "FROM rooms " +
                 "ORDER BY room_id " +
                 "LIMIT ? OFFSET ?";
+
         return jdbcTemplate.query(query, new RoomMapper(), limit, offset);
     }
 
@@ -71,7 +79,17 @@ public class RoomDaoImpl implements RoomDao {
                 "INNER JOIN students ON students_equipments.student_id = students.student_id " +
                 "INNER JOIN rooms ON students.room_id = rooms.room_id " +
                 "WHERE equipments.equipment_id = ? ";
+
         return jdbcTemplate.query(query, new RoomMapper(), equipmentId);
+    }
+
+    @Override
+    public BigInteger getEntriesCount() {
+        String query = "" +
+                "SELECT count(*) " +
+                "FROM rooms ";
+
+        return jdbcTemplate.queryForObject(query, BigInteger.class);
     }
 
     @Override
@@ -82,8 +100,12 @@ public class RoomDaoImpl implements RoomDao {
                 "room_name = ? ," +
                 "floor_id = ? " +
                 "WHERE room_id = ? ";
+        try {
+            return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
 
-        return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(room.toString(), ex);
+        }
     }
 
     @Override
@@ -91,7 +113,11 @@ public class RoomDaoImpl implements RoomDao {
         String query = "" +
                 "DELETE FROM rooms " +
                 "WHERE room_id  = ? ";
+        try {
+            return jdbcTemplate.update(query, id) == 1;
 
-        return jdbcTemplate.update(query, id) == 1;
+        } catch (DataAccessException ex) {
+            throw new DaoException(id.toString(), ex);
+        }
     }
 }

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -13,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Task;
 
 import javax.sql.DataSource;
@@ -80,11 +80,12 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> taskDao.getById(BigInteger.valueOf(10)));
     }
+
     @Test
-    public void getAll_ShouldReturnListOfTasks_WhenConditionCompleted(){
+    public void getAll_ShouldReturnListOfTasks_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -97,7 +98,7 @@ class TaskDaoTest {
         List<Task> list = new ArrayList<>();
         list.add(task);
 
-        Assertions.assertEquals(list, taskDao.getAll(1,1));
+        Assertions.assertEquals(list, taskDao.getAll(1, 1));
     }
 
     @Test
@@ -118,8 +119,8 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(3)));
+        Assertions.assertThrows(DaoException.class,
+                () -> taskDao.assignToStudent(BigInteger.valueOf(3), BigInteger.valueOf(1)));
     }
 
     @Test
@@ -127,8 +128,8 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(2), BigInteger.valueOf(1)));
+        Assertions.assertThrows(DaoException.class,
+                () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(2)));
     }
 
 
@@ -138,11 +139,20 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
-        taskDao.removeFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(4));
+        taskDao.unassignFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(4));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
     }
+
+    @Test
+    public void isStudentTaskRelationExist_ShouldReturnTrue_WhenEntryExist() {
+        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+
+        Assertions.assertTrue(taskDao.isStudentTaskRelationExist(BigInteger.valueOf(1), BigInteger.valueOf(4)));
+    }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));

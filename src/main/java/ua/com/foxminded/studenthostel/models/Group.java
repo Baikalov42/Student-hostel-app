@@ -1,12 +1,29 @@
 package ua.com.foxminded.studenthostel.models;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.math.BigInteger;
 
+@NotNull
 public class Group {
 
+    private static final String NAME_PATTERN = "[A-Z]{3}[-][0-9]{4}";
+
+    @NotNull
+    @Size(min = 8, max = 8)
+    @Pattern(regexp = NAME_PATTERN)
     private String name;
+
     private BigInteger id;
+
+    @NotNull
+    @Min(value = 1)
     private BigInteger facultyId;
+
+    @NotNull
+    @Min(value = 1)
     private BigInteger courseNumberId;
 
     public String getName() {

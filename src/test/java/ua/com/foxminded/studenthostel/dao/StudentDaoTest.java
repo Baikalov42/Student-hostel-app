@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -13,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.sql.DataSource;
@@ -46,7 +46,7 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student student = new Student(BigInteger.valueOf(10), "firstnameone", "lastnameone",
+        Student student = new Student(BigInteger.valueOf(10), "firstnameones", "lastnameone",
                 10, BigInteger.valueOf(1), BigInteger.valueOf(1));
 
 
@@ -65,7 +65,7 @@ class StudentDaoTest {
         Student student = new Student(BigInteger.valueOf(10), "firstnameone", "lastnameone",
                 10, BigInteger.valueOf(5), BigInteger.valueOf(1));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> studentDao.insert(student));
     }
 
@@ -77,7 +77,7 @@ class StudentDaoTest {
         Student student = new Student(BigInteger.valueOf(10), "firstnameone", "lastnameone",
                 10, BigInteger.valueOf(1), BigInteger.valueOf(5));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> studentDao.insert(student));
     }
 
@@ -97,7 +97,7 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> studentDao.getById(BigInteger.valueOf(10)));
     }
     @Test
@@ -188,7 +188,7 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> studentDao.changeRoom(BigInteger.valueOf(10), BigInteger.valueOf(1)));
     }
     @Test

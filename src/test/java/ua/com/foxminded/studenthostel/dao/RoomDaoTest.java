@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -14,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
+import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Room;
 
 import javax.sql.DataSource;
@@ -72,7 +72,7 @@ class RoomDaoTest {
         room.setName("testnametwo");
         room.setFloorId(BigInteger.valueOf(12));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class,
+        Assertions.assertThrows(DaoException.class,
                 () -> roomDao.insert(room));
     }
 
@@ -93,7 +93,7 @@ class RoomDaoTest {
     public void getById_ShouldThrowException_WhenIdNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-        Assertions.assertThrows(DaoException.class,
+        Assertions.assertThrows(NotFoundException.class,
                 () -> roomDao.getById(BigInteger.valueOf(10)));
     }
 
