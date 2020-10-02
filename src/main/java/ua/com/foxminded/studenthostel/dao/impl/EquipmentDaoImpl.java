@@ -1,6 +1,8 @@
 package ua.com.foxminded.studenthostel.dao.impl;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,11 +23,14 @@ import java.util.List;
 @Repository
 public class EquipmentDaoImpl implements EquipmentDao {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EquipmentDaoImpl.class);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Override
     public BigInteger insert(Equipment equipment) {
+        LOGGER.debug("inserting {}", equipment);
 
         String query = "" +
                 "INSERT INTO equipments(equipment_name) " +
@@ -39,60 +44,77 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 return ps;
             }, keyHolder);
 
-        } catch (
-                DataAccessException ex) {
+        } catch (DataAccessException ex) {
+
+            LOGGER.error("insertion error {}", equipment, ex);
             throw new DaoException(equipment.toString(), ex);
         }
-
         return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
     public Equipment getById(BigInteger equipmentId) {
+        LOGGER.debug("getting by id {}", equipmentId);
+
         String query = "" +
                 "SELECT * FROM equipments " +
                 "WHERE equipment_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
         } catch (EmptyResultDataAccessException ex) {
+
+            LOGGER.warn("Failed get by id {}", equipmentId, ex);
             throw new NotFoundException(equipmentId.toString(), ex);
         }
     }
 
     @Override
     public List<Equipment> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+
         String query = "" +
                 "SELECT * " +
                 "FROM equipments " +
                 "ORDER BY equipment_id " +
                 "LIMIT ? OFFSET ?";
+
         return jdbcTemplate.query(query, new EquipmentMapper(), limit, offset);
     }
 
     @Override
     public List<Equipment> getAllByStudent(BigInteger studentId) {
+        LOGGER.debug("getting all by Student id {} ", studentId);
+
         String query = "" +
                 "SELECT * " +
                 "FROM students_equipments " +
                 "WHERE student_id = ? ";
+
         return jdbcTemplate.query(query, new EquipmentMapper(), studentId);
     }
 
     @Override
     public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
+        LOGGER.debug("assigning, student id {}, equipment id {}", studentId, equipmentId);
+
         String query = "" +
                 "INSERT INTO students_equipments (student_id, equipment_id) " +
                 "VALUES (? , ?)";
         try {
             return jdbcTemplate.update(query, studentId, equipmentId) == 1;
+
         } catch (DataAccessException ex) {
-            throw new DaoException(
-                    "student id =" + studentId + " equipment id =" + equipmentId, ex);
+
+            LOGGER.error("failed assigning, student id {}, equipment id {}", studentId, equipmentId, ex);
+            String message = "student id =" + studentId + " equipment id =" + equipmentId;
+            throw new DaoException(message, ex);
         }
     }
 
     @Override
     public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
+        LOGGER.debug("un assigning, student id {}, equipment id {}", studentId, equipmentId);
+
         String query = "" +
                 "DELETE FROM students_equipments " +
                 "WHERE student_id = ? " +
@@ -101,13 +123,16 @@ public class EquipmentDaoImpl implements EquipmentDao {
             return jdbcTemplate.update(query, studentId, equipmentId) == 1;
 
         } catch (DataAccessException ex) {
-            throw new DaoException(
-                    "student id =" + studentId + " equipment id =" + equipmentId, ex);
+
+            LOGGER.error("failed un assigning, student id {}, equipment id {}", studentId, equipmentId, ex);
+            throw new DaoException("student id =" + studentId + " equipment id =" + equipmentId, ex);
         }
     }
 
     @Override
     public boolean update(Equipment equipment) {
+        LOGGER.debug("updating {}", equipment);
+
         String query = "" +
                 "UPDATE equipments " +
                 "SET equipment_name = ? " +
@@ -115,12 +140,16 @@ public class EquipmentDaoImpl implements EquipmentDao {
         try {
             return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
         } catch (DataAccessException ex) {
+
+            LOGGER.error("updating error {}", equipment);
             throw new DaoException(equipment.toString(), ex);
         }
     }
 
     @Override
     public BigInteger getEntriesCount() {
+        LOGGER.debug("getting count of entries");
+
         String query = "" +
                 "SELECT count(*) " +
                 "FROM equipments";
@@ -130,12 +159,17 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
     @Override
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
+
         String query = "" +
                 "DELETE FROM equipments " +
                 "WHERE equipment_id = ? ";
         try {
             return jdbcTemplate.update(query, id) == 1;
+
         } catch (DataAccessException ex) {
+
+            LOGGER.error("deleting error {}", id);
             throw new DaoException(id.toString(), ex);
         }
     }

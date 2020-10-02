@@ -1,6 +1,8 @@
 package ua.com.foxminded.studenthostel.dao.impl;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,11 +23,15 @@ import java.util.List;
 @Repository
 public class GroupDaoImpl implements GroupDao {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupDaoImpl.class);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Override
     public BigInteger insert(Group group) {
+        LOGGER.debug("inserting {}", group);
+
         String query = "" +
                 "INSERT INTO groups (group_name, faculty_id, course_number_id) " +
                 "VALUES (? , ? , ? )";
@@ -42,6 +48,8 @@ public class GroupDaoImpl implements GroupDao {
             }, keyHolder);
 
         } catch (DataAccessException ex) {
+
+            LOGGER.error("insertion error {}", group, ex);
             throw new DaoException(group.toString(), ex);
         }
 
@@ -50,41 +58,56 @@ public class GroupDaoImpl implements GroupDao {
 
     @Override
     public Group getById(BigInteger groupId) {
+        LOGGER.debug("getting by id {}", groupId);
+
         String query = "" +
                 "SELECT * FROM groups " +
                 "WHERE group_id = ? ";
         try {
             return jdbcTemplate.queryForObject(query, new GroupMapper(), groupId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException(groupId.toString(), e);
+
+        } catch (EmptyResultDataAccessException ex) {
+
+            LOGGER.warn("Failed get by id {}", groupId, ex);
+            throw new NotFoundException(groupId.toString(), ex);
         }
     }
 
     @Override
     public List<Group> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+
         String query = "" +
                 "SELECT * " +
                 "FROM groups " +
                 "ORDER BY group_id " +
                 "LIMIT ? OFFSET ?";
+
         return jdbcTemplate.query(query, new GroupMapper(), limit, offset);
     }
 
     @Override
     public boolean update(Group group) {
+        LOGGER.debug("updating {}", group);
+
         String query = "" +
                 "UPDATE groups " +
                 "SET group_name = ?" +
                 "WHERE group_id = ?";
         try {
             return jdbcTemplate.update(query, group.getName(), group.getId()) == 1;
+
         } catch (DataAccessException ex) {
+
+            LOGGER.error("updating error {}", group);
             throw new DaoException(group.toString(), ex);
         }
     }
 
     @Override
     public BigInteger getEntriesCount() {
+        LOGGER.debug("getting count of entries");
+
         String query = "" +
                 "SELECT count(*) " +
                 "FROM groups";
@@ -94,6 +117,8 @@ public class GroupDaoImpl implements GroupDao {
 
     @Override
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
+
         String query = "" +
                 "DELETE FROM groups " +
                 "WHERE group_id  = ? ";
@@ -101,6 +126,8 @@ public class GroupDaoImpl implements GroupDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
+
+            LOGGER.error("deleting error {}", id);
             throw new DaoException(id.toString(), ex);
         }
     }

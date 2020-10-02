@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.EquipmentDao;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Service
 public class EquipmentService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EquipmentService.class);
 
     @Autowired
     private EquipmentDao equipmentDao;
@@ -57,8 +61,9 @@ public class EquipmentService {
         List<Equipment> result = equipmentDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
+
+            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
+            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
@@ -81,6 +86,8 @@ public class EquipmentService {
     }
 
     void validateExistence(BigInteger id) {
+        LOGGER.debug("Validation existence id = {}", id);
+
         try {
             equipmentDao.getById(id);
         } catch (NotFoundException ex) {

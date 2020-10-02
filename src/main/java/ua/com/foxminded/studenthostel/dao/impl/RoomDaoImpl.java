@@ -1,6 +1,8 @@
 package ua.com.foxminded.studenthostel.dao.impl;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,11 +23,15 @@ import java.util.List;
 @Repository
 public class RoomDaoImpl implements RoomDao {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoomDaoImpl.class);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Override
     public BigInteger insert(Room room) {
+        LOGGER.debug("inserting {}", room);
+
         String query = "" +
                 "INSERT INTO rooms (room_name, floor_id) " +
                 "VALUES (?, ?)";
@@ -41,6 +47,8 @@ public class RoomDaoImpl implements RoomDao {
             }, keyHolder);
 
         } catch (DataAccessException ex) {
+
+            LOGGER.error("insertion error {}", room, ex);
             throw new DaoException(room.toString(), ex);
         }
         return BigInteger.valueOf(keyHolder.getKey().longValue());
@@ -48,6 +56,8 @@ public class RoomDaoImpl implements RoomDao {
 
     @Override
     public Room getById(BigInteger roomId) {
+        LOGGER.debug("getting by id {}", roomId);
+
         String query = "" +
                 "SELECT * " +
                 "FROM rooms " +
@@ -56,12 +66,16 @@ public class RoomDaoImpl implements RoomDao {
             return jdbcTemplate.queryForObject(query, new RoomMapper(), roomId);
 
         } catch (EmptyResultDataAccessException ex) {
+
+            LOGGER.warn("Failed get by id {}", roomId, ex);
             throw new NotFoundException(roomId.toString(), ex);
         }
     }
 
     @Override
     public List<Room> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+
         String query = "" +
                 "SELECT * " +
                 "FROM rooms " +
@@ -73,6 +87,8 @@ public class RoomDaoImpl implements RoomDao {
 
     @Override
     public List<Room> getAllByEquipment(BigInteger equipmentId) {
+        LOGGER.debug("getting all by Equipment id {} ", equipmentId);
+
         String query = "" +
                 "SELECT * FROM equipments " +
                 "INNER JOIN students_equipments ON equipments.equipment_id = students_equipments.equipment_id " +
@@ -85,6 +101,8 @@ public class RoomDaoImpl implements RoomDao {
 
     @Override
     public BigInteger getEntriesCount() {
+        LOGGER.debug("getting count of entries");
+
         String query = "" +
                 "SELECT count(*) " +
                 "FROM rooms ";
@@ -94,6 +112,8 @@ public class RoomDaoImpl implements RoomDao {
 
     @Override
     public boolean update(Room room) {
+        LOGGER.debug("updating {}", room);
+
         String query = "" +
                 "UPDATE rooms " +
                 "SET " +
@@ -104,12 +124,16 @@ public class RoomDaoImpl implements RoomDao {
             return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
 
         } catch (DataAccessException ex) {
+
+            LOGGER.error("updating error {}", room);
             throw new DaoException(room.toString(), ex);
         }
     }
 
     @Override
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
+
         String query = "" +
                 "DELETE FROM rooms " +
                 "WHERE room_id  = ? ";
@@ -117,6 +141,8 @@ public class RoomDaoImpl implements RoomDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
+
+            LOGGER.error("deleting error {}", id);
             throw new DaoException(id.toString(), ex);
         }
     }

@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.TaskDao;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Service
 public class TaskService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
     @Autowired
     private TaskDao taskDao;
@@ -34,9 +38,10 @@ public class TaskService {
 
     public List<Task> getAll(long limit, long offset) {
         List<Task> result = taskDao.getAll(limit, offset);
+
         if (result.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
+            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
@@ -86,7 +91,9 @@ public class TaskService {
         return taskDao.deleteById(id);
     }
 
-     void validateExistence(BigInteger id) {
+    void validateExistence(BigInteger id) {
+        LOGGER.debug("Validation existence id = {}", id);
+
         try {
             taskDao.getById(id);
         } catch (NotFoundException ex) {

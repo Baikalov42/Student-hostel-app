@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Service
 public class RoomService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoomService.class);
 
     @Autowired
     private RoomDao roomDao;
@@ -54,8 +58,9 @@ public class RoomService {
         List<Room> result = roomDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
+
+            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
+            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
@@ -79,8 +84,9 @@ public class RoomService {
         List<Room> rooms = roomDao.getAllByEquipment(equipmentId);
 
         if (rooms.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with equipment id=" + equipmentId + " is empty");
+
+            LOGGER.warn("Result is empty, equipment id = {}", equipmentId);
+            throw new NotFoundException("Result with equipment id=" + equipmentId + " is empty");
         }
         List<RoomDTO> roomDTOS = new ArrayList<>();
 
@@ -109,6 +115,8 @@ public class RoomService {
     }
 
     void validateExistence(BigInteger id) {
+        LOGGER.debug("Validation existence id = {}", id);
+
         try {
             roomDao.getById(id);
         } catch (NotFoundException ex) {

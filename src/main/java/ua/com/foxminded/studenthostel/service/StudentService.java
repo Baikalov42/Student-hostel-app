@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.List;
 
 @Service
 public class StudentService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentService.class);
 
     public static final int MAX_HOURS_DEBT = 40;
     public static final int MIN_HOURS_DEBT = 0;
@@ -80,8 +84,9 @@ public class StudentService {
 
         List<Student> result = studentDao.getAll(limit, offset);
         if (result.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
+
+            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
+            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
@@ -100,8 +105,8 @@ public class StudentService {
         List<Student> students = studentDao.getAllByFloor(floorId);
 
         if (students.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with floor id=" + floorId + " is empty");
+            LOGGER.warn("result is empty, floor id = {}", floorId);
+            throw new NotFoundException("result is empty, floor id = " + floorId);
         }
         return getDTOS(students);
     }
@@ -114,8 +119,8 @@ public class StudentService {
         List<Student> students = studentDao.getAllByFaculty(facultyId);
 
         if (students.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with faculty id=" + facultyId + " is empty");
+            LOGGER.warn("result is empty, faculty id = {}", facultyId);
+            throw new NotFoundException("result is empty, faculty id = " + facultyId);
         }
 
         return getDTOS(students);
@@ -129,8 +134,8 @@ public class StudentService {
         List<Student> students = studentDao.getAllByCourse(courseNumberId);
 
         if (students.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with faculty id=" + courseNumberId + " is empty");
+            LOGGER.warn("result is empty, course id = {}", courseNumberId);
+            throw new NotFoundException("result is empty, course id = " + courseNumberId);
         }
 
         return getDTOS(students);
@@ -144,8 +149,8 @@ public class StudentService {
         List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
 
         if (students.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with group id=" + groupId + " and debt=" + hoursDebt + " is empty");
+            LOGGER.warn("result is empty, group id = {}, debt = {}", groupDao, hoursDebt);
+            throw new NotFoundException("result is empty, group id = " + groupId + "debt = " + hoursDebt);
         }
 
         return getDTOS(students);
@@ -164,6 +169,7 @@ public class StudentService {
 
     public boolean changeDebt(Integer newHoursDebt, BigInteger studentId) {
         if (newHoursDebt > MAX_HOURS_DEBT || newHoursDebt < MIN_HOURS_DEBT) {
+            LOGGER.warn("not valid debt. debt = {}, student id ={}", newHoursDebt, studentId);
             throw new ValidationException("the value must be in the range from 0 to 40");
         }
         validateExistence(studentId);
@@ -189,8 +195,8 @@ public class StudentService {
         taskService.validateExistence(taskId);
 
         if (!taskService.isStudentTaskRelationExist(studentId, taskId)) {
-            throw new ValidationException(
-                    "Relation student id = " + studentId + " and task id = " + taskId + " not exist");
+            LOGGER.warn("relation between student and task not exist. Student id ={}, Task id = {}", studentId, taskId);
+            throw new ValidationException("Relation student id = " + studentId + " and task id = " + taskId + " not exist");
         }
 
         Student student = studentDao.getById(studentId);
@@ -241,6 +247,8 @@ public class StudentService {
     }
 
     void validateExistence(BigInteger studentId) {
+        LOGGER.debug("Validation existence id = {}", studentId);
+
         try {
             studentDao.getById(studentId);
         } catch (NotFoundException ex) {
@@ -249,8 +257,10 @@ public class StudentService {
     }
 
     private void validateRoomVacancy(BigInteger roomId) {
+        LOGGER.debug("Room vacancy validation, room id = {}", roomId);
 
         if (studentDao.getStudentsCountByRoom(roomId) >= MAX_STUDENTS_IN_ROOM) {
+            LOGGER.warn("validation error, room id ={}", roomId);
             throw new ValidationException("no more than 4 student in one room");
         }
     }
