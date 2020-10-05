@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.TaskDao;
@@ -14,6 +16,8 @@ import java.util.List;
 @Service
 public class TaskService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
+
     @Autowired
     private TaskDao taskDao;
     @Autowired
@@ -22,26 +26,38 @@ public class TaskService {
     private ValidatorEntity<Task> validator;
 
     public BigInteger insert(Task task) {
+        LOGGER.debug("inserting {}", task);
 
         validator.validate(task);
-        return taskDao.insert(task);
+        BigInteger id = taskDao.insert(task);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public Task getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
+
         validator.validateId(id);
-        return taskDao.getById(id);
+        Task task = taskDao.getById(id);
+
+        LOGGER.debug("getting complete {}", task);
+        return task;
     }
 
     public List<Task> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
         List<Task> result = taskDao.getAll(limit, offset);
+
         if (result.isEmpty()) {
-            throw new NotFoundException(
-                    "Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
+            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
         }
         return result;
     }
 
     public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -51,6 +67,7 @@ public class TaskService {
     }
 
     public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("un assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -60,6 +77,7 @@ public class TaskService {
     }
 
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("is relation exist between student id = {}, task id = {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -70,6 +88,7 @@ public class TaskService {
 
 
     public boolean update(Task task) {
+        LOGGER.debug("updating {}", task);
 
         validator.validate(task);
         validator.validateId(task.getId());
@@ -79,6 +98,7 @@ public class TaskService {
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -86,10 +106,13 @@ public class TaskService {
         return taskDao.deleteById(id);
     }
 
-     void validateExistence(BigInteger id) {
+    void validateExistence(BigInteger id) {
+        LOGGER.debug("Validation existence id = {}", id);
         try {
             taskDao.getById(id);
+
         } catch (NotFoundException ex) {
+            LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }
