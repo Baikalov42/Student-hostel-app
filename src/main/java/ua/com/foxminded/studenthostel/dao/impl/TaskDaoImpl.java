@@ -47,12 +47,14 @@ public class TaskDaoImpl implements TaskDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", task, ex);
             throw new DaoException(task.toString(), ex);
         }
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -64,10 +66,11 @@ public class TaskDaoImpl implements TaskDao {
                 "FROM tasks " +
                 "WHERE task_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new TaskMapper(), taskId);
+            Task task = jdbcTemplate.queryForObject(query, new TaskMapper(), taskId);
+            LOGGER.debug("getting complete {}", task);
+            return task;
 
         } catch (EmptyResultDataAccessException ex) {
-
             LOGGER.warn("Failed get by id {}", taskId, ex);
             throw new NotFoundException(taskId.toString(), ex);
         }
@@ -97,7 +100,6 @@ public class TaskDaoImpl implements TaskDao {
                 "WHERE student_id = ? ";
         return jdbcTemplate.query(query, new TaskMapper(), studentId);
     }
-
 
     @Override
     public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
@@ -144,17 +146,6 @@ public class TaskDaoImpl implements TaskDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM tasks";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public boolean update(Task task) {
         LOGGER.debug("updating {}", task);
 
@@ -168,8 +159,7 @@ public class TaskDaoImpl implements TaskDao {
             return jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getId()) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("updating error {}", ex);
+            LOGGER.error("updating error {}", task, ex);
             throw new DaoException(task.toString(), ex);
         }
     }
@@ -185,7 +175,7 @@ public class TaskDaoImpl implements TaskDao {
             return jdbcTemplate.update(query, id) == 1;
         } catch (DataAccessException ex) {
 
-            LOGGER.error("deleting error {}", id);
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

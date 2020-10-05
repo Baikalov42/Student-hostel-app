@@ -28,18 +28,28 @@ public class CourseNumberService {
     private ValidatorEntity<CourseNumber> validator;
 
     public BigInteger insert(CourseNumber courseNumber) {
+        LOGGER.debug("inserting {}", courseNumber);
 
         validator.validate(courseNumber);
-        return courseNumberDao.insert(courseNumber);
+        BigInteger id = courseNumberDao.insert(courseNumber);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public CourseNumber getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        return courseNumberDao.getById(id);
+        CourseNumber courseNumber = courseNumberDao.getById(id);
+
+        LOGGER.debug("getting complete {}", courseNumber);
+        return courseNumber;
     }
 
     public List<CourseNumber> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+
         List<CourseNumber> result = courseNumberDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
@@ -51,6 +61,8 @@ public class CourseNumberService {
 
     public boolean update(CourseNumber courseNumber) {
 
+        LOGGER.debug("updating {}", courseNumber);
+
         validator.validate(courseNumber);
         validator.validateId(courseNumber.getId());
         validateExistence(courseNumber.getId());
@@ -59,6 +71,7 @@ public class CourseNumberService {
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -68,10 +81,11 @@ public class CourseNumberService {
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-
         try {
             courseNumberDao.getById(id);
+
         } catch (NotFoundException ex) {
+            LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

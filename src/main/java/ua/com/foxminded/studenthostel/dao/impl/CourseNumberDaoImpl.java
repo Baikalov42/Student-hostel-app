@@ -42,12 +42,15 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 ps.setString(1, courseNumber.getName());
                 return ps;
             }, keyHolder);
-        } catch (DataAccessException ex) {
 
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
+
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", courseNumber, ex);
             throw new DaoException(courseNumber.toString(), ex);
         }
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -58,9 +61,11 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "SELECT * FROM course_numbers " +
                 "WHERE course_number_id = ?";
         try {
-            return jdbcTemplate.queryForObject(query, new CourseNumberMapper(), courseNumberId);
-        } catch (EmptyResultDataAccessException ex) {
+            CourseNumber courseNumber = jdbcTemplate.queryForObject(query, new CourseNumberMapper(), courseNumberId);
+            LOGGER.debug("getting complete {}", courseNumber);
+            return courseNumber;
 
+        } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", courseNumberId, ex);
             throw new NotFoundException(courseNumberId.toString(), ex);
         }
@@ -80,17 +85,6 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM course_numbers";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public boolean update(CourseNumber courseNumber) {
         LOGGER.debug("updating {}", courseNumber);
 
@@ -100,9 +94,9 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "WHERE course_number_id = ? ";
         try {
             return jdbcTemplate.update(query, courseNumber.getName(), courseNumber.getId()) == 1;
-        } catch (DataAccessException ex) {
 
-            LOGGER.error("updating error {}", courseNumber);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", courseNumber, ex);
             throw new DaoException(courseNumber.toString(), ex);
         }
     }
@@ -116,9 +110,9 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
                 "WHERE course_number_id = ? ";
         try {
             return jdbcTemplate.update(query, id) == 1;
-        } catch (DataAccessException ex) {
 
-            LOGGER.error("deleting error {}", id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

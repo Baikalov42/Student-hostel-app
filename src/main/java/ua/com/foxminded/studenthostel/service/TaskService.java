@@ -26,17 +26,27 @@ public class TaskService {
     private ValidatorEntity<Task> validator;
 
     public BigInteger insert(Task task) {
+        LOGGER.debug("inserting {}", task);
 
         validator.validate(task);
-        return taskDao.insert(task);
+        BigInteger id = taskDao.insert(task);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public Task getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
+
         validator.validateId(id);
-        return taskDao.getById(id);
+        Task task = taskDao.getById(id);
+
+        LOGGER.debug("getting complete {}", task);
+        return task;
     }
 
     public List<Task> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
         List<Task> result = taskDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
@@ -47,6 +57,7 @@ public class TaskService {
     }
 
     public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -56,6 +67,7 @@ public class TaskService {
     }
 
     public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("un assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -65,6 +77,7 @@ public class TaskService {
     }
 
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("is relation exist between student id = {}, task id = {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
@@ -75,6 +88,7 @@ public class TaskService {
 
 
     public boolean update(Task task) {
+        LOGGER.debug("updating {}", task);
 
         validator.validate(task);
         validator.validateId(task.getId());
@@ -84,6 +98,7 @@ public class TaskService {
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -93,10 +108,11 @@ public class TaskService {
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-
         try {
             taskDao.getById(id);
+
         } catch (NotFoundException ex) {
+            LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

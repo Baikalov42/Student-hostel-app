@@ -36,7 +36,7 @@ public class ValidatorEntity<T> {
             validates = getValidatorInstance().validate(t);
 
         } catch (IllegalArgumentException ex) {
-            LOGGER.warn("object not valid: {}", t);
+            LOGGER.warn("object not valid: {}", t, ex);
             throw new ValidationException("object not valid", ex);
         }
         if (!validates.isEmpty()) {

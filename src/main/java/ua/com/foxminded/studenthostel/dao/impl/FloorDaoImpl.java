@@ -44,13 +44,14 @@ public class FloorDaoImpl implements FloorDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", floor, ex);
             throw new DaoException(floor.toString(), ex);
         }
-
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -62,10 +63,11 @@ public class FloorDaoImpl implements FloorDao {
                 "FROM floors " +
                 "WHERE floor_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new FloorMapper(), floorId);
+            Floor floor = jdbcTemplate.queryForObject(query, new FloorMapper(), floorId);
+            LOGGER.debug("getting complete {}", floor);
+            return floor;
 
         } catch (EmptyResultDataAccessException ex) {
-
             LOGGER.warn("Failed get by id {}", floorId, ex);
             throw new NotFoundException("failed to get object", ex);
         }
@@ -85,17 +87,6 @@ public class FloorDaoImpl implements FloorDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM floors";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public boolean update(Floor floor) {
         LOGGER.debug("updating {}", floor);
 
@@ -107,8 +98,7 @@ public class FloorDaoImpl implements FloorDao {
             return jdbcTemplate.update(query, floor.getName(), floor.getId()) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("updating error {}", floor);
+            LOGGER.error("updating error {}", floor, ex);
             throw new DaoException(floor.toString(), ex);
         }
     }
@@ -124,8 +114,7 @@ public class FloorDaoImpl implements FloorDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("deleting error {}", id);
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

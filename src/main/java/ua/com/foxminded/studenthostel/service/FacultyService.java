@@ -25,19 +25,28 @@ public class FacultyService {
     private ValidatorEntity<Faculty> validator;
 
     public BigInteger insert(Faculty faculty) {
+        LOGGER.debug("inserting {}", faculty);
 
         validator.validate(faculty);
-        return facultyDao.insert(faculty);
+        BigInteger id = facultyDao.insert(faculty);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public Faculty getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        return facultyDao.getById(id);
+        Faculty faculty = facultyDao.getById(id);
+
+        LOGGER.debug("getting complete {}", faculty);
+        return faculty;
     }
 
 
     public List<Faculty> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
         List<Faculty> result = facultyDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
@@ -48,6 +57,7 @@ public class FacultyService {
     }
 
     public boolean update(Faculty faculty) {
+        LOGGER.debug("updating {}", faculty);
 
         validator.validate(faculty);
         validator.validateId(faculty.getId());
@@ -57,6 +67,7 @@ public class FacultyService {
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -66,10 +77,11 @@ public class FacultyService {
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-
         try {
             facultyDao.getById(id);
+
         } catch (NotFoundException ex) {
+            LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

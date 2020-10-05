@@ -26,19 +26,28 @@ public class FloorService {
 
 
     public BigInteger insert(Floor floor) {
+        LOGGER.debug("inserting {}", floor);
 
         validator.validate(floor);
-        return floorDao.insert(floor);
+        BigInteger id = floorDao.insert(floor);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public Floor getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        return floorDao.getById(id);
+        Floor floor = floorDao.getById(id);
+
+        LOGGER.debug("getting complete {}", floor);
+        return floor;
     }
 
 
     public List<Floor> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
         List<Floor> result = floorDao.getAll(limit, offset);
 
         if (result.isEmpty()) {
@@ -49,6 +58,7 @@ public class FloorService {
     }
 
     public boolean update(Floor floor) {
+        LOGGER.debug("updating {}", floor);
 
         validator.validate(floor);
         validator.validateId(floor.getId());
@@ -58,6 +68,7 @@ public class FloorService {
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -67,10 +78,11 @@ public class FloorService {
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-
         try {
             floorDao.getById(id);
+
         } catch (NotFoundException ex) {
+            LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
     }

@@ -44,12 +44,14 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", equipment, ex);
             throw new DaoException(equipment.toString(), ex);
         }
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -60,9 +62,11 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "SELECT * FROM equipments " +
                 "WHERE equipment_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
-        } catch (EmptyResultDataAccessException ex) {
+            Equipment equipment = jdbcTemplate.queryForObject(query, new EquipmentMapper(), equipmentId);
+            LOGGER.debug("getting complete {}", equipment);
+            return equipment;
 
+        } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", equipmentId, ex);
             throw new NotFoundException(equipmentId.toString(), ex);
         }
@@ -123,7 +127,6 @@ public class EquipmentDaoImpl implements EquipmentDao {
             return jdbcTemplate.update(query, studentId, equipmentId) == 1;
 
         } catch (DataAccessException ex) {
-
             LOGGER.error("failed un assigning, student id {}, equipment id {}", studentId, equipmentId, ex);
             throw new DaoException("student id =" + studentId + " equipment id =" + equipmentId, ex);
         }
@@ -139,22 +142,11 @@ public class EquipmentDaoImpl implements EquipmentDao {
                 "WHERE equipment_id = ? ";
         try {
             return jdbcTemplate.update(query, equipment.getName(), equipment.getId()) == 1;
-        } catch (DataAccessException ex) {
 
-            LOGGER.error("updating error {}", equipment);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", equipment, ex);
             throw new DaoException(equipment.toString(), ex);
         }
-    }
-
-    @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM equipments";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
     }
 
     @Override
@@ -168,8 +160,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("deleting error {}", id);
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

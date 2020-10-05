@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
-public class FacultyDaoImpl implements FacultyDao {
+public class  FacultyDaoImpl implements FacultyDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FacultyDaoImpl.class);
 
@@ -43,13 +43,14 @@ public class FacultyDaoImpl implements FacultyDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", faculty, ex);
             throw new DaoException(faculty.toString(), ex);
         }
-
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -60,10 +61,11 @@ public class FacultyDaoImpl implements FacultyDao {
                 "SELECT * FROM faculties " +
                 "WHERE faculty_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new FacultyMapper(), facultyId);
+            Faculty faculty = jdbcTemplate.queryForObject(query, new FacultyMapper(), facultyId);
+            LOGGER.debug("getting complete {}", faculty);
+            return faculty;
 
         } catch (EmptyResultDataAccessException ex) {
-
             LOGGER.warn("Failed get by id {}", facultyId, ex);
             throw new NotFoundException(facultyId.toString(), ex);
         }
@@ -82,17 +84,6 @@ public class FacultyDaoImpl implements FacultyDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM faculties";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public boolean update(Faculty faculty) {
         LOGGER.debug("updating {}", faculty);
 
@@ -104,8 +95,7 @@ public class FacultyDaoImpl implements FacultyDao {
             return jdbcTemplate.update(query, faculty.getName(), faculty.getId()) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("updating error {}", faculty);
+            LOGGER.error("updating error {}", faculty, ex);
             throw new DaoException(faculty.toString(), ex);
         }
     }
@@ -121,8 +111,7 @@ public class FacultyDaoImpl implements FacultyDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("deleting error {}", id);
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

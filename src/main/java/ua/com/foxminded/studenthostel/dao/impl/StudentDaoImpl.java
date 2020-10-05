@@ -49,12 +49,14 @@ public class StudentDaoImpl implements StudentDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", student, ex);
             throw new DaoException(student.toString(), ex);
         }
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -65,10 +67,11 @@ public class StudentDaoImpl implements StudentDao {
                 "SELECT * FROM students " +
                 "WHERE student_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new StudentMapper(), studentId);
+            Student student = jdbcTemplate.queryForObject(query, new StudentMapper(), studentId);
+            LOGGER.debug("getting complete {}", student);
+            return student;
 
         } catch (EmptyResultDataAccessException ex) {
-
             LOGGER.warn("Failed get by id {}", studentId, ex);
             throw new NotFoundException(studentId.toString(), ex);
         }
@@ -98,7 +101,6 @@ public class StudentDaoImpl implements StudentDao {
                 "INNER JOIN rooms ON students.room_id = rooms.room_id " +
                 "INNER JOIN floors ON rooms.floor_id = floors.floor_id " +
                 "WHERE floors.floor_id = ?;";
-
 
         return jdbcTemplate.query(query, new StudentMapper(), floorId);
     }
@@ -178,17 +180,6 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM students";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public Integer getStudentsCountByRoom(BigInteger roomID) {
         LOGGER.debug("getting count of students, by room id {}", roomID);
 
@@ -197,7 +188,10 @@ public class StudentDaoImpl implements StudentDao {
                 "FROM students " +
                 "WHERE room_id = ?";
 
-        return jdbcTemplate.queryForObject(query, Integer.class, roomID);
+        int count = jdbcTemplate.queryForObject(query, Integer.class, roomID);
+        LOGGER.debug("getting count of students complete, count = {}", count);
+
+        return count;
     }
 
     @Override
@@ -219,8 +213,7 @@ public class StudentDaoImpl implements StudentDao {
                     student.getHoursDebt(), student.getGroupId(), student.getRoomId(), student.getId()) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("updating error {}", student);
+            LOGGER.error("updating error {}", student, ex);
             throw new DaoException(student.toString(), ex);
         }
     }
@@ -234,9 +227,9 @@ public class StudentDaoImpl implements StudentDao {
                 "WHERE student_id = ? ";
         try {
             return jdbcTemplate.update(query, id) == 1;
-        } catch (DataAccessException ex) {
 
-            LOGGER.error("deleting error {}", id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }

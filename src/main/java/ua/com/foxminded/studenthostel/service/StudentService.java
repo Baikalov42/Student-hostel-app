@@ -57,6 +57,7 @@ public class StudentService {
 
 
     public BigInteger insert(Student student) {
+        LOGGER.debug("inserting {}", student);
 
         validator.validate(student);
 
@@ -65,22 +66,34 @@ public class StudentService {
 
         validateRoomVacancy(student.getRoomId());
 
-        return studentDao.insert(student);
+        BigInteger id = studentDao.insert(student);
+
+        LOGGER.debug("inserting complete, id = {}", id);
+        return id;
     }
 
     public Student getById(BigInteger id) {
+        LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        return studentDao.getById(id);
+        Student student = studentDao.getById(id);
+
+        LOGGER.debug("getting complete {}", student);
+        return student;
     }
 
     public StudentDTO getDTOById(BigInteger id) {
+        LOGGER.debug("getting DTO by id {}", id);
 
         Student student = getById(id);
-        return getDTO(student);
+        StudentDTO studentDTO = getDTO(student);
+
+        LOGGER.debug("getting DTO by id, complete {}", studentDTO);
+        return studentDTO;
     }
 
     public List<Student> getAll(long limit, long offset) {
+        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
 
         List<Student> result = studentDao.getAll(limit, offset);
         if (result.isEmpty()) {
@@ -92,12 +105,14 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllDTO(long limit, long offset) {
+        LOGGER.debug("getting all DTO, limit {} , offset {} ", limit, offset);
 
         List<Student> result = getAll(limit, offset);
         return getDTOS(result);
     }
 
     public List<StudentDTO> getAllByFloor(BigInteger floorId) {
+        LOGGER.debug("getting all by floor id {} ", floorId);
 
         validator.validateId(floorId);
         floorService.validateExistence(floorId);
@@ -112,6 +127,7 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByFaculty(BigInteger facultyId) {
+        LOGGER.debug("getting all by faculty id {} ", facultyId);
 
         validator.validateId(facultyId);
         facultyService.validateExistence(facultyId);
@@ -127,6 +143,7 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllByCourse(BigInteger courseNumberId) {
+        LOGGER.debug("getting all by course id {} ", courseNumberId);
 
         validator.validateId(courseNumberId);
         courseNumberService.validateExistence(courseNumberId);
@@ -142,6 +159,7 @@ public class StudentService {
     }
 
     public List<StudentDTO> getAllWithDebitByGroup(BigInteger groupId, int hoursDebt) {
+        LOGGER.debug("getting all by Group id ={} , with debt = {} ", groupId, hoursDebt);
 
         validator.validateId(groupId);
         groupService.validateExistence(groupId);
@@ -157,6 +175,7 @@ public class StudentService {
     }
 
     public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) {
+        LOGGER.debug("changing room id = {}, student id = {}", newRoomId, studentId);
 
         validator.validateId(newRoomId, studentId);
         validateExistence(studentId);
@@ -168,6 +187,8 @@ public class StudentService {
     }
 
     public boolean changeDebt(Integer newHoursDebt, BigInteger studentId) {
+        LOGGER.debug("changing debt, new debt = {}, student id = {}", newHoursDebt, studentId);
+
         if (newHoursDebt > MAX_HOURS_DEBT || newHoursDebt < MIN_HOURS_DEBT) {
             LOGGER.warn("not valid debt. debt = {}, student id ={}", newHoursDebt, studentId);
             throw new ValidationException("the value must be in the range from 0 to 40");
@@ -177,6 +198,7 @@ public class StudentService {
     }
 
     public boolean update(Student student) {
+        LOGGER.debug("updating {}", student);
 
         validator.validate(student);
         validator.validateId(student.getId());
@@ -189,6 +211,8 @@ public class StudentService {
     }
 
     public int acceptHoursAndUpdate(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("accept hours and update: student id ={}, task id={}", studentId, taskId);
+
         validator.validateId(studentId, taskId);
 
         this.validateExistence(studentId);
@@ -210,10 +234,14 @@ public class StudentService {
 
         taskDao.unassignFromStudent(studentId, taskId);
         studentDao.update(student);
+
+        LOGGER.debug("accept hours and update is complete, new hours debt ={}", newHoursDebt);
+
         return newHoursDebt;
     }
 
     public boolean deleteById(BigInteger id) {
+        LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
@@ -222,6 +250,7 @@ public class StudentService {
     }
 
     StudentDTO getDTO(Student student) {
+        LOGGER.debug("getting DTO,  {}", student);
 
         StudentDTO studentDTO = new StudentDTO();
         studentDTO.setId(student.getId());
@@ -235,6 +264,7 @@ public class StudentService {
         studentDTO.setEquipments(equipmentDao.getAllByStudent(student.getId()));
         studentDTO.setTasks(taskDao.getAllByStudent(student.getId()));
 
+        LOGGER.debug("getting DTO complete,  {}", studentDTO);
         return studentDTO;
     }
 
@@ -246,13 +276,14 @@ public class StudentService {
         return studentDTOS;
     }
 
-    void validateExistence(BigInteger studentId) {
-        LOGGER.debug("Validation existence id = {}", studentId);
-
+    void validateExistence(BigInteger id) {
+        LOGGER.debug("Validation existence id = {}", id);
         try {
-            studentDao.getById(studentId);
+            studentDao.getById(id);
+
         } catch (NotFoundException ex) {
-            throw new ValidationException("student not exist", ex);
+            LOGGER.warn("entry not exist, id = {}", id);
+            throw new ValidationException("id = " + id + " not exist", ex);
         }
     }
 
@@ -260,6 +291,7 @@ public class StudentService {
         LOGGER.debug("Room vacancy validation, room id = {}", roomId);
 
         if (studentDao.getStudentsCountByRoom(roomId) >= MAX_STUDENTS_IN_ROOM) {
+
             LOGGER.warn("validation error, room id ={}", roomId);
             throw new ValidationException("no more than 4 student in one room");
         }

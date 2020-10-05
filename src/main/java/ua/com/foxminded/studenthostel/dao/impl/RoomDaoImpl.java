@@ -46,12 +46,14 @@ public class RoomDaoImpl implements RoomDao {
                 return ps;
             }, keyHolder);
 
-        } catch (DataAccessException ex) {
+            long id = keyHolder.getKey().longValue();
+            LOGGER.debug("inserting complete, id = {}", id);
+            return BigInteger.valueOf(id);
 
+        } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", room, ex);
             throw new DaoException(room.toString(), ex);
         }
-        return BigInteger.valueOf(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -63,10 +65,11 @@ public class RoomDaoImpl implements RoomDao {
                 "FROM rooms " +
                 "WHERE room_id = ? ";
         try {
-            return jdbcTemplate.queryForObject(query, new RoomMapper(), roomId);
+            Room room = jdbcTemplate.queryForObject(query, new RoomMapper(), roomId);
+            LOGGER.debug("getting complete {}", room);
+            return room;
 
         } catch (EmptyResultDataAccessException ex) {
-
             LOGGER.warn("Failed get by id {}", roomId, ex);
             throw new NotFoundException(roomId.toString(), ex);
         }
@@ -100,17 +103,6 @@ public class RoomDaoImpl implements RoomDao {
     }
 
     @Override
-    public BigInteger getEntriesCount() {
-        LOGGER.debug("getting count of entries");
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM rooms ";
-
-        return jdbcTemplate.queryForObject(query, BigInteger.class);
-    }
-
-    @Override
     public boolean update(Room room) {
         LOGGER.debug("updating {}", room);
 
@@ -124,8 +116,7 @@ public class RoomDaoImpl implements RoomDao {
             return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("updating error {}", room);
+            LOGGER.error("updating error {}", room, ex);
             throw new DaoException(room.toString(), ex);
         }
     }
@@ -141,8 +132,7 @@ public class RoomDaoImpl implements RoomDao {
             return jdbcTemplate.update(query, id) == 1;
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("deleting error {}", id);
+            LOGGER.error("deleting error {}", id, ex);
             throw new DaoException(id.toString(), ex);
         }
     }
