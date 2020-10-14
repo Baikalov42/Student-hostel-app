@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Floor;
@@ -21,7 +20,6 @@ import java.math.BigInteger;
 import java.util.List;
 
 @Controller
-@RequestMapping("/students")
 public class StudentController {
 
     private static final long LIMIT = 10;
@@ -38,8 +36,8 @@ public class StudentController {
     @Autowired
     private GroupService groupService;
 
-    @GetMapping("/getById")
-    public String getById(@RequestParam long id, Model model) {
+    @GetMapping("/students/{id}")
+    public String getById(@PathVariable long id, Model model) {
 
         StudentDTO studentDTO = studentService.getDTOById(BigInteger.valueOf(id));
         model.addAttribute("studentDTO", studentDTO);
@@ -47,11 +45,11 @@ public class StudentController {
         return "students/getById";
     }
 
-    @GetMapping("/getAll")
-    public String getAll(@RequestParam(defaultValue = "1") long page,
+    @GetMapping("/students/page/{pageNumber}")
+    public String getAll(@PathVariable long pageNumber,
                          Model model) {
 
-        long offset = LIMIT * page - LIMIT;
+        long offset = LIMIT * pageNumber - LIMIT;
         List<Student> students = studentService.getAll(LIMIT, offset);
 
         model.addAttribute("students", students);
@@ -59,20 +57,19 @@ public class StudentController {
         return "students/getAll";
     }
 
-    @GetMapping("/getAllByFloor")
-    public String getAllByFloor(@RequestParam(defaultValue = "1") long page,
+    @GetMapping("/students/byFloor/page/{pageNumber}")
+    public String getAllByFloor(@PathVariable long pageNumber,
                                 Model model) {
 
-        long offset = LIMIT * page - LIMIT;
+        long offset = LIMIT * pageNumber - LIMIT;
         List<Floor> floors = floorService.getAll(LIMIT, offset);
         model.addAttribute("floors", floors);
 
         return "students/getAllByFloor";
     }
 
-    @GetMapping("/getAllByFloorResult")
-    public String getAllByFloorResult(@RequestParam long floorId,
-                                      Model model) {
+    @GetMapping("/students/byFloor/{floorId}")
+    public String getAllByFloorResult(@PathVariable long floorId, Model model) {
 
         List<StudentDTO> students = studentService.getAllByFloor(BigInteger.valueOf(floorId));
         model.addAttribute("students", students);
@@ -80,11 +77,11 @@ public class StudentController {
         return "students/getAll";
     }
 
-    @GetMapping("/getAllByFaculty")
-    public String getAllByFaculty(@RequestParam(defaultValue = "1") long page,
+    @GetMapping("/students/byFaculty/page/{pageNumber}")
+    public String getAllByFaculty(@PathVariable long pageNumber,
                                   Model model) {
 
-        long offset = LIMIT * page - LIMIT;
+        long offset = LIMIT * pageNumber - LIMIT;
 
         List<Faculty> faculties = facultyService.getAll(LIMIT, offset);
         model.addAttribute("faculties", faculties);
@@ -92,8 +89,8 @@ public class StudentController {
         return "students/getAllByFaculty";
     }
 
-    @GetMapping("/getAllByFacultyResult")
-    public String getAllByFacultyResult(@RequestParam long facultyId, Model model) {
+    @GetMapping("/students/byFaculty/{facultyId}")
+    public String getAllByFacultyResult(@PathVariable long facultyId, Model model) {
 
         List<StudentDTO> students = studentService.getAllByFaculty(BigInteger.valueOf(facultyId));
         model.addAttribute("students", students);
@@ -101,11 +98,10 @@ public class StudentController {
         return "students/getAll";
     }
 
-    @GetMapping("/getAllByCourse")
-    public String getAllByCourse(@RequestParam(defaultValue = "1") long page,
-                                 Model model) {
+    @GetMapping("/students/byCourse/page/{pageNumber}")
+    public String getAllByCourse(@PathVariable long pageNumber, Model model) {
 
-        long offset = LIMIT * page - LIMIT;
+        long offset = LIMIT * pageNumber - LIMIT;
 
         List<CourseNumber> courseNumbers = courseNumberService.getAll(LIMIT, offset);
         model.addAttribute("courseNumbers", courseNumbers);
@@ -113,24 +109,25 @@ public class StudentController {
         return "students/getAllByCourse";
     }
 
-    @GetMapping("/getAllByCourseResult")
-    public String getAllByCourseResult(@RequestParam long courseId, Model model) {
+    @GetMapping("/students/byCourse/{courseId}")
+    public String getAllByCourseResult(@PathVariable long courseId, Model model) {
 
         List<StudentDTO> students = studentService.getAllByCourse(BigInteger.valueOf(courseId));
         model.addAttribute("students", students);
 
         return "students/getAll";
     }
-    @GetMapping("/getAllByGroupWithDebtExample")
+
+    @GetMapping("/students/byGroupWithDebtExample")
     public String getAllByGroupWithDebtExample() {
 
         return "students/getAllByGroupWithDebtExample";
     }
 
-    @GetMapping("/getAllByGroupWithDebt")
-    public String getAllByGroupWithDebt(@RequestParam long groupId,
-                                              @RequestParam int debt,
-                                              Model model) {
+    @GetMapping("/students/byGroupWithDebt/group/{groupId}/debt/{debt}")
+    public String getAllByGroupWithDebt(@PathVariable long groupId,
+                                        @PathVariable int debt,
+                                        Model model) {
 
         List<StudentDTO> students = studentService.getAllWithDebitByGroup(BigInteger.valueOf(groupId), debt);
         model.addAttribute("students", students);

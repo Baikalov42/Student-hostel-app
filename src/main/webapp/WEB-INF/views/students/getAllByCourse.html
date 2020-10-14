@@ -14,7 +14,7 @@
 
     <div th:each="course : ${courseNumbers}" class="list-group">
         <a class="list-group-item list-group-item-action"
-           th:href="@{getAllByCourseResult(courseId=${course.id})}"
+           th:href="@{/students/byCourse/{courseId}(courseId=${course.id})}"
            th:text="${course.name}"></a>
     </div>
 </div>

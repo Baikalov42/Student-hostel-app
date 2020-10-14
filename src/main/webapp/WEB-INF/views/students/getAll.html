@@ -24,7 +24,11 @@
         <th scope="row" th:text="${student.id}"></th>
         <td th:text="${student.firstName}">name</td>
         <td th:text="${student.lastName}">name</td>
-        <td><a th:href="@{getById(id=${student.getId()})}">view</a></td>
+        <td>
+            <a class="text-secondary"
+               th:text="'view'"
+               th:href="@{/students/{id}(id = ${student.id})}"></a>
+        </td>
     </tr>
     </tbody>
 </table>

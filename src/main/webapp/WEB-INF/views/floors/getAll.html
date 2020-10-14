@@ -21,7 +21,11 @@
     <tr th:each="floor : ${floors}">
         <th scope="row" th:text="${floor.id}">id</th>
         <td th:text="${floor.name}">name</td>
-        <td><a th:href="@{getById(id=${floor.id})}">view</a></td>
+        <td>
+            <a class="text-secondary"
+               th:text="'view'"
+               th:href="@{/floors/{id}(id = ${floor.id})}"></a>
+        </td>
     </tr>
     </tbody>
 </table>

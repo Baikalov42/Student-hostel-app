@@ -19,9 +19,13 @@
     </thead>
     <tbody>
     <tr th:each="courseNumber : ${courses}">
-        <th scope="row" th:text="${courseNumber.getId()}"></th>
-        <td th:text="${courseNumber.getName()}">name</td>
-        <td><a th:href="@{getById(id=${courseNumber.getId()})}">view</a></td>
+        <th scope="row" th:text="${courseNumber.id}"></th>
+        <td th:text="${courseNumber.name}">name</td>
+        <td>
+            <a class="text-secondary"
+               th:text="'view'"
+               th:href="@{/courseNumbers/{id}(id = ${courseNumber.id})}"></a>
+        </td>
     </tr>
     </tbody>
 </table>

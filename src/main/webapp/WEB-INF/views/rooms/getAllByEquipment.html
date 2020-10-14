@@ -12,7 +12,7 @@
 <div class="container">
     <h5>Chose equipment:</h5>
     <div th:each="equipment : ${equipments}" class="list-group">
-        <a th:href="@{getAllByEquipmentResult(equipmentId=${equipment.id})}"
+        <a th:href="@{/rooms/byEquipment/{equipmentId}(equipmentId=${equipment.id})}"
            class="list-group-item list-group-item-action"
            th:text="${equipment.name}"></a>
     </div>

@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.service.FloorService;
 
@@ -13,7 +12,6 @@ import java.math.BigInteger;
 import java.util.List;
 
 @Controller
-@RequestMapping("/floors")
 public class FloorController {
 
     private static final long LIMIT = 10;
@@ -21,8 +19,8 @@ public class FloorController {
     @Autowired
     FloorService floorService;
 
-    @GetMapping("/getById")
-    public String getById(@RequestParam long id, Model model) {
+    @GetMapping("/floors/{id}")
+    public String getById(@PathVariable long id, Model model) {
 
         Floor floor = floorService.getById(BigInteger.valueOf(id));
         model.addAttribute("floor", floor);
@@ -30,11 +28,10 @@ public class FloorController {
         return "floors/getById";
     }
 
-    @GetMapping("/getAll")
-    public String getAll(@RequestParam(defaultValue = "1") long page,
-                         Model model) {
+    @GetMapping("/floors/page/{pageNumber}")
+    public String getAll(@PathVariable long pageNumber, Model model) {
 
-        long offset = LIMIT * page - LIMIT;
+        long offset = LIMIT * pageNumber - LIMIT;
         List<Floor> floors = floorService.getAll(LIMIT, offset);
 
         model.addAttribute("floors", floors);

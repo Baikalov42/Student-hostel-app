@@ -51,7 +51,7 @@
             <th>
                 <a th:text="${studentDTO.tasks.size()}"></a>
                 <a class="btn btn-outline-info"
-                   th:href="@{~/tasks/getAllByStudent(studentId=${studentDTO.id}) }">view</a>
+                   th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id}) }">view</a>
             </th>
         </tr>
         <tr>
@@ -59,7 +59,7 @@
             <th >
                 <a th:text="${studentDTO.equipments.size()}"></a>
                 <a class="btn btn-outline-info"
-                   th:href="@{~/equipments/getAllByStudent(studentId=${studentDTO.id})}">view</a>
+                   th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}">view</a>
             </th>
         </tr>
         </tbody>
