@@ -34,8 +34,7 @@ public class CourseNumberController {
     }
 
     @GetMapping("/courseNumbers/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber,
-                          Model model) {
+    public String getAll(@PathVariable long pageNumber, Model model) {
 
         long offset = LIMIT * pageNumber - LIMIT;
         List<CourseNumber> courseNumbers = courseNumberService.getAll(LIMIT, offset);
@@ -54,7 +53,7 @@ public class CourseNumberController {
 
     @PostMapping("/insert")
     public String insert(@ModelAttribute CourseNumber courseNumber,
-                               Model model) {
+                         Model model) {
         BigInteger id = null;
 
         try {

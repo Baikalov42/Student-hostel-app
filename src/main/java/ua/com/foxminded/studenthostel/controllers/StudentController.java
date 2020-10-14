@@ -78,8 +78,7 @@ public class StudentController {
     }
 
     @GetMapping("/students/byFaculty/page/{pageNumber}")
-    public String getAllByFaculty(@PathVariable long pageNumber,
-                                  Model model) {
+    public String getAllByFaculty(@PathVariable long pageNumber, Model model) {
 
         long offset = LIMIT * pageNumber - LIMIT;
 

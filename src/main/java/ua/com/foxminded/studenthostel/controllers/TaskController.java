@@ -5,8 +5,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import ua.com.foxminded.studenthostel.models.Task;
 import ua.com.foxminded.studenthostel.service.TaskService;
 
@@ -31,8 +29,7 @@ public class TaskController {
     }
 
     @GetMapping("/tasks/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber,
-                         Model model) {
+    public String getAll(@PathVariable long pageNumber, Model model) {
 
         long offset = LIMIT * pageNumber - LIMIT;
         List<Task> tasks = taskService.getAll(LIMIT, offset);

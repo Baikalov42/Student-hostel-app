@@ -31,8 +31,7 @@ public class EquipmentController {
     }
 
     @GetMapping("/equipments/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber,
-                          Model model) {
+    public String getAll(@PathVariable long pageNumber, Model model) {
 
         long offset = LIMIT * pageNumber - LIMIT;
         List<Equipment> equipments = equipmentService.getAll(LIMIT, offset);
@@ -43,8 +42,7 @@ public class EquipmentController {
     }
 
     @GetMapping("/equipments/byStudent/{studentId}")
-    public String getAllByStudent(@PathVariable long studentId,
-                                  Model model) {
+    public String getAllByStudent(@PathVariable long studentId, Model model) {
 
         List<Equipment> equipments = equipmentService.getAllByStudent(BigInteger.valueOf(studentId));
         model.addAttribute("equipments", equipments);
