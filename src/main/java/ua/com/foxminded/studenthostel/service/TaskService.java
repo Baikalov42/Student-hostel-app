@@ -56,6 +56,21 @@ public class TaskService {
         return result;
     }
 
+    public List<Task> getAllByStudent(BigInteger studentId) {
+        LOGGER.debug("getting all by student id {} ", studentId);
+
+        validator.validateId(studentId);
+        studentService.validateExistence(studentId);
+
+        List<Task> tasks = taskDao.getAllByStudent(studentId);
+
+        if (tasks.isEmpty()) {
+            LOGGER.warn("result is empty, student id = {}", studentId);
+            throw new NotFoundException("result is empty, student id = " + studentId);
+        }
+        return tasks;
+    }
+
     public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
         LOGGER.debug("assigning, student id {}, task id {}", studentId, taskId);
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+
+    <title>Get all</title>
+</head>
+<body>
+
+<div th:insert="templates/fragments :: navbar"></div>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Floor name</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="floor : ${floors}">
+        <th scope="row" th:text="${floor.id}">id</th>
+        <td th:text="${floor.name}">name</td>
+        <td><a th:href="@{getById(id=${floor.id})}">view</a></td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:insert="templates/fragments :: js"></div>
+
+</body>
+</html>

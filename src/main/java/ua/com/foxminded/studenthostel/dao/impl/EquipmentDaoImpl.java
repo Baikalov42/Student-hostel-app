@@ -92,6 +92,8 @@ public class EquipmentDaoImpl implements EquipmentDao {
         String query = "" +
                 "SELECT * " +
                 "FROM students_equipments " +
+                "INNER JOIN equipments " +
+                "ON students_equipments.equipment_id = equipments.equipment_id " +
                 "WHERE student_id = ? ";
 
         return jdbcTemplate.query(query, new EquipmentMapper(), studentId);

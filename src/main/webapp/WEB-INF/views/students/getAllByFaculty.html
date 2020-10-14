@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Get all by Faculty</title>
+</head>
+
+<body>
+<div th:insert="templates/fragments :: navbar"></div>
+<br>
+
+<div class="container">
+    <h5>Choose faculty:</h5>
+
+    <div th:each="faculty : ${faculties}" class="list-group">
+        <a class="list-group-item list-group-item-action"
+           th:href="@{getAllByFacultyResult(facultyId=${faculty.id})}"
+           th:text="${faculty.name}"></a>
+    </div>
+</div>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>
