@@ -53,7 +53,7 @@ public class GroupDaoImpl implements GroupDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", group, ex);
-            throw new DaoException(group.toString(), ex);
+            throw new DaoException("Insertion error: " + group, ex);
         }
     }
 
@@ -71,7 +71,7 @@ public class GroupDaoImpl implements GroupDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", groupId, ex);
-            throw new NotFoundException(groupId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + groupId, ex);
         }
     }
 
@@ -101,7 +101,7 @@ public class GroupDaoImpl implements GroupDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", group, ex);
-            throw new DaoException(group.toString(), ex);
+            throw new DaoException("Updating error: " + group, ex);
         }
     }
 
@@ -117,7 +117,7 @@ public class GroupDaoImpl implements GroupDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

@@ -1,2 +1,5 @@
 /StudentHostel.iml
 /.idea/
+src/main/webapp/resources/css
+src/main/webapp/resources/jQuery
+src/main/webapp/resources/js

@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <div th:insert="templates/fragments :: style"></div>
-    <title>Get all by Faculty</title>
+    <title>Students by course</title>
 </head>
 
 <body>
@@ -10,12 +10,12 @@
 <br>
 
 <div class="container">
-    <h5>Choose faculty:</h5>
+    <h5>Choose course:</h5>
 
-    <div th:each="faculty : ${faculties}" class="list-group">
+    <div th:each="course : ${courseNumbers}" class="list-group">
         <a class="list-group-item list-group-item-action"
-           th:href="@{/students/byFaculty/{facultyId}(facultyId=${faculty.id})}"
-           th:text="${faculty.name}"></a>
+           th:href="@{/students/byCourse/{courseId}(courseId=${course.id})}"
+           th:text="${course.name}"></a>
     </div>
 </div>
 

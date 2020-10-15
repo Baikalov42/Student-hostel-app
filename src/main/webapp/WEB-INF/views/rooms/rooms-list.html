@@ -3,34 +3,33 @@
 <head>
     <div th:insert="templates/fragments :: style"></div>
 
-    <title>Get all</title>
+    <title>Rooms list</title>
 </head>
-<body>
 
+<body>
 <div th:insert="templates/fragments :: navbar"></div>
 
 <table class="table table-hover">
     <thead>
     <tr>
         <th scope="col">ID</th>
-        <th scope="col">Equipment name</th>
+        <th scope="col">Room name</th>
         <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="equipment : ${equipments}">
-        <th scope="row" th:text="${equipment.id}">id</th>
-        <td th:text="${equipment.name}">name</td>
+    <tr th:each="room : ${rooms}">
+        <th scope="row" th:text="${room.id}">id</th>
+        <td th:text="${room.name}">name</td>
         <td>
             <a class="text-secondary"
                th:text="'view'"
-               th:href="@{/equipments/{id}(id = ${equipment.id})}"></a>
+               th:href="@{/rooms/{id}(id = ${room.id})}"></a>
         </td>
     </tr>
     </tbody>
 </table>
 
 <div th:insert="templates/fragments :: js"></div>
-
 </body>
 </html>

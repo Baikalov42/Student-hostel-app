@@ -1,5 +1,7 @@
 package ua.com.foxminded.studenthostel.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,28 +17,34 @@ import java.util.List;
 @Controller
 public class GroupController {
 
-    private static final long LIMIT = 10;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupController.class);
+    private static final long LINES_LIMIT_ON_PAGE = 10;
 
     @Autowired
-    GroupService groupService;
+    private GroupService groupService;
 
     @GetMapping("/groups/{id}")
     public String getById(@PathVariable long id, Model model) {
+        LOGGER.debug("getting by id: {}", id);
 
         GroupDTO groupDTO = groupService.getDTOById(BigInteger.valueOf(id));
         model.addAttribute("groupDTO", groupDTO);
 
-        return "groups/getById";
+        LOGGER.debug("getting complete: {}", groupDTO);
+        return "groups/group-info";
     }
 
     @GetMapping("/groups/page/{pageNumber}")
     public String getAll(@PathVariable long pageNumber, Model model) {
+        LOGGER.debug("getting all, page number: {}", pageNumber);
 
-        long offset = LIMIT * pageNumber - LIMIT;
-        List<Group> groups = groupService.getAll(LIMIT, offset);
+        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
+        LOGGER.debug("getting all, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
 
+        List<Group> groups = groupService.getAll(LINES_LIMIT_ON_PAGE, offset);
         model.addAttribute("groups", groups);
 
-        return "groups/getAll";
+        LOGGER.debug("getting complete, page number: {}, result size: {}", pageNumber, groups.size());
+        return "groups/groups-list";
     }
 }

@@ -52,7 +52,7 @@ public class RoomDaoImpl implements RoomDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", room, ex);
-            throw new DaoException(room.toString(), ex);
+            throw new DaoException("Insertion error: " + room, ex);
         }
     }
 
@@ -71,7 +71,7 @@ public class RoomDaoImpl implements RoomDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", roomId, ex);
-            throw new NotFoundException(roomId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + roomId, ex);
         }
     }
 
@@ -117,7 +117,7 @@ public class RoomDaoImpl implements RoomDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", room, ex);
-            throw new DaoException(room.toString(), ex);
+            throw new DaoException("Updating error: " + room, ex);
         }
     }
 
@@ -133,7 +133,7 @@ public class RoomDaoImpl implements RoomDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

@@ -50,7 +50,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", equipment, ex);
-            throw new DaoException(equipment.toString(), ex);
+            throw new DaoException("Insertion error: " + equipment, ex);
         }
     }
 
@@ -68,7 +68,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", equipmentId, ex);
-            throw new NotFoundException(equipmentId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + equipmentId, ex);
         }
     }
 
@@ -147,7 +147,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", equipment, ex);
-            throw new DaoException(equipment.toString(), ex);
+            throw new DaoException("Updating error: " + equipment, ex);
         }
     }
 
@@ -163,7 +163,7 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

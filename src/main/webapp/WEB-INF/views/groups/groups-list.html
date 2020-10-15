@@ -2,35 +2,33 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <div th:insert="templates/fragments :: style"></div>
-
-    <title>Get all</title>
+    <title>Groups list</title>
 </head>
-<body>
 
+<body>
 <div th:insert="templates/fragments :: navbar"></div>
 
 <table class="table table-hover">
     <thead>
     <tr>
         <th scope="col">ID</th>
-        <th scope="col">Room name</th>
+        <th scope="col">Group name</th>
         <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="room : ${rooms}">
-        <th scope="row" th:text="${room.id}">id</th>
-        <td th:text="${room.name}">name</td>
+    <tr th:each="group : ${groups}">
+        <th scope="row" th:text="${group.id}">id</th>
+        <td th:text="${group.name}">name</td>
         <td>
             <a class="text-secondary"
                th:text="'view'"
-               th:href="@{/rooms/{id}(id = ${room.id})}"></a>
+               th:href="@{/groups/{id}(id = ${group.id})}"></a>
         </td>
     </tr>
     </tbody>
 </table>
 
 <div th:insert="templates/fragments :: js"></div>
-
 </body>
 </html>

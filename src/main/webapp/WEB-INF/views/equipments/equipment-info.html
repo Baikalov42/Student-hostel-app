@@ -2,9 +2,8 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <div th:insert="templates/fragments :: style"></div>
-    <title>Get</title>
+    <title>Equipment info</title>
 </head>
-
 <body>
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
@@ -13,17 +12,17 @@
     <table class="table table-bordered">
         <thead class="thead-light">
         <tr>
-            <th scope="col" colspan="2">Faculty card</th>
+            <th scope="col" colspan="2">Equipment card</th>
         </tr>
         </thead>
         <tbody>
         <tr>
             <td>ID</td>
-            <th scope="row" th:text="${faculty.id}"></th>
+            <th scope="row" th:text="${equipment.id}"></th>
         </tr>
         <tr>
             <td>Name</td>
-            <th th:text="${faculty.name}"></th>
+            <th th:text="${equipment.name}"></th>
         </tr>
         </tbody>
     </table>

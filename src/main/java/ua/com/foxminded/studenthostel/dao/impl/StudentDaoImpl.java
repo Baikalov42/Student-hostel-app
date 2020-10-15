@@ -55,7 +55,7 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", student, ex);
-            throw new DaoException(student.toString(), ex);
+            throw new DaoException("Insertion error: " + student, ex);
         }
     }
 
@@ -73,7 +73,7 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", studentId, ex);
-            throw new NotFoundException(studentId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + studentId, ex);
         }
     }
 
@@ -214,7 +214,7 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", student, ex);
-            throw new DaoException(student.toString(), ex);
+            throw new DaoException("Updating error: " + student, ex);
         }
     }
 
@@ -230,7 +230,7 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

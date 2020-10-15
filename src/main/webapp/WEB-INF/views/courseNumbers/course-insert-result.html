@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <div th:insert="templates/fragments :: style"></div>
-
-    <title>result</title>
+    <title>Course insert result</title>
 </head>
-<body>
 
+<body>
 <div th:insert="templates/fragments :: navbar"></div>
 
 <div class="alert alert-primary" role="alert">
@@ -15,8 +13,6 @@
 </div>
 
 <a th:href="@{/courseNumber/insert}" class="btn btn-primary"> back</a>
-
-
 
 <div th:insert="templates/fragments :: js"></div>
 </body>

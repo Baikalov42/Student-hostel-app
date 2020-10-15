@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <div th:insert="templates/fragments :: style"></div>
-
-    <title>Get</title>
+    <title>Floor info</title>
 </head>
-<body>
 
+<body>
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
@@ -15,17 +13,17 @@
     <table class="table table-bordered">
         <thead class="thead-light">
         <tr>
-            <th scope="col" colspan="2">Course card</th>
+            <th scope="col" colspan="2">Floor card</th>
         </tr>
         </thead>
         <tbody>
         <tr>
             <td>ID</td>
-            <th scope="row" th:text="${courseNumber.id}"></th>
+            <th scope="row" th:text="${floor.id}"></th>
         </tr>
         <tr>
             <td>Name</td>
-            <th th:text="${courseNumber.name}"></th>
+            <th th:text="${floor.name}"></th>
         </tr>
         </tbody>
     </table>
