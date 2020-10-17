@@ -35,7 +35,7 @@ public class RoomController {
         model.addAttribute("roomDTO", roomDTO);
 
         LOGGER.debug("getting complete: {}", roomDTO);
-        return "rooms/rooms-info";
+        return "rooms/room-info";
     }
 
     @GetMapping("/rooms/page/{pageNumber}")
@@ -53,7 +53,7 @@ public class RoomController {
     }
 
     @GetMapping("/rooms/byEquipment/page/{pageNumber}")
-    public String getEquipments(@PathVariable long pageNumber, Model model) {
+    public String getAllByEquipment(@PathVariable long pageNumber, Model model) {
         LOGGER.debug("getting Equipments, page number: {}", pageNumber);
 
         long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;

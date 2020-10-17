@@ -79,4 +79,48 @@ public class StudentDTO {
     public void setEquipments(List<Equipment> equipments) {
         this.equipments = equipments;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StudentDTO that = (StudentDTO) o;
+
+        if (hoursDebt != that.hoursDebt) return false;
+        if (!id.equals(that.id)) return false;
+        if (!firstName.equals(that.firstName)) return false;
+        if (!lastName.equals(that.lastName)) return false;
+        if (!groupDTO.equals(that.groupDTO)) return false;
+        if (!roomDTO.equals(that.roomDTO)) return false;
+        if (!tasks.equals(that.tasks)) return false;
+        return equipments.equals(that.equipments);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + firstName.hashCode();
+        result = 31 * result + lastName.hashCode();
+        result = 31 * result + hoursDebt;
+        result = 31 * result + groupDTO.hashCode();
+        result = 31 * result + roomDTO.hashCode();
+        result = 31 * result + tasks.hashCode();
+        result = 31 * result + equipments.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "StudentDTO{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", hoursDebt=" + hoursDebt +
+                ", groupDTO=" + groupDTO +
+                ", roomDTO=" + roomDTO +
+                ", tasks=" + tasks +
+                ", equipments=" + equipments +
+                '}';
+    }
 }

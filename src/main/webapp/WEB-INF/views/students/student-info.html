@@ -36,26 +36,30 @@
         </tr>
         <tr>
             <td>Group name</td>
-            <th th:text="${studentDTO.groupDTO.name}"></th>
+            <th>
+                <a th:href="@{/groups/{id}(id=${studentDTO.groupDTO.id})}" style="color: lightslategrey"
+                   th:text="${studentDTO.groupDTO.name}"></a>
+            </th>
         </tr>
         <tr>
             <td>Room name</td>
-            <th th:text="${studentDTO.roomDTO.name}"></th>
+            <th>
+                <a th:href="@{/rooms/{id}(id=${studentDTO.roomDTO.id})}" style="color: lightslategrey"
+                   th:text="${studentDTO.roomDTO.name}"></a>
+            </th>
         </tr>
         <tr>
             <td>Active tasks</td>
             <th>
-                <a th:text="${studentDTO.tasks.size()}"></a>
-                <a class="btn btn-outline-info"
-                   th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id}) }">view</a>
+                <a th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id})}" style="color: lightslategrey"
+                   th:text="${studentDTO.tasks.size()}"></a>
             </th>
         </tr>
         <tr>
             <td>Active equipments</td>
-            <th >
-                <a th:text="${studentDTO.equipments.size()}"></a>
-                <a class="btn btn-outline-info"
-                   th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}">view</a>
+            <th>
+                <a th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}"
+                   style="color: lightslategrey" th:text="${studentDTO.equipments.size()}"></a>
             </th>
         </tr>
         </tbody>

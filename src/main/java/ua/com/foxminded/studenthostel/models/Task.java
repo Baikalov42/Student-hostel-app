@@ -14,13 +14,13 @@ public class Task {
 
     private BigInteger id;
 
-    @Size(min = 3, max = 30)
     @NotNull
+    @Size(min = 3, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String name;
 
-    @Pattern(regexp = NAME_PATTERN)
     @NotNull
+    @Pattern(regexp = NAME_PATTERN)
     @Size(min = 10, max = 30)
     private String description;
 

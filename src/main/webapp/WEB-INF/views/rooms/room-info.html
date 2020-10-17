@@ -26,8 +26,15 @@
             <th th:text="${roomDTO.name}"></th>
         </tr>
         <tr>
+            <td>Students count</td>
+            <th th:text="${roomDTO.studentsCount}"></th>
+        </tr>
+        <tr>
             <td>Floor name</td>
-            <th th:text="${roomDTO.floor.name}"></th>
+            <th>
+                <a th:href="@{/floors/{id}(id=${roomDTO.floor.id})}" style="color: lightslategrey"
+                   th:text="${roomDTO.floor.name}"></a>
+            </th>
         </tr>
         </tbody>
     </table>

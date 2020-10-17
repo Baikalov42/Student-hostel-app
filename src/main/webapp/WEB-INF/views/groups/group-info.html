@@ -27,11 +27,17 @@
         </tr>
         <tr>
             <td>Course name</td>
-            <th th:text="${groupDTO.courseNumber.name}"></th>
+            <th>
+                <a th:href="@{/courseNumbers/{id}(id=${groupDTO.courseNumber.id})}" style="color: lightslategrey"
+                   th:text="${groupDTO.courseNumber.name}"></a>
+            </th>
         </tr>
         <tr>
             <td>Faculty name</td>
-            <th th:text="${groupDTO.faculty.name}"></th>
+            <th>
+                <a th:href="@{/faculties/{id}(id=${groupDTO.faculty.id})}" style="color:lightslategrey"
+                   th:text="${groupDTO.faculty.name}"></a>
+            </th>
         </tr>
         </tbody>
     </table>

@@ -15,7 +15,6 @@ import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
 import ua.com.foxminded.studenthostel.service.CourseNumberService;
 import ua.com.foxminded.studenthostel.service.FacultyService;
 import ua.com.foxminded.studenthostel.service.FloorService;
-import ua.com.foxminded.studenthostel.service.GroupService;
 import ua.com.foxminded.studenthostel.service.StudentService;
 
 import java.math.BigInteger;
@@ -35,8 +34,6 @@ public class StudentController {
     private FacultyService facultyService;
     @Autowired
     private CourseNumberService courseNumberService;
-    @Autowired
-    private GroupService groupService;
 
     @GetMapping("/students/{id}")
     public String getById(@PathVariable long id, Model model) {
