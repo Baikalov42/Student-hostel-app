@@ -9,25 +9,35 @@
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
-<div class="container" >
-    <table class="table table-bordered">
-        <thead class="thead-light">
-        <tr>
-            <th scope="col" colspan="2">Course card</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>ID</td>
-            <th scope="row" th:text="${courseNumber.id}"></th>
-        </tr>
-        <tr>
-            <td>Name</td>
-            <th th:text="${courseNumber.name}"></th>
-        </tr>
-        </tbody>
-    </table>
-</div>
+<style>
+    .table-size {
+        width: 400px;
+        margin-left: 100px;
+    }
+    .text-to-center {
+        text-align: center;
+    }
+</style>
+
+
+<table class="table table-bordered table-size ">
+    <thead class="thead-light ">
+    <tr>
+        <th class="text-to-center" scope="col" colspan="2">Course card</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>ID</td>
+        <th scope="row" th:text="${courseNumber.id}"></th>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <th th:text="${courseNumber.name}"></th>
+    </tr>
+    </tbody>
+</table>
+
 
 <div th:insert="templates/fragments :: js"></div>
 </body>

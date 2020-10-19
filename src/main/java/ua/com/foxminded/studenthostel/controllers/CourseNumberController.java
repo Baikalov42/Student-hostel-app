@@ -19,8 +19,8 @@ import java.util.List;
 @Controller
 public class CourseNumberController {
 
-    private static final long LINES_LIMIT_ON_PAGE = 10;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseNumberController.class);
+    private static final long LINES_LIMIT_ON_PAGE = 10;
 
     @Autowired
     private CourseNumberService courseNumberService;
