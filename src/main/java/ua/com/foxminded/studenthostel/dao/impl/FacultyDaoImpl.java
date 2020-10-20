@@ -49,7 +49,7 @@ public class  FacultyDaoImpl implements FacultyDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", faculty, ex);
-            throw new DaoException(faculty.toString(), ex);
+            throw new DaoException("Insertion error: " + faculty, ex);
         }
     }
 
@@ -67,7 +67,7 @@ public class  FacultyDaoImpl implements FacultyDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", facultyId, ex);
-            throw new NotFoundException(facultyId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + facultyId, ex);
         }
     }
 
@@ -96,7 +96,7 @@ public class  FacultyDaoImpl implements FacultyDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", faculty, ex);
-            throw new DaoException(faculty.toString(), ex);
+            throw new DaoException("Updating error: " + faculty, ex);
         }
     }
 
@@ -112,7 +112,7 @@ public class  FacultyDaoImpl implements FacultyDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

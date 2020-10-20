@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.dao.RoomDao;
+import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Room;
@@ -25,6 +26,8 @@ public class RoomService {
     private RoomDao roomDao;
     @Autowired
     private FloorDao floorDao;
+    @Autowired
+    private StudentDao studentDao;
     @Autowired
     private EquipmentService equipmentService;
     @Autowired
@@ -150,6 +153,7 @@ public class RoomService {
 
         roomDTO.setId(room.getId());
         roomDTO.setName(room.getName());
+        roomDTO.setStudentsCount(studentDao.getStudentsCountByRoom(room.getId()));
         roomDTO.setFloor(floorDao.getById(room.getFloorId()));
 
         LOGGER.debug("getting DTO complete,  {}", roomDTO);

@@ -79,6 +79,21 @@ public class EquipmentService {
         return result;
     }
 
+    public List<Equipment> getAllByStudent(BigInteger studentId) {
+        LOGGER.debug("getting all by student id {} ", studentId);
+
+        validator.validateId(studentId);
+        studentService.validateExistence(studentId);
+
+        List<Equipment> tasks = equipmentDao.getAllByStudent(studentId);
+
+        if (tasks.isEmpty()) {
+            LOGGER.warn("result is empty, student id = {}", studentId);
+            throw new NotFoundException("result is empty, student id = " + studentId);
+        }
+        return tasks;
+    }
+
     public boolean update(Equipment equipment) {
         LOGGER.debug("updating {}", equipment);
 

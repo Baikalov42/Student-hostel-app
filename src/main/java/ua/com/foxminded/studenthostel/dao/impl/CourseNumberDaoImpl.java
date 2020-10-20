@@ -48,8 +48,8 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
             return BigInteger.valueOf(id);
 
         } catch (DataAccessException ex) {
-            LOGGER.error("insertion error {}", courseNumber, ex);
-            throw new DaoException(courseNumber.toString(), ex);
+            LOGGER.error("Insertion error {}", courseNumber, ex);
+            throw new DaoException("Insertion error: " + courseNumber, ex);
         }
     }
 
@@ -67,7 +67,7 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", courseNumberId, ex);
-            throw new NotFoundException(courseNumberId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + courseNumberId, ex);
         }
     }
 
@@ -97,7 +97,7 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", courseNumber, ex);
-            throw new DaoException(courseNumber.toString(), ex);
+            throw new DaoException("Updating error: " + courseNumber, ex);
         }
     }
 
@@ -113,7 +113,7 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

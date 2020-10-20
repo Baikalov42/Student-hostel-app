@@ -53,7 +53,7 @@ public class TaskDaoImpl implements TaskDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", task, ex);
-            throw new DaoException(task.toString(), ex);
+            throw new DaoException("Insertion error: " + task, ex);
         }
     }
 
@@ -72,7 +72,7 @@ public class TaskDaoImpl implements TaskDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", taskId, ex);
-            throw new NotFoundException(taskId.toString(), ex);
+            throw new NotFoundException("Failed get by id: " + taskId, ex);
         }
     }
 
@@ -160,7 +160,7 @@ public class TaskDaoImpl implements TaskDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", task, ex);
-            throw new DaoException(task.toString(), ex);
+            throw new DaoException("Updating error: " + task, ex);
         }
     }
 
@@ -176,7 +176,7 @@ public class TaskDaoImpl implements TaskDao {
         } catch (DataAccessException ex) {
 
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

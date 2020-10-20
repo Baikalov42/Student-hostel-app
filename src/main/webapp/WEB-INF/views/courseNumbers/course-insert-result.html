@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Course insert result</title>
+</head>
+
+<body>
+<div th:insert="templates/fragments :: navbar"></div>
+
+<div class="alert alert-primary" role="alert">
+    <p th:text="'Genereted id: ' + ${newID.longValue()}"/>
+</div>
+
+<a th:href="@{/courseNumber/insert}" class="btn btn-primary"> back</a>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>

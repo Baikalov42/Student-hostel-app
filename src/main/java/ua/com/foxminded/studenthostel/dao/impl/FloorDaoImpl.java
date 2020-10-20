@@ -50,7 +50,7 @@ public class FloorDaoImpl implements FloorDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("insertion error {}", floor, ex);
-            throw new DaoException(floor.toString(), ex);
+            throw new DaoException("Insertion error: " + floor, ex);
         }
     }
 
@@ -69,7 +69,7 @@ public class FloorDaoImpl implements FloorDao {
 
         } catch (EmptyResultDataAccessException ex) {
             LOGGER.warn("Failed get by id {}", floorId, ex);
-            throw new NotFoundException("failed to get object", ex);
+            throw new NotFoundException("Failed get by id: " + floorId, ex);
         }
     }
 
@@ -99,7 +99,7 @@ public class FloorDaoImpl implements FloorDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("updating error {}", floor, ex);
-            throw new DaoException(floor.toString(), ex);
+            throw new DaoException("Updating error: " + floor, ex);
         }
     }
 
@@ -115,7 +115,7 @@ public class FloorDaoImpl implements FloorDao {
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
-            throw new DaoException(id.toString(), ex);
+            throw new DaoException("Deleting error: " + id, ex);
         }
     }
 }

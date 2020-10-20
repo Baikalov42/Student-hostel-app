@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <div th:fragment="style">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" th:href="@{/static/css/bootstrap.min.css}">
+    </div>
+
+</head>
+<body>
+
+<!--НАВБАР С ВЫПАДАЮЩИМ МЕНЮ-->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light">
+
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <li>
+                <a class="navbar-brand" th:href="@{/}">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-house" fill="currentColor"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                              d="M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"/>
+                        <path fill-rule="evenodd"
+                              d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"/>
+                    </svg>
+                    Student Hostel
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/courseNumbers/page/1}">Courses</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " th:href="@{/faculties/page/1}">Faculties</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " th:href="@{/groups/page/1}">Groups</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " th:href="@{/floors/page/1}">Floors</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " th:href="@{/tasks/page/1}">Tasks</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " th:href="@{/equipments/page/1}">Equipment</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Rooms
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" th:href="@{/rooms/page/1} ">All</a>
+                    <a class="dropdown-item" th:href="@{/rooms/byEquipment/page/1}" }>By Equipment</a>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Students
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" th:href="@{/students/page/1}">All</a>
+                    <a class="dropdown-item" th:href="@{/students/byFaculty/page/1}">By Faculty</a>
+                    <a class="dropdown-item" th:href="@{/students/byCourse/page/1}">By Course</a>
+                    <a class="dropdown-item" th:href="@{/students/byFloor/page/1}">By Floor</a>
+                    <a class="dropdown-item" th:href="@{/students/byGroupWithDebtExample}">By Group with debt</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div th:fragment="js">
+    <!--   <script th:src="@{/resources/js/bootstrap.min.js}"></script>
+       <script th:src="@{/resources/js/bootstrap.bundle.js}"></script>
+       <script th:src="@{/resources/jQuery/jquery-3.5.1.slim.min.js}"></script>-->
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+            crossorigin="anonymous"></script>
+</div>
+</body>
+</html>
