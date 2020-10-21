@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Assigning equipment to student</title>
+</head>
+<body>
+<div th:insert="templates/fragments :: navbar"></div>
+<br>
+
+<form action="#" th:action="@{/equipments/assign}"
+      th:object="${student}"
+      method="post" class="form-size">
+    <br>
+    <h2 th:text="${'Adding new Equipment to: ' + student.firstName + ' ' + student.lastName}" align=" center"></h2>
+
+    <div class="form-group" >
+        <label for="exampleFormControlInput1">new Equipment ID</label>
+        <input type="number" th:field="*{groupId}"
+               id="exampleFormControlInput1"
+               class="form-control">
+    </div>
+    <div hidden="hidden" >
+        <input type="number" th:field="*{id}" th:value="${student.id}">
+    </div>
+    <input type="submit" class="btn btn-info" value="Save"/>
+</form>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>

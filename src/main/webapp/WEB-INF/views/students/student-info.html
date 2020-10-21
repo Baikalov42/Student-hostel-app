@@ -5,21 +5,10 @@
     <title>Student info</title>
 </head>
 <body>
-
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
-<style>
-    .table-size {
-        width: 400px;
-        margin-left: 400px;
-    }
-    .text-to-center {
-        text-align: center;
-    }
-</style>
-
-<table class="table table-bordered table-size" >
+<table class="table-size table table-bordered">
     <thead class="thead-light">
     <tr>
         <th scope="col" colspan="2" class="text-to-center">Student card</th>
@@ -40,10 +29,6 @@
         <th th:text="${studentDTO.lastName}"></th>
     </tr>
     <tr>
-        <td>Hours debt</td>
-        <th th:text="${studentDTO.hoursDebt}"></th>
-    </tr>
-    <tr>
         <td>Group name</td>
         <th>
             <a th:href="@{/groups/{id}(id=${studentDTO.groupDTO.id})}" style="color: lightslategrey"
@@ -51,29 +36,59 @@
         </th>
     </tr>
     <tr>
+        <td>Hours debt</td>
+        <th>
+            <a th:text="${studentDTO.hoursDebt}"></a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{/students/update-debt/{studentId}(studentId=${studentDTO.id})}"> Edit</a>
+        </th>
+    </tr>
+    <tr>
         <td>Room name</td>
         <th>
             <a th:href="@{/rooms/{id}(id=${studentDTO.roomDTO.id})}" style="color: lightslategrey"
                th:text="${studentDTO.roomDTO.name}"></a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{/students/update-room/{roomId}(roomId=${studentDTO.id})}"> Edit</a>
         </th>
     </tr>
     <tr>
         <td>Active tasks</td>
         <th>
-            <a th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id})}" style="color: lightslategrey"
-               th:text="${studentDTO.tasks.size()}"></a>
+            <a th:text="${studentDTO.tasks.size()}"></a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{~/tasks/assign/{id}(id = ${studentDTO.id})}">Add</a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id})}"> Show</a>
         </th>
     </tr>
     <tr>
         <td>Active equipments</td>
         <th>
-            <a th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}"
-               style="color: lightslategrey" th:text="${studentDTO.equipments.size()}"></a>
+            <a th:text="${studentDTO.equipments.size()}"></a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{~/equipments/assign/{studentId}(studentId = ${studentDTO.id})}">Add</a>
+
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}"> Show</a>
         </th>
     </tr>
     </tbody>
 </table>
 
+<div class="edit-del-container">
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/students/update/{id}(id = ${studentDTO.id})}">Edit</a>
+
+    <form action="#" th:action="@{/students/{id}(id = ${studentDTO.id})}" method="post">
+        <input type="hidden">
+        <input type="submit" class="edit-del-btn btn btn-secondary "  value="Delete"/>
+    </form>
+</div>
 
 <div th:insert="templates/fragments :: js"></div>
 </body>

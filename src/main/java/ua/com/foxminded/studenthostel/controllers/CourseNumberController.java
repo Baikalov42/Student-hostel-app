@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
@@ -24,6 +23,24 @@ public class CourseNumberController {
 
     @Autowired
     private CourseNumberService courseNumberService;
+
+    @GetMapping("/courseNumbers/insert")
+    public String insert(Model model) {
+
+        model.addAttribute("courseNumber", new CourseNumber());
+        return "courseNumbers/course-insert";
+    }
+
+    @PostMapping("/courseNumbers/insert")
+    public String insert(CourseNumber courseNumber, Model model) {
+
+        BigInteger id = courseNumberService.insert(courseNumber);
+
+        model.addAttribute("message", "Adding completed.");
+        model.addAttribute("id", "New ID = " + id);
+
+        return "message";
+    }
 
     @GetMapping("/courseNumbers/{id}")
     public String getById(@PathVariable long id, Model model) {
@@ -50,21 +67,32 @@ public class CourseNumberController {
         return "courseNumbers/courses-list";
     }
 
-    @GetMapping("/insert")
-    public String insert(Model model) {
+    @GetMapping("/courseNumbers/update/{id}")
+    public String update(@PathVariable long id, Model model) {
 
-        model.addAttribute("courseNumber", new CourseNumber());
-        return "courseNumbers/course-insert";
+        CourseNumber courseNumber = courseNumberService.getById(BigInteger.valueOf(id));
+        model.addAttribute("courseNumber", courseNumber);
+        return "/courseNumbers/course-update";
     }
 
-    @PostMapping("/insert")
-    public String insert(@ModelAttribute CourseNumber courseNumber, Model model) {
-        LOGGER.debug("inserting {}", courseNumber);
+    @PostMapping("/courseNumbers/update/{id}")
+    public String update(@PathVariable long id, Model model,
+                         CourseNumber courseNumber) {
 
-        BigInteger id = courseNumberService.insert(courseNumber);
-        model.addAttribute("newID", id);
+        courseNumberService.update(courseNumber);
 
-        LOGGER.debug("inserting complete, id = {}", id);
-        return "courseNumbers/course-insert-result";
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", "Updated ID = " + courseNumber.getId());
+        return "message";
+    }
+
+    @PostMapping("/courseNumbers/{id}")
+    public String delete(@PathVariable long id, Model model) {
+        courseNumberService.deleteById(BigInteger.valueOf(id));
+
+        model.addAttribute("message", "Deleting complete");
+        model.addAttribute("id", "Deleted id = " + id);
+
+        return "message";
     }
 }

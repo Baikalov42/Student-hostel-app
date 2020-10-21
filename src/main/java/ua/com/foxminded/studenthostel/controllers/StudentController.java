@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Floor;
@@ -34,6 +36,23 @@ public class StudentController {
     private FacultyService facultyService;
     @Autowired
     private CourseNumberService courseNumberService;
+
+    @GetMapping("/students/insert")
+    public String insert(Model model) {
+
+        model.addAttribute("student", new Student());
+        return "students/student-insert";
+    }
+
+    @PostMapping("/students/insert")
+    public String insert(Student student, Model model) {
+
+        BigInteger id = studentService.insert(student);
+        model.addAttribute("message", "Adding completed.");
+        model.addAttribute("id", "New ID = " + id);
+
+        return "message";
+    }
 
     @GetMapping("/students/{id}")
     public String getById(@PathVariable long id, Model model) {
@@ -159,5 +178,77 @@ public class StudentController {
 
         LOGGER.debug("getting all by croup with debt, result size: {}", students.size());
         return "students/students-list";
+    }
+
+    @GetMapping("/students/update/{id}")
+    public String update(@PathVariable long id, Model model) {
+
+        Student student = studentService.getById(BigInteger.valueOf(id));
+        model.addAttribute("student", student);
+        return "/students/student-update";
+    }
+
+    @PostMapping("/students/update/{id}")
+    public String update(@PathVariable long id, Model model,
+                         Student student) {
+
+        studentService.update(student);
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", "Updated ID = " + student.getId());
+        return "message";
+    }
+
+    @GetMapping("/students/update-room/{roomId}")
+    public String changeRoom(@PathVariable long roomId, Model model) {
+        Student student = studentService.getById(BigInteger.valueOf(roomId));
+        model.addAttribute("student", student);
+
+        return "/students/student-update-room";
+    }
+
+    @PostMapping("/students/update-room")
+    public String changeRoom(Student student, Model model) {
+
+        System.out.println(student);
+
+        studentService.changeRoom(
+                BigInteger.valueOf(student.getRoomId().longValue()),
+                BigInteger.valueOf(student.getId().longValue()));
+
+        String mes = "Student ID = " + student.getId() + ", updated room on ID = " + student.getRoomId();
+
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", mes);
+        return "message";
+    }
+    @GetMapping("/students/update-debt/{studentId}")
+    public String changeDebt(@PathVariable long studentId, Model model) {
+        Student student = studentService.getById(BigInteger.valueOf(studentId));
+        model.addAttribute("student", student);
+
+        return "/students/student-update-debt";
+    }
+
+    @PostMapping("/students/update-debt")
+    public String changeDebt(Student student, Model model) {
+
+        System.err.println(student);
+
+        studentService.changeDebt(student.getHoursDebt(), student.getId());
+
+        String mes = "Student ID = " + student.getId() + ", updated debt on: " + student.getHoursDebt();
+
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", mes);
+        return "message";
+    }
+
+    @PostMapping("/students/{id}")
+    public String delete(@PathVariable long id, Model model) {
+        studentService.deleteById(BigInteger.valueOf(id));
+        model.addAttribute("message", "Deleting complete");
+        model.addAttribute("id", "Deleted id = " + id);
+
+        return "message";
     }
 }

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Tasks by student</title>
+</head>
+
+<body>
+<div th:insert="templates/fragments :: navbar"></div>
+
+<table class="table table-hover ">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Task name</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${tasks}">
+        <th scope="row" th:text="${task.id}">id</th>
+        <td th:text="${task.name}">name</td>
+        <td>
+            <a class="to-right btn btn-info btn-sm"
+               th:href="@{/tasks/{id}(id = ${task.id})}"> Show</a>
+
+            <form th:action="@{/tasks/unassign/{studentId}/{taskId}(taskId = ${task.id}, studentId=${studentId})}"
+                  action="#"
+                  method="post">
+                <input type="hidden">
+                <input type="submit" class="to-right btn btn-info btn-sm" value="Delete"/>
+            </form>
+
+            <form th:action="@{/tasks/accept/{studentId}/{taskId}(taskId = ${task.id}, studentId=${studentId})}"
+                  action="#"
+                  method="post">
+                <input type="hidden">
+                <input type="submit" class="to-right btn btn-info btn-sm" value="Accept"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>

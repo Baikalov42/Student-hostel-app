@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.dto.GroupDTO;
 import ua.com.foxminded.studenthostel.service.GroupService;
@@ -22,6 +23,24 @@ public class GroupController {
 
     @Autowired
     private GroupService groupService;
+
+    @GetMapping("/groups/insert")
+    public String insert(Model model) {
+
+        model.addAttribute("group", new Group());
+        return "groups/group-insert";
+    }
+
+    @PostMapping("/groups/insert")
+    public String insert(Group group, Model model) {
+
+        BigInteger id = groupService.insert(group);
+
+        model.addAttribute("message", "Adding completed.");
+        model.addAttribute("id", "New ID = " + id);
+
+        return "message";
+    }
 
     @GetMapping("/groups/{id}")
     public String getById(@PathVariable long id, Model model) {
@@ -46,5 +65,35 @@ public class GroupController {
 
         LOGGER.debug("getting complete, page number: {}, result size: {}", pageNumber, groups.size());
         return "groups/groups-list";
+    }
+
+    @GetMapping("/groups/update/{id}")
+    public String update(@PathVariable long id, Model model) {
+
+        Group group = groupService.getById(BigInteger.valueOf(id));
+        model.addAttribute("group", group);
+        return "groups/group-update";
+    }
+
+    @PostMapping("/groups/update/{id}")
+    public String update(@PathVariable long id, Model model,
+                         Group group) {
+
+        groupService.update(group);
+
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", "Updated ID = " + group.getId());
+
+        return "message";
+    }
+
+    @PostMapping("/groups/{id}")
+    public String delete(@PathVariable long id, Model model) {
+        groupService.deleteById(BigInteger.valueOf(id));
+
+        model.addAttribute("message", "Deleting complete");
+        model.addAttribute("id", "Deleted group id = " + id);
+
+        return "message";
     }
 }

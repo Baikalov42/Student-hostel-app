@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.service.FloorService;
 
@@ -21,6 +22,24 @@ public class FloorController {
 
     @Autowired
     private FloorService floorService;
+
+    @GetMapping("/floors/insert")
+    public String insert(Model model) {
+
+        model.addAttribute("floor", new Floor());
+        return "floors/floor-insert";
+    }
+
+    @PostMapping("/floors/insert")
+    public String insert(Floor floor, Model model) {
+
+        BigInteger id = floorService.insert(floor);
+
+        model.addAttribute("message", "Adding completed.");
+        model.addAttribute("id", "New ID = " + id);
+
+        return "message";
+    }
 
     @GetMapping("/floors/{id}")
     public String getById(@PathVariable long id, Model model) {
@@ -45,5 +64,34 @@ public class FloorController {
 
         LOGGER.debug("getting complete, page number: {}, result size: {}", pageNumber, floors.size());
         return "floors/floors-list";
+    }
+
+    @GetMapping("/floors/update/{id}")
+    public String update(@PathVariable long id, Model model) {
+
+        Floor floor = floorService.getById(BigInteger.valueOf(id));
+        model.addAttribute("floor", floor);
+        return "floors/floor-update";
+    }
+
+    @PostMapping("/floors/update/{id}")
+    public String update(@PathVariable long id, Model model,
+                         Floor floor) {
+
+        floorService.update(floor);
+
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", "Updated ID = " + floor.getId());
+        return "message";
+    }
+
+    @PostMapping("/floors/{id}")
+    public String delete(@PathVariable long id, Model model) {
+        floorService.deleteById(BigInteger.valueOf(id));
+
+        model.addAttribute("message", "Deleting complete");
+        model.addAttribute("id", "Deleted floor id = " + id);
+
+        return "message";
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.dto.RoomDTO;
@@ -26,6 +27,24 @@ public class RoomController {
     private RoomService roomService;
     @Autowired
     private EquipmentService equipmentService;
+
+    @GetMapping("/rooms/insert")
+    public String insert(Model model) {
+
+        model.addAttribute("room", new Room());
+        return "rooms/room-insert";
+    }
+
+    @PostMapping("/rooms/insert")
+    public String insert(Room room, Model model) {
+
+        BigInteger id = roomService.insert(room);
+
+        model.addAttribute("message", "Adding completed.");
+        model.addAttribute("id", "New ID = " + id);
+
+        return "message";
+    }
 
     @GetMapping("/rooms/{id}")
     public String getById(@PathVariable long id, Model model) {
@@ -76,5 +95,34 @@ public class RoomController {
 
         LOGGER.debug("getting all by equipment complete, result size: {}", rooms.size());
         return "rooms/rooms-list";
+    }
+
+    @GetMapping("/rooms/update/{id}")
+    public String update(@PathVariable long id, Model model) {
+
+        Room room = roomService.getById(BigInteger.valueOf(id));
+        model.addAttribute("room", room);
+        return "rooms/room-update";
+    }
+
+    @PostMapping("/rooms/update/{id}")
+    public String update(@PathVariable long id, Model model,
+                         Room room) {
+
+        roomService.update(room);
+
+        model.addAttribute("message", "Updating complete");
+        model.addAttribute("id", "Updated ID = " + room.getId());
+        return "message";
+    }
+
+    @PostMapping("/rooms/{id}")
+    public String delete(@PathVariable long id, Model model) {
+        roomService.deleteById(BigInteger.valueOf(id));
+
+        model.addAttribute("message", "Deleting complete");
+        model.addAttribute("id", "Deleted room id = " + id);
+
+        return "message";
     }
 }

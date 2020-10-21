@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Equipment updating</title>
+</head>
+<body>
+
+<div th:insert="templates/fragments :: navbar"></div>
+
+<form action="#" th:action="@{/equipments/update/{id}(id = ${equipment.id})}"
+      th:object="${equipment}" method="post" class="form-size">
+    <br>
+    <h2 align="center" th:text="${'Updating equipment: ' + equipment.name}"></h2>
+
+    <div class="form-group">
+        <label for="exampleFormControlInput1">Equipment name</label>
+        <input type="text" th:field="*{name}"
+               th:value="${equipment.name}"
+               id="exampleFormControlInput1"
+               class="form-control">
+    </div>
+    <input type="submit" class="btn btn-info" value="Save"/>
+</form>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>

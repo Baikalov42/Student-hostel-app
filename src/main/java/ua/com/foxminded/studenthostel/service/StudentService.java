@@ -210,7 +210,7 @@ public class StudentService {
         return studentDao.update(student);
     }
 
-    public int acceptHoursAndUpdate(BigInteger studentId, BigInteger taskId) {
+    public int acceptTaskAndUpdateHours(BigInteger studentId, BigInteger taskId) {
         LOGGER.debug("accept hours and update: student id ={}, task id={}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
