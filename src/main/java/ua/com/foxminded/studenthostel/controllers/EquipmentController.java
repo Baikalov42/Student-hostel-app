@@ -30,6 +30,7 @@ public class EquipmentController {
 
     @GetMapping("/equipments/insert")
     public String insert(Model model) {
+        LOGGER.debug("(GET) insert");
 
         model.addAttribute("equipment", new Equipment());
         return "equipments/equipment-insert";
@@ -37,56 +38,58 @@ public class EquipmentController {
 
     @PostMapping("/equipments/insert")
     public String insert(Equipment equipment, Model model) {
+        LOGGER.debug("(POST) insert {}", equipment);
 
         BigInteger id = equipmentService.insert(equipment);
 
         model.addAttribute("message", "Adding completed.");
         model.addAttribute("id", "New ID = " + id);
 
+        LOGGER.debug("(POST) insert complete, model := {}", model);
         return "message";
     }
 
     @GetMapping("/equipments/{id}")
     public String getById(@PathVariable long id, Model model) {
-        LOGGER.debug("getting by id: {}", id);
+        LOGGER.debug("(GET) getById: {}", id);
 
         Equipment equipment = equipmentService.getById(BigInteger.valueOf(id));
         model.addAttribute("equipment", equipment);
 
-        LOGGER.debug("getting complete: {}", equipment);
+        LOGGER.debug("(GET) getById complete, model: {}", model);
         return "equipments/equipment-info";
     }
 
     @GetMapping("/equipments/page/{pageNumber}")
     public String getAll(@PathVariable long pageNumber, Model model) {
-        LOGGER.debug("getting all, page number: {}", pageNumber);
+        LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
         long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("getting all, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
 
         List<Equipment> equipments = equipmentService.getAll(LINES_LIMIT_ON_PAGE, offset);
         model.addAttribute("equipments", equipments);
 
-        LOGGER.debug("getting complete, page number: {}, result size: {}", pageNumber, equipments.size());
+        LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, equipments.size());
         return "equipments/equipments-list";
     }
 
     @GetMapping("/equipments/byStudent/{studentId}")
     public String getAllByStudent(@PathVariable long studentId, Model model) {
-        LOGGER.debug("getting all by student, id: {}", studentId);
+        LOGGER.debug("(GET) getAllByStudent, id: {}", studentId);
 
         List<Equipment> equipments = equipmentService.getAllByStudent(BigInteger.valueOf(studentId));
         model.addAttribute("equipments", equipments);
 
-        LOGGER.debug("getting complete, result size: {}", equipments.size());
+        LOGGER.debug("(GET) getAllByStudent complete, result size: {}", equipments.size());
         return "equipments/equipments-by-student";
     }
 
     @GetMapping("/equipments/assign/{studentId}")
     public String assignToStudent(@PathVariable BigInteger studentId, Model model) {
+        LOGGER.debug("(GET) assignToStudent, student id {}", studentId);
 
         Student student = studentService.getById(studentId);
-
         model.addAttribute("student", student);
 
         return "equipments/equipment-assign-to-student";
@@ -95,7 +98,7 @@ public class EquipmentController {
 
     @PostMapping("/equipments/assign")
     public String assignToStudent(Student student, Model model) {
-        System.err.println(student);
+        LOGGER.debug("(POST) assignToStudent, student id {}, equipment id {}", student.getId(), student.getGroupId());
 
         equipmentService.assignToStudent(student.getId(), student.getGroupId());
         String message = "Student ID = " + student.getId() + ", Equipment ID = " + student.getGroupId();
@@ -103,6 +106,7 @@ public class EquipmentController {
         model.addAttribute("message", "Assigning success");
         model.addAttribute("id", message);
 
+        LOGGER.debug("(POST) assignToStudent complete, model: {}", model);
         return "message";
     }
 
@@ -110,6 +114,7 @@ public class EquipmentController {
     public String unassignFromStudent(@PathVariable BigInteger studentId,
                                       @PathVariable BigInteger equipmentId,
                                       Model model) {
+        LOGGER.debug("(POST) unassignFromStudent, student id {}, equipment id {}", studentId, equipmentId);
 
         equipmentService.unassignFromStudent(studentId, equipmentId);
         String message = "Equipment ID = " + equipmentId + " un assigned from Student ID = " + studentId;
@@ -117,35 +122,43 @@ public class EquipmentController {
         model.addAttribute("message", "Un assigning complete");
         model.addAttribute("id", message);
 
+        LOGGER.debug("(POST) unassignFromStudent complete, model: {}", model);
         return "message";
     }
 
     @GetMapping("/equipments/update/{id}")
     public String update(@PathVariable long id, Model model) {
+        LOGGER.debug("(GET) update id = {}", id);
 
         Equipment equipment = equipmentService.getById(BigInteger.valueOf(id));
         model.addAttribute("equipment", equipment);
-        return "/equipments/equipment-update";
+
+        return "equipments/equipment-update";
     }
 
     @PostMapping("/equipments/update/{id}")
-    public String update(@PathVariable long id, Model model,
-                         Equipment equipment) {
+    public String update(@PathVariable long id, Model model, Equipment equipment) {
+        LOGGER.debug("(POST) update id = {}", id);
 
         equipmentService.update(equipment);
 
         model.addAttribute("message", "Updating complete");
         model.addAttribute("id", "Updated ID = " + equipment.getId());
+
+        LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";
     }
 
     @PostMapping("/equipments/{id}")
     public String delete(@PathVariable long id, Model model) {
+        LOGGER.debug("(POST) delete, id {}", id);
+
         equipmentService.deleteById(BigInteger.valueOf(id));
 
         model.addAttribute("message", "Deleting complete");
-        model.addAttribute("id", "Deleted id = " + id);
+        model.addAttribute("id", "Deleted equipment id = " + id);
 
+        LOGGER.debug("(POST) delete complete, model: {}", model);
         return "message";
     }
 }

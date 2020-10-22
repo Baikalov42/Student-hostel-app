@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Faculty {
@@ -41,13 +42,13 @@ public class Faculty {
         Faculty faculty = (Faculty) o;
 
         if (!name.equals(faculty.name)) return false;
-        return id.equals(faculty.id);
+        return Objects.equals(id, faculty.id);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
     }
 

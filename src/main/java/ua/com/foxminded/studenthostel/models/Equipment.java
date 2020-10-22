@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Equipment {
@@ -41,13 +42,13 @@ public class Equipment {
         Equipment equipment = (Equipment) o;
 
         if (!name.equals(equipment.name)) return false;
-        return id.equals(equipment.id);
+        return Objects.equals(id, equipment.id);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
     }
 

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Room;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -34,20 +36,21 @@ import static ua.com.foxminded.studenthostel.controllers.FloorControllerTest.get
 @SpringJUnitWebConfig(WebConfig.class)
 class RoomControllerTest {
 
-    MockMvc mockMvc;
+    private static final BigInteger ONE = BigInteger.ONE;
+    private MockMvc mockMvc;
 
     @Autowired
     @InjectMocks
-    RoomController roomController;
+    private RoomController roomController;
 
     @Autowired
-    ExceptionController exceptionController;
+    private ExceptionController exceptionController;
 
     @Mock
-    RoomService roomService;
+    private RoomService roomService;
 
     @Mock
-    EquipmentService equipmentService;
+    private EquipmentService equipmentService;
 
     @BeforeEach
     public void setup() {
@@ -55,6 +58,38 @@ class RoomControllerTest {
         this.mockMvc = MockMvcBuilders
                 .standaloneSetup(roomController, exceptionController)
                 .build();
+    }
+    @Test
+    public void insert_GET_ShouldReturnInsertFormView_WhenConditionComplete() throws Exception {
+        mockMvc.perform(get("/rooms/insert"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("rooms/room-insert"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfMessage_WhenEntryInserted() throws Exception {
+        Mockito.when(roomService.insert(getNullIdRoom())).thenReturn(ONE);
+
+        mockMvc.perform(post("/rooms/insert")
+                .param("name", "Testname")
+                .param("floorId", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Adding completed."))
+                .andExpect(model().attribute("id", "New ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfError_WhenEntryNotInserted() throws Exception {
+        Mockito.when(roomService.insert(getNullIdRoom())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/rooms/insert")
+                .param("name", "Testname")
+                .param("floorId", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
     }
 
     @Test
@@ -145,23 +180,90 @@ class RoomControllerTest {
                 .andExpect(view().name("error"));
     }
 
-    static Room getRoom() {
+    @Test
+    public void update_GET_ShouldReturnUpdateFormView_WhenConditionComplete() throws Exception {
+        Mockito.when(roomService.getById(ONE)).thenReturn(getRoom());
+
+        mockMvc.perform(get("/rooms/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("rooms/room-update"))
+                .andExpect(model().attribute("room", getRoom()));
+    }
+
+    @Test
+    public void update_GET_ShouldReturnErrorView_WhenEntryNotExist() throws Exception {
+        Mockito.when(roomService.getById(ONE)).thenThrow(NotFoundException.class);
+
+        mockMvc.perform(get("/rooms/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
+        Mockito.when(roomService.update(getRoom())).thenReturn(true);
+
+        mockMvc.perform(post("/rooms/update/1")
+                .param("name", "Testname")
+                .param("floorId", ONE.toString())
+                .param("id", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Updating complete"))
+                .andExpect(model().attribute("id", "Updated ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfError_WhenEntryNotUpdated() throws Exception {
+        Mockito.when(roomService.update(getRoom())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/rooms/update/1")
+                .param("name", "Testname")
+                .param("floorId", ONE.toString())
+                .param("id", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
+        Mockito.when(roomService.deleteById(ONE)).thenReturn(true);
+
+        mockMvc.perform(post("/rooms/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Deleting complete"))
+                .andExpect(model().attribute("id", "Deleted room id = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    static Room getNullIdRoom() {
         Room room = new Room();
         room.setFloorId(BigInteger.ONE);
-        room.setId(BigInteger.ONE);
         room.setName("Testname");
+
+        return room;
+    }
+    static Room getRoom() {
+        Room room = getNullIdRoom();
+        room.setId(BigInteger.ONE);
 
         return room;
     }
 
     static RoomDTO getRoomDTO() {
 
+        Room room = getRoom();
+
         RoomDTO roomDTO = new RoomDTO();
 
         roomDTO.setFloor(getFloor());
-        roomDTO.setStudentsCount(1);
-        roomDTO.setId(getRoom().getId());
-        roomDTO.setName(getRoom().getName());
+        roomDTO.setStudentsCount(ONE.intValue());
+        roomDTO.setId(room.getId());
+        roomDTO.setName(room.getName());
 
         return roomDTO;
     }

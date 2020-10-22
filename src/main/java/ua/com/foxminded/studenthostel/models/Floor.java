@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Floor {
@@ -41,13 +42,13 @@ public class Floor {
         Floor floor = (Floor) o;
 
         if (!name.equals(floor.name)) return false;
-        return id.equals(floor.id);
+        return Objects.equals(id, floor.id);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
     }
 

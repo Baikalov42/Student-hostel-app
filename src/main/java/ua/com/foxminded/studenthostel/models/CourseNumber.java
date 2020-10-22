@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class CourseNumber {
@@ -38,16 +39,16 @@ public class CourseNumber {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CourseNumber that = (CourseNumber) o;
+        CourseNumber courseNumber = (CourseNumber) o;
 
-        if (!name.equals(that.name)) return false;
-        return id.equals(that.id);
+        if (!name.equals(courseNumber.name)) return false;
+        return Objects.equals(id, courseNumber.id);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
     }
 

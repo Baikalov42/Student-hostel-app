@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class Student {
 
@@ -116,7 +117,7 @@ public class Student {
         Student student = (Student) o;
 
         if (hoursDebt != student.hoursDebt) return false;
-        if (!id.equals(student.id)) return false;
+        if (!Objects.equals(id, student.id)) return false;
         if (!firstName.equals(student.firstName)) return false;
         if (!lastName.equals(student.lastName)) return false;
         if (!groupId.equals(student.groupId)) return false;
@@ -125,7 +126,7 @@ public class Student {
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + firstName.hashCode();
         result = 31 * result + lastName.hashCode();
         result = 31 * result + hoursDebt;

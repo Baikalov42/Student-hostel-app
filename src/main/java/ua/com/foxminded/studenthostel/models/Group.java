@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Group {
@@ -66,7 +67,7 @@ public class Group {
         Group group = (Group) o;
 
         if (!name.equals(group.name)) return false;
-        if (!id.equals(group.id)) return false;
+        if (!Objects.equals(id, group.id)) return false;
         if (!facultyId.equals(group.facultyId)) return false;
         return courseNumberId.equals(group.courseNumberId);
     }
@@ -74,7 +75,7 @@ public class Group {
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         result = 31 * result + facultyId.hashCode();
         result = 31 * result + courseNumberId.hashCode();
         return result;
