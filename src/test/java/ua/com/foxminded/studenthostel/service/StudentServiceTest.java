@@ -648,22 +648,22 @@ class StudentServiceTest {
     @Test
     public void acceptHoursAndUpdate_ShouldThrowException_WhenIdNotValid() {
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, ZERO_ID));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, ZERO_ID));
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, NEGATIVE_ID));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, NEGATIVE_ID));
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, null));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, null));
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(ZERO_ID, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(ZERO_ID, VALID_ID));
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(NEGATIVE_ID, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(NEGATIVE_ID, VALID_ID));
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(null, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(null, VALID_ID));
     }
 
     @Test
@@ -672,7 +672,7 @@ class StudentServiceTest {
         Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
     }
 
     @Test
@@ -681,7 +681,7 @@ class StudentServiceTest {
         Mockito.when(taskDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
     }
 
     @Test
@@ -691,7 +691,7 @@ class StudentServiceTest {
         Mockito.when(taskDao.isStudentTaskRelationExist(VALID_ID, VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
-                () -> studentService.acceptHoursAndUpdate(VALID_ID, VALID_ID));
+                () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
     }
 
     @Test

@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.Faculty;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -41,14 +43,15 @@ import static ua.com.foxminded.studenthostel.controllers.CourseNumberControllerT
 @SpringJUnitWebConfig(WebConfig.class)
 class StudentControllerTest {
 
-    MockMvc mockMvc;
+    private static final BigInteger ONE = BigInteger.ONE;
+    private MockMvc mockMvc;
 
     @Autowired
     @InjectMocks
-    StudentController studentController;
+    private StudentController studentController;
 
     @Autowired
-    ExceptionController exceptionController;
+    private ExceptionController exceptionController;
 
     @Mock
     private StudentService studentService;
@@ -65,6 +68,45 @@ class StudentControllerTest {
         this.mockMvc = MockMvcBuilders
                 .standaloneSetup(studentController, exceptionController)
                 .build();
+    }
+
+    @Test
+    public void insert_GET_ShouldReturnInsertFormView_WhenConditionComplete() throws Exception {
+        mockMvc.perform(get("/students/insert"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("students/student-insert"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfMessage_WhenEntryInserted() throws Exception {
+        Mockito.when(studentService.insert(getNullIdStudent())).thenReturn(ONE);
+
+        mockMvc.perform(post("/students/insert")
+                .param("firstName", "Firstname")
+                .param("lastName", "Lastname")
+                .param("roomId", ONE.toString())
+                .param("groupId", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Adding completed."))
+                .andExpect(model().attribute("id", "New ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfError_WhenEntryNotInserted() throws Exception {
+        Mockito.when(studentService.insert(getNullIdStudent())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/students/insert")
+                .param("firstName", "Firstname")
+                .param("lastName", "Lastname")
+                .param("roomId", ONE.toString())
+                .param("groupId", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
     }
 
     @Test
@@ -128,6 +170,7 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
+
     @Test
     public void getAllByFloorResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<StudentDTO> students = Collections.singletonList(getStudentDTO());
@@ -173,6 +216,7 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
+
     @Test
     public void getAllByFacultyResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<StudentDTO> students = Collections.singletonList(getStudentDTO());
@@ -195,6 +239,7 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
+
     @Test
     public void getAllByCourse_ShouldReturnViewListOfCourseNumbers_WhenCourseNumberExists() throws Exception {
         List<CourseNumber> courseNumbers = Collections.singletonList(getCourseNumber());
@@ -217,6 +262,7 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
+
     @Test
     public void getAllByCourseResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<StudentDTO> students = Collections.singletonList(getStudentDTO());
@@ -239,12 +285,14 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
+
     @Test
     public void getAllByGroupWithDebtExample_ShouldReturnViewOfExample() throws Exception {
         mockMvc.perform(get("/students/byGroupWithDebtExample"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/students-by-group-with-debt-example"));
     }
+
     @Test
     public void getAllByGroupWithDebt_ShouldReturnViewOfResult_WhenResultNotEmpty() throws Exception {
 
@@ -258,12 +306,151 @@ class StudentControllerTest {
                 .andExpect(model().attribute("students", students));
     }
 
-    static Student getStudent() {
+    @Test
+    public void update_GET_ShouldReturnUpdateFormView_WhenConditionComplete() throws Exception {
+        Mockito.when(studentService.getById(ONE)).thenReturn(getStudent());
+
+        mockMvc.perform(get("/students/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("students/student-update"))
+                .andExpect(model().attribute("student", getStudent()));
+    }
+
+    @Test
+    public void update_GET_ShouldReturnErrorView_WhenEntryNotExist() throws Exception {
+        Mockito.when(studentService.getById(ONE)).thenThrow(NotFoundException.class);
+
+        mockMvc.perform(get("/students/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
+        Mockito.when(studentService.update(getStudent())).thenReturn(true);
+
+        mockMvc.perform(post("/students/update/1")
+                .param("id", ONE.toString())
+                .param("firstName", "Firstname")
+                .param("lastName", "Lastname")
+                .param("roomId", ONE.toString())
+                .param("groupId", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Updating complete"))
+                .andExpect(model().attribute("id", "Updated ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfError_WhenEntryNotUpdated() throws Exception {
+        Mockito.when(studentService.update(getStudent())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/students/update/1")
+                .param("id", ONE.toString())
+                .param("firstName", "Firstname")
+                .param("lastName", "Lastname")
+                .param("roomId", ONE.toString())
+                .param("groupId", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void changeRoom_GET_ShouldReturnUpdateFormView_WhenConditionComplete() throws Exception {
+        Mockito.when(studentService.getById(ONE)).thenReturn(getStudent());
+
+        mockMvc.perform(get("/students/update-room/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("students/student-update-room"))
+                .andExpect(model().attribute("student", getStudent()));
+    }
+
+    @Test
+    public void changeRoom_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
+        Mockito.when(studentService.changeRoom(ONE, ONE)).thenReturn(true);
+
+        mockMvc.perform(post("/students/update-room")
+                .param("id", ONE.toString())
+                .param("roomId", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Updating complete"))
+                .andExpect(model().attribute("id", "Student ID = " + ONE + ", updated room on ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void changeRoom_POST_ShouldReturnViewOfError_WhenEntryNotUpdated() throws Exception {
+        Mockito.when(studentService.changeRoom(ONE, ONE)).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/students/update-room")
+                .param("id", ONE.toString())
+                .param("roomId", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void changeDebt_GET_ShouldReturnUpdateFormView_WhenConditionComplete() throws Exception {
+        Mockito.when(studentService.getById(ONE)).thenReturn(getStudent());
+
+        mockMvc.perform(get("/students/update-debt/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("students/student-update-debt"))
+                .andExpect(model().attribute("student", getStudent()));
+    }
+
+    @Test
+    public void changeDebt_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
+        Mockito.when(studentService.changeDebt(10, ONE)).thenReturn(true);
+
+        mockMvc.perform(post("/students/update-debt")
+                .param("id", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Updating complete"))
+                .andExpect(model().attribute("id", "Student ID = " + ONE + ", updated debt on: " + 10))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void changeDebt_POST_ShouldReturnViewOfError_WhenEntryNotUpdated() throws Exception {
+        Mockito.when(studentService.changeDebt(10, ONE)).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/students/update-debt")
+                .param("id", ONE.toString())
+                .param("hoursDebt", String.valueOf(10)))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
+        Mockito.when(studentService.deleteById(ONE)).thenReturn(true);
+
+        mockMvc.perform(post("/students/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Deleting complete"))
+                .andExpect(model().attribute("id", "Deleted student id = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    static Student getNullIdStudent() {
         Student student = new Student();
 
-        student.setId(BigInteger.ONE);
         student.setFirstName("Firstname");
-        student.setLastName("Lasttname");
+        student.setLastName("Lastname");
         student.setGroupId(BigInteger.ONE);
         student.setRoomId(BigInteger.ONE);
         student.setHoursDebt(10);
@@ -271,12 +458,20 @@ class StudentControllerTest {
         return student;
     }
 
+    static Student getStudent() {
+        Student student = getNullIdStudent();
+        student.setId(BigInteger.ONE);
+
+        return student;
+    }
+
     static StudentDTO getStudentDTO() {
         StudentDTO studentDTO = new StudentDTO();
+        Student student = getStudent();
 
         studentDTO.setId(BigInteger.ONE);
-        studentDTO.setFirstName("Firstname");
-        studentDTO.setLastName("Lasttname");
+        studentDTO.setFirstName(student.getFirstName());
+        studentDTO.setLastName(student.getLastName());
         studentDTO.setGroupDTO(getGroupDTO());
         studentDTO.setRoomDTO(getRoomDTO());
         studentDTO.setHoursDebt(10);

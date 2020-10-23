@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.service.CourseNumberService;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -28,15 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringJUnitWebConfig(WebConfig.class)
 class CourseNumberControllerTest {
 
-    MockMvc mockMvc;
+    private static final BigInteger ONE = BigInteger.ONE;
+    private MockMvc mockMvc;
 
     @Autowired
     @InjectMocks
-    CourseNumberController courseNumberController;
+    private CourseNumberController courseNumberController;
+
     @Autowired
-    ExceptionController exceptionController;
+    private ExceptionController exceptionController;
+
     @Mock
-    CourseNumberService courseNumberService;
+    private CourseNumberService courseNumberService;
 
     @BeforeEach
     public void setup() {
@@ -47,8 +52,39 @@ class CourseNumberControllerTest {
     }
 
     @Test
+    public void insert_GET_ShouldReturnInsertFormView_WhenConditionComplete() throws Exception {
+        mockMvc.perform(get("/courseNumbers/insert"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("courseNumbers/course-insert"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfMessage_WhenEntryInserted() throws Exception {
+        Mockito.when(courseNumberService.insert(getCourseNumberNullId())).thenReturn(ONE);
+
+        mockMvc.perform(post("/courseNumbers/insert")
+                .param("name", "Testname"))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Adding completed."))
+                .andExpect(model().attribute("id", "New ID = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void insert_POST_ShouldReturnViewOfError_WhenEntryNotInserted() throws Exception {
+        Mockito.when(courseNumberService.insert(getCourseNumberNullId())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/courseNumbers/insert")
+                .param("name", "Testname"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
     public void getById_ShouldReturnViewOfEntry_WhenIdIsExist() throws Exception {
-        Mockito.when(courseNumberService.getById(BigInteger.ONE)).thenReturn(getCourseNumber());
+        Mockito.when(courseNumberService.getById(ONE)).thenReturn(getCourseNumber());
 
         mockMvc.perform(get("/courseNumbers/1"))
                 .andExpect(status().isOk())
@@ -58,7 +94,7 @@ class CourseNumberControllerTest {
 
     @Test
     public void getById_ShouldReturnViewOfError_WhenIdNotExist() throws Exception {
-        Mockito.when(courseNumberService.getById(BigInteger.ONE)).thenThrow(NotFoundException.class);
+        Mockito.when(courseNumberService.getById(ONE)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/courseNumbers/1"))
                 .andExpect(status().isOk())
@@ -85,9 +121,83 @@ class CourseNumberControllerTest {
                 .andExpect(view().name("error"));
     }
 
-    static CourseNumber getCourseNumber() {
+    @Test
+    public void update_GET_ShouldReturnUpdateFormView_WhenConditionComplete() throws Exception {
+        Mockito.when(courseNumberService.getById(ONE)).thenReturn(getCourseNumber());
+
+        mockMvc.perform(get("/courseNumbers/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("courseNumbers/course-update"))
+                .andExpect(model().attribute("courseNumber", getCourseNumber()));
+    }
+
+    @Test
+    public void update_GET_ShouldReturnErrorView_WhenEntryNotExist() throws Exception {
+        Mockito.when(courseNumberService.getById(ONE)).thenThrow(NotFoundException.class);
+
+        mockMvc.perform(get("/courseNumbers/update/1"))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
+        Mockito.when(courseNumberService.update(getCourseNumber())).thenReturn(true);
+
+        mockMvc.perform(post("/courseNumbers/update/1")
+                .param("name", "Testname")
+                .param("id", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Updating complete"))
+                .andExpect(model().attribute("id", "Updated ID = " + getCourseNumber().getId()))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void update_POST_ShouldReturnViewOfError_WhenEntryNotUpdated() throws Exception {
+        Mockito.when(courseNumberService.update(getCourseNumber())).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/courseNumbers/update/1")
+                .param("name", "Testname")
+                .param("id", ONE.toString()))
+
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+    @Test
+    public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
+        Mockito.when(courseNumberService.deleteById(ONE)).thenReturn(true);
+
+        mockMvc.perform(post("/courseNumbers/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("message", "Deleting complete"))
+                .andExpect(model().attribute("id", "Deleted course id = " + ONE))
+                .andExpect(view().name("message"));
+    }
+
+    @Test
+    public void delete_ShouldReturnViewOfError_WhenEntryNotDeleted() throws Exception {
+        Mockito.when(courseNumberService.deleteById(ONE)).thenThrow(DaoException.class);
+
+        mockMvc.perform(post("/courseNumbers/1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error"));
+    }
+
+     static CourseNumber getCourseNumber() {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(BigInteger.ONE);
+        courseNumber.setName("Testname");
+
+        return courseNumber;
+    }
+
+     static CourseNumber getCourseNumberNullId() {
+        CourseNumber courseNumber = new CourseNumber();
         courseNumber.setName("Testname");
 
         return courseNumber;

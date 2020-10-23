@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Room {
@@ -55,14 +56,14 @@ public class Room {
         Room room = (Room) o;
 
         if (!name.equals(room.name)) return false;
-        if (!id.equals(room.id)) return false;
+        if (!Objects.equals(id, room.id)) return false;
         return floorId.equals(room.floorId);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + id.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         result = 31 * result + floorId.hashCode();
         return result;
     }

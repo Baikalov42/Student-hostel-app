@@ -9,18 +9,7 @@
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
-<style>
-    .table-size {
-        width: 400px;
-        margin-left: 100px;
-    }
-    .text-to-center {
-        text-align: center;
-    }
-</style>
-
-
-<table class="table table-bordered table-size ">
+<table class="table-size table table-bordered  ">
     <thead class="thead-light ">
     <tr>
         <th class="text-to-center" scope="col" colspan="2">Course card</th>
@@ -38,6 +27,14 @@
     </tbody>
 </table>
 
+<div class="edit-del-container">
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/courseNumbers/update/{id}(id = ${courseNumber.id})}">Edit</a>
+
+    <form action="#" th:action="@{/courseNumbers/{id}(id = ${courseNumber.id})}" method="post">
+        <input type="hidden">
+        <input type="submit" class="edit-del-btn btn btn-secondary " value="Delete"/>
+    </form>
+</div>
 
 <div th:insert="templates/fragments :: js"></div>
 </body>

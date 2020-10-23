@@ -2,17 +2,19 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <div th:insert="templates/fragments :: style"></div>
-    <title>Course insert result</title>
+    <title>Message page</title>
 </head>
 
 <body>
 <div th:insert="templates/fragments :: navbar"></div>
-
-<div class="alert alert-primary" role="alert">
-    <p th:text="'Genereted id: ' + ${newID.longValue()}"/>
+<br>
+<br>
+<div class="alert alert-success form-size" role="alert">
+    <h4 class="alert-heading">Success!</h4>
+    <p th:text="${message}"></p>
+    <hr>
+    <p th:text="${id}" class="mb-0" ></p>
 </div>
-
-<a th:href="@{/courseNumber/insert}" class="btn btn-primary"> back</a>
 
 <div th:insert="templates/fragments :: js"></div>
 </body>

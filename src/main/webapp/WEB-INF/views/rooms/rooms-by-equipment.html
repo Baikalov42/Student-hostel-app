@@ -4,12 +4,11 @@
     <div th:insert="templates/fragments :: style"></div>
     <title>Rooms by equipment</title>
 </head>
-
 <body>
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
-<div class="container">
+<div class="table-size">
     <h5>Chose equipment:</h5>
     <div th:each="equipment : ${equipments}" class="list-group">
         <a th:href="@{/rooms/byEquipment/{equipmentId}(equipmentId=${equipment.id})}"

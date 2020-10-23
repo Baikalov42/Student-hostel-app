@@ -8,24 +8,32 @@
 <div th:insert="templates/fragments :: navbar"></div>
 <br>
 
-<div class="container" >
-    <table class="table table-bordered">
-        <thead class="thead-light">
-        <tr>
-            <th scope="col" colspan="2">Equipment card</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>ID</td>
-            <th scope="row" th:text="${equipment.id}"></th>
-        </tr>
-        <tr>
-            <td>Name</td>
-            <th th:text="${equipment.name}"></th>
-        </tr>
-        </tbody>
-    </table>
+<table class="table-size table table-bordered">
+    <thead class="thead-light">
+    <tr>
+        <th class="text-to-center" scope="col" colspan="2">Equipment card</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>ID</td>
+        <th scope="row" th:text="${equipment.id}"></th>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <th th:text="${equipment.name}"></th>
+    </tr>
+    </tbody>
+</table>
+
+
+<div class="edit-del-container">
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/equipments/update/{id}(id = ${equipment.id})}">Edit</a>
+
+    <form action="#" th:action="@{/equipments/{id}(id = ${equipment.id})}" method="post">
+        <input type="hidden">
+        <input type="submit" class="edit-del-btn btn btn-secondary " value="Delete"/>
+    </form>
 </div>
 
 <div th:insert="templates/fragments :: js"></div>

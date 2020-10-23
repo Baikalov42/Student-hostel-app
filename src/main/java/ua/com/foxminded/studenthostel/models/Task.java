@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.Objects;
 
 @NotNull
 public class Task {
@@ -69,14 +70,14 @@ public class Task {
         Task task = (Task) o;
 
         if (costInHours != task.costInHours) return false;
-        if (!id.equals(task.id)) return false;
+        if (!Objects.equals(id, task.id)) return false;
         if (!name.equals(task.name)) return false;
         return description.equals(task.description);
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + name.hashCode();
         result = 31 * result + description.hashCode();
         result = 31 * result + costInHours;
