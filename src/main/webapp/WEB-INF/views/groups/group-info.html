@@ -17,33 +17,33 @@
     <tbody>
     <tr>
         <td>ID</td>
-        <th scope="row" th:text="${groupDTO.id}"></th>
+        <th scope="row" th:text="${group.id}"></th>
     </tr>
     <tr>
         <td>Name</td>
-        <th th:text="${groupDTO.name}"></th>
+        <th th:text="${group.name}"></th>
     </tr>
     <tr>
         <td>Course name</td>
         <th>
-            <a th:href="@{/courseNumbers/{id}(id=${groupDTO.courseNumber.id})}" style="color: lightslategrey"
-               th:text="${groupDTO.courseNumber.name}"></a>
+            <a th:href="@{/courseNumbers/{id}(id=${group.courseNumber.id})}" style="color: lightslategrey"
+               th:text="${group.courseNumber.name}"></a>
         </th>
     </tr>
     <tr>
         <td>Faculty name</td>
         <th>
-            <a th:href="@{/faculties/{id}(id=${groupDTO.faculty.id})}" style="color:lightslategrey"
-               th:text="${groupDTO.faculty.name}"></a>
+            <a th:href="@{/faculties/{id}(id=${group.faculty.id})}" style="color:lightslategrey"
+               th:text="${group.faculty.name}"></a>
         </th>
     </tr>
     </tbody>
 </table>
 
 <div class="edit-del-container">
-    <a class="btn btn-secondary edit-del-btn" th:href="@{/groups/update/{id}(id = ${groupDTO.id})}">Edit</a>
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/groups/update/{id}(id = ${group.id})}">Edit</a>
 
-    <form action="#" th:action="@{/groups/{id}(id = ${groupDTO.id})}" method="post">
+    <form action="#" th:action="@{/groups/{id}(id = ${group.id})}" method="post">
         <input type="hidden">
         <input type="submit" class="edit-del-btn btn btn-secondary " value="Delete"/>
     </form>

@@ -11,9 +11,9 @@ public interface FloorDao {
 
     Floor getById(BigInteger floorId);
 
-    List<Floor> getAll(long limit, long offset);
+    List<Floor> getAll(int offset, int limit);
 
-    boolean update(Floor floor);
+    Floor update(Floor floor);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

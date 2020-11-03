@@ -3,135 +3,111 @@ package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.RoomDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Room;
-import ua.com.foxminded.studenthostel.models.mappers.RoomMapper;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
-import java.sql.PreparedStatement;
 import java.util.List;
 
+
 @Repository
+@Transactional
 public class RoomDaoImpl implements RoomDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomDaoImpl.class);
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public BigInteger insert(Room room) {
-        LOGGER.debug("inserting {}", room);
-
-        String query = "" +
-                "INSERT INTO rooms (room_name, floor_id) " +
-                "VALUES (?, ?)";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        LOGGER.debug("inserting room {}", room);
         try {
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(query, new String[]{"room_id"});
-                ps.setString(1, room.getName());
-                ps.setLong(2, room.getFloorId().longValue());
+            entityManager.persist(room);
 
-                return ps;
-            }, keyHolder);
-
-            long id = keyHolder.getKey().longValue();
+            BigInteger id = room.getId();
             LOGGER.debug("inserting complete, id = {}", id);
-            return BigInteger.valueOf(id);
+            return id;
 
-        } catch (DataAccessException ex) {
-            LOGGER.error("insertion error {}", room, ex);
+        } catch (DataIntegrityViolationException ex) {
             throw new DaoException("Insertion error: " + room, ex);
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Room getById(BigInteger roomId) {
         LOGGER.debug("getting by id {}", roomId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM rooms " +
-                "WHERE room_id = ? ";
-        try {
-            Room room = jdbcTemplate.queryForObject(query, new RoomMapper(), roomId);
-            LOGGER.debug("getting complete {}", room);
-            return room;
+        Room room = entityManager.find(Room.class, roomId);
 
-        } catch (EmptyResultDataAccessException ex) {
-            LOGGER.warn("Failed get by id {}", roomId, ex);
-            throw new NotFoundException("Failed get by id: " + roomId, ex);
+        if (room == null) {
+            LOGGER.warn("Failed get by id {}", roomId);
+            throw new NotFoundException("Failed get by id: " + roomId);
         }
+        LOGGER.debug("getting complete {}", room);
+        return room;
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<Room> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+    public List<Room> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {}, limit {}  ", offset, limit);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM rooms " +
-                "ORDER BY room_id " +
-                "LIMIT ? OFFSET ?";
-
-        return jdbcTemplate.query(query, new RoomMapper(), limit, offset);
+        return entityManager
+                .createNamedQuery("Room.getAll", Room.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Room> getAllByEquipment(BigInteger equipmentId) {
-        LOGGER.debug("getting all by Equipment id {} ", equipmentId);
+        LOGGER.debug("getting all by Equipment id {}", equipmentId);
 
-        String query = "" +
-                "SELECT * FROM equipments " +
-                "INNER JOIN students_equipments ON equipments.equipment_id = students_equipments.equipment_id " +
-                "INNER JOIN students ON students_equipments.student_id = students.student_id " +
-                "INNER JOIN rooms ON students.room_id = rooms.room_id " +
-                "WHERE equipments.equipment_id = ? ";
-
-        return jdbcTemplate.query(query, new RoomMapper(), equipmentId);
+        return entityManager
+                .createQuery("" +
+                        "select rm " +
+                        "from Room rm " +
+                        "join rm.students st " +
+                        "join  st.equipments eq " +
+                        "where eq.id = :id ", Room.class)
+                .setParameter("id", equipmentId)
+                .getResultList();
     }
 
     @Override
-    public boolean update(Room room) {
+    public Room update(Room room) {
         LOGGER.debug("updating {}", room);
 
-        String query = "" +
-                "UPDATE rooms " +
-                "SET " +
-                "room_name = ? ," +
-                "floor_id = ? " +
-                "WHERE room_id = ? ";
         try {
-            return jdbcTemplate.update(query, room.getName(), room.getFloorId(), room.getId()) == 1;
+            Room result = entityManager.merge(room);
+            LOGGER.debug("updating complete, result: {}", result);
+            return result;
 
-        } catch (DataAccessException ex) {
+        } catch (DataIntegrityViolationException ex) {
             LOGGER.error("updating error {}", room, ex);
             throw new DaoException("Updating error: " + room, ex);
         }
     }
 
     @Override
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
-        String query = "" +
-                "DELETE FROM rooms " +
-                "WHERE room_id  = ? ";
         try {
-            return jdbcTemplate.update(query, id) == 1;
+            Room room = entityManager.find(Room.class, id);
+            entityManager.remove(room);
 
-        } catch (DataAccessException ex) {
+        } catch (DataIntegrityViolationException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

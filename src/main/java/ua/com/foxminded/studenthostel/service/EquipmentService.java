@@ -35,24 +35,24 @@ public class EquipmentService {
         return id;
     }
 
-    public boolean assignToStudent(BigInteger studentId, BigInteger equipmentId) {
+    public void assignToStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("assigning, student id {}, equipment id {}", studentId, equipmentId);
 
         validator.validateId(studentId, equipmentId);
         validateExistence(equipmentId);
         studentService.validateExistence(studentId);
 
-        return equipmentDao.assignToStudent(studentId, equipmentId);
+         equipmentDao.assignToStudent(studentId, equipmentId);
     }
 
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
+    public void unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("un assigning, student id {}, equipment id {}", studentId, equipmentId);
 
         validator.validateId(studentId, equipmentId);
         validateExistence(equipmentId);
         studentService.validateExistence(studentId);
 
-        return equipmentDao.unassignFromStudent(studentId, equipmentId);
+         equipmentDao.unassignFromStudent(studentId, equipmentId);
     }
 
 
@@ -67,14 +67,14 @@ public class EquipmentService {
     }
 
 
-    public List<Equipment> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+    public List<Equipment> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
 
-        List<Equipment> result = equipmentDao.getAll(limit, offset);
+        List<Equipment> result = equipmentDao.getAll(offset, limit);
         if (result.isEmpty()) {
 
-            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
-            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
+            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
         }
         return result;
     }
@@ -94,7 +94,7 @@ public class EquipmentService {
         return tasks;
     }
 
-    public boolean update(Equipment equipment) {
+    public Equipment update(Equipment equipment) {
         LOGGER.debug("updating {}", equipment);
 
         validator.validate(equipment);
@@ -104,13 +104,13 @@ public class EquipmentService {
         return equipmentDao.update(equipment);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
 
-        return equipmentDao.deleteById(id);
+         equipmentDao.deleteById(id);
     }
 
     void validateExistence(BigInteger id) {

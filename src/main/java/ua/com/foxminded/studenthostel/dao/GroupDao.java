@@ -10,9 +10,9 @@ public interface GroupDao {
 
     Group getById(BigInteger groupId);
 
-    List<Group> getAll(long limit, long offset);
+    List<Group> getAll(int offset, int limit);
 
-    boolean update(Group group);
+    Group update(Group group);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

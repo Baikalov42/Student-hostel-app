@@ -10,7 +10,7 @@ public interface StudentDao {
 
     Student getById(BigInteger studentId);
 
-    List<Student> getAll(long limit, long offset);
+    List<Student> getAll(int offset, int limit);
 
     List<Student> getAllByFloor(BigInteger floorId);
 
@@ -20,13 +20,11 @@ public interface StudentDao {
 
     List<Student> getAllWithDebitByGroup(BigInteger groupId, int numberOfHoursDebt);
 
-    boolean changeRoom(BigInteger newRoomId, BigInteger studentId);
+    Student changeRoom(BigInteger newRoomId, BigInteger studentId);
 
-    boolean changeDebt(int newHoursDebt, BigInteger studentId);
+    Student changeDebt(int newHoursDebt, BigInteger studentId);
 
-    Integer getStudentsCountByRoom(BigInteger roomID);
+    Student update(Student student);
 
-    boolean update(Student student);
-
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

@@ -11,9 +11,9 @@ public interface FacultyDao {
 
     Faculty getById(BigInteger facultyId);
 
-    List<Faculty> getAll(long limit, long offset);
+    List<Faculty> getAll(int offset, int limit);
 
-    boolean update(Faculty faculty);
+    Faculty update(Faculty faculty);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

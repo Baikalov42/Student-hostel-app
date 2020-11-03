@@ -20,8 +20,10 @@ public class TaskService {
 
     @Autowired
     private TaskDao taskDao;
+
     @Autowired
     StudentService studentService;
+
     @Autowired
     private ValidatorEntity<Task> validator;
 
@@ -45,13 +47,13 @@ public class TaskService {
         return task;
     }
 
-    public List<Task> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
-        List<Task> result = taskDao.getAll(limit, offset);
+    public List<Task> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
+        List<Task> result = taskDao.getAll(offset, limit);
 
         if (result.isEmpty()) {
-            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
-            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
+            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
         }
         return result;
     }
@@ -71,24 +73,24 @@ public class TaskService {
         return tasks;
     }
 
-    public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
+    public void assignToStudent(BigInteger studentId, BigInteger taskId) {
         LOGGER.debug("assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
         studentService.validateExistence(studentId);
 
-        return taskDao.assignToStudent(studentId, taskId);
+        taskDao.assignToStudent(studentId, taskId);
     }
 
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) {
+    public void unassignFromStudent(BigInteger studentId, BigInteger taskId) {
         LOGGER.debug("un assigning, student id {}, task id {}", studentId, taskId);
 
         validator.validateId(studentId, taskId);
         validateExistence(taskId);
         studentService.validateExistence(studentId);
 
-        return taskDao.unassignFromStudent(studentId, taskId);
+        taskDao.unassignFromStudent(studentId, taskId);
     }
 
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
@@ -102,7 +104,7 @@ public class TaskService {
     }
 
 
-    public boolean update(Task task) {
+    public Task update(Task task) {
         LOGGER.debug("updating {}", task);
 
         validator.validate(task);
@@ -112,13 +114,13 @@ public class TaskService {
         return taskDao.update(task);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
 
-        return taskDao.deleteById(id);
+        taskDao.deleteById(id);
     }
 
     void validateExistence(BigInteger id) {

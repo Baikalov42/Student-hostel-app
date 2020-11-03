@@ -18,7 +18,7 @@ import java.util.List;
 public class FloorController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FloorController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private FloorService floorService;
@@ -56,13 +56,13 @@ public class FloorController {
     }
 
     @GetMapping("/floors/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , offset {} ", LINES_LIMIT_ON_PAGE , offset);
 
-        List<Floor> floors = floorService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Floor> floors = floorService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("floors", floors);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, floors.size());
@@ -83,10 +83,10 @@ public class FloorController {
     public String update(@PathVariable long id, Model model, Floor floor) {
         LOGGER.debug("(POST) update id = {}", id);
 
-        floorService.update(floor);
+        Floor updated = floorService.update(floor);
 
         model.addAttribute("message", "Updating complete");
-        model.addAttribute("id", "Updated ID = " + floor.getId());
+        model.addAttribute("id", "Updated ID = " + updated.getId());
 
         LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";

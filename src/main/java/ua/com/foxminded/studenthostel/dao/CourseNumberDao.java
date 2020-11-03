@@ -11,9 +11,9 @@ public interface CourseNumberDao {
 
     CourseNumber getById(BigInteger courseNumberId);
 
-    List<CourseNumber> getAll(long limit, long offset);
+    List<CourseNumber> getAll(int offset, int limit);
 
-    boolean update(CourseNumber courseNumber);
+    CourseNumber update(CourseNumber courseNumber);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

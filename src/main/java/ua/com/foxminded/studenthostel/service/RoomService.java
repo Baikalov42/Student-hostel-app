@@ -10,11 +10,9 @@ import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Room;
-import ua.com.foxminded.studenthostel.models.dto.RoomDTO;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,7 +37,7 @@ public class RoomService {
         LOGGER.debug("inserting {}", room);
 
         validator.validate(room);
-        floorService.validateExistence(room.getFloorId());
+        floorService.validateExistence(room.getFloor().getId());
 
         BigInteger id = roomDao.insert(room);
 
@@ -57,43 +55,21 @@ public class RoomService {
         return room;
     }
 
-    public RoomDTO getDTOById(BigInteger id) {
-        LOGGER.debug("getting DTO by id {}", id);
 
-        Room room = getById(id);
-        RoomDTO roomDTO = getDTO(room);
-
-        LOGGER.debug("getting DTO by id, complete {}", roomDTO);
-        return roomDTO;
-    }
-
-
-    public List<Room> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
-        List<Room> result = roomDao.getAll(limit, offset);
+    public List<Room> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
+        List<Room> result = roomDao.getAll(offset, limit);
 
         if (result.isEmpty()) {
 
-            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
-            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
+            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
         }
         return result;
     }
 
-    public List<RoomDTO> getAllDTO(long limit, long offset) {
-        LOGGER.debug("getting all DTO, limit {} , offset {} ", limit, offset);
 
-        List<Room> rooms = getAll(limit, offset);
-        List<RoomDTO> roomDTOS = new ArrayList<>();
-
-        for (Room room : rooms) {
-            roomDTOS.add(getDTO(room));
-        }
-        return roomDTOS;
-    }
-
-
-    public List<RoomDTO> getAllByEquipment(BigInteger equipmentId) {
+    public List<Room> getAllByEquipment(BigInteger equipmentId) {
         LOGGER.debug("getting all by Equipment, id = {} ", equipmentId);
 
         validator.validateId(equipmentId);
@@ -106,33 +82,28 @@ public class RoomService {
             LOGGER.warn("Result is empty, equipment id = {}", equipmentId);
             throw new NotFoundException("Result with equipment id=" + equipmentId + " is empty");
         }
-        List<RoomDTO> roomDTOS = new ArrayList<>();
-
-        for (Room room : rooms) {
-            roomDTOS.add(getDTO(room));
-        }
-        return roomDTOS;
+        return rooms;
     }
 
-    public boolean update(Room room) {
+    public Room update(Room room) {
         LOGGER.debug("updating {}", room);
 
         validator.validate(room);
         validator.validateId(room.getId());
 
         validateExistence(room.getId());
-        floorService.validateExistence(room.getFloorId());
+        floorService.validateExistence(room.getFloor().getId());
 
         return roomDao.update(room);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
 
-        return roomDao.deleteById(id);
+        roomDao.deleteById(id);
     }
 
     void validateExistence(BigInteger id) {
@@ -144,19 +115,5 @@ public class RoomService {
             LOGGER.warn("entry not exist, id = {}", id);
             throw new ValidationException("id = " + id + " not exist", ex);
         }
-    }
-
-    RoomDTO getDTO(Room room) {
-        LOGGER.debug("getting DTO,  {}", room);
-
-        RoomDTO roomDTO = new RoomDTO();
-
-        roomDTO.setId(room.getId());
-        roomDTO.setName(room.getName());
-        roomDTO.setStudentsCount(studentDao.getStudentsCountByRoom(room.getId()));
-        roomDTO.setFloor(floorDao.getById(room.getFloorId()));
-
-        LOGGER.debug("getting DTO complete,  {}", roomDTO);
-        return roomDTO;
     }
 }

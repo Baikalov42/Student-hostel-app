@@ -3,117 +3,94 @@ package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Floor;
-import ua.com.foxminded.studenthostel.models.mappers.FloorMapper;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
-import java.sql.PreparedStatement;
 import java.util.List;
 
-
+@Transactional
 @Repository
 public class FloorDaoImpl implements FloorDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FloorDaoImpl.class);
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public BigInteger insert(Floor floor) {
-        LOGGER.debug("inserting {}", floor);
-
-        String query = "" +
-                "INSERT INTO floors (floor_name) " +
-                "VALUES (?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        LOGGER.debug("inserting floor {}", floor);
         try {
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(query, new String[]{"floor_id"});
-                ps.setString(1, floor.getName());
-                return ps;
-            }, keyHolder);
+            entityManager.persist(floor);
 
-            long id = keyHolder.getKey().longValue();
+            BigInteger id = floor.getId();
             LOGGER.debug("inserting complete, id = {}", id);
-            return BigInteger.valueOf(id);
+            return id;
 
-        } catch (DataAccessException ex) {
-            LOGGER.error("insertion error {}", floor, ex);
+        } catch (DataIntegrityViolationException ex) {
             throw new DaoException("Insertion error: " + floor, ex);
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Floor getById(BigInteger floorId) {
         LOGGER.debug("getting by id {}", floorId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM floors " +
-                "WHERE floor_id = ? ";
-        try {
-            Floor floor = jdbcTemplate.queryForObject(query, new FloorMapper(), floorId);
-            LOGGER.debug("getting complete {}", floor);
-            return floor;
+        Floor floor = entityManager.find(Floor.class, floorId);
 
-        } catch (EmptyResultDataAccessException ex) {
-            LOGGER.warn("Failed get by id {}", floorId, ex);
-            throw new NotFoundException("Failed get by id: " + floorId, ex);
+        if (floor == null) {
+            LOGGER.warn("Failed get by id {}", floorId);
+            throw new NotFoundException("Failed get by id: " + floorId);
         }
+        LOGGER.debug("getting complete {}", floor);
+        return floor;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Floor> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {}, limit {}  ", offset, limit);
+
+        return entityManager
+                .createNamedQuery("Floor.getAll", Floor.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 
     @Override
-    public List<Floor> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
-
-        String query = "" +
-                "SELECT * " +
-                "FROM floors " +
-                "ORDER BY floor_id " +
-                "LIMIT ? OFFSET ? ";
-
-        return jdbcTemplate.query(query, new FloorMapper(), limit, offset);
-    }
-
-    @Override
-    public boolean update(Floor floor) {
+    public Floor update(Floor floor) {
         LOGGER.debug("updating {}", floor);
 
-        String query = "" +
-                "UPDATE floors " +
-                "SET floor_name = ? " +
-                "WHERE floor_id = ? ";
         try {
-            return jdbcTemplate.update(query, floor.getName(), floor.getId()) == 1;
+            Floor result = entityManager.merge(floor);
+            LOGGER.debug("updating complete, result: {}", result);
+            return result;
 
-        } catch (DataAccessException ex) {
+        } catch (DataIntegrityViolationException ex) {
             LOGGER.error("updating error {}", floor, ex);
             throw new DaoException("Updating error: " + floor, ex);
         }
     }
 
     @Override
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
-        String query = "" +
-                "DELETE FROM floors " +
-                "WHERE floor_id  = ? ";
         try {
-            return jdbcTemplate.update(query, id) == 1;
+            Floor floor = entityManager.find(Floor.class, id);
+            entityManager.remove(floor);
 
-        } catch (DataAccessException ex) {
+        } catch (DataIntegrityViolationException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

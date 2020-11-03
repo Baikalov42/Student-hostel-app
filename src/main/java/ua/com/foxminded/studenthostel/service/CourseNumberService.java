@@ -47,19 +47,19 @@ public class CourseNumberService {
         return courseNumber;
     }
 
-    public List<CourseNumber> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+    public List<CourseNumber> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
 
-        List<CourseNumber> result = courseNumberDao.getAll(limit, offset);
+        List<CourseNumber> result = courseNumberDao.getAll(offset, limit);
 
         if (result.isEmpty()) {
-            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
-            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
+            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
         }
         return result;
     }
 
-    public boolean update(CourseNumber courseNumber) {
+    public CourseNumber update(CourseNumber courseNumber) {
 
         LOGGER.debug("updating {}", courseNumber);
 
@@ -70,13 +70,13 @@ public class CourseNumberService {
         return courseNumberDao.update(courseNumber);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
 
-        return courseNumberDao.deleteById(id);
+        courseNumberDao.deleteById(id);
     }
 
     void validateExistence(BigInteger id) {

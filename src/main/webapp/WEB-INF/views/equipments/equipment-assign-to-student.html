@@ -9,19 +9,19 @@
 <br>
 
 <form action="#" th:action="@{/equipments/assign}"
-      th:object="${student}"
+      th:object="${pair}"
       method="post" class="form-size">
     <br>
     <h2 th:text="${'Adding new Equipment to: ' + student.firstName + ' ' + student.lastName}" align=" center"></h2>
 
     <div class="form-group" >
         <label for="exampleFormControlInput1">new Equipment ID</label>
-        <input type="number" th:field="*{groupId}"
+        <input type="number" th:field="*{secondId}"
                id="exampleFormControlInput1"
                class="form-control">
     </div>
     <div hidden="hidden" >
-        <input type="number" th:field="*{id}" th:value="${student.id}">
+        <input type="number" th:field="*{studentId}" th:value="${pair.studentId}">
     </div>
     <input type="submit" class="btn btn-info" value="Save"/>
 </form>
@@ -29,3 +29,4 @@
 <div th:insert="templates/fragments :: js"></div>
 </body>
 </html>
+
