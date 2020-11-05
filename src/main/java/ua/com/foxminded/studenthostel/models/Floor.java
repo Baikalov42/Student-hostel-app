@@ -31,7 +31,7 @@ public class Floor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "floor_id")
+    @Column(name = "floor_id", nullable = false, unique = true)
     public BigInteger getId() {
         return id;
     }
@@ -51,19 +51,20 @@ public class Floor {
 
     @Override
     public boolean equals(Object o) {
+
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Floor floor = (Floor) o;
 
-        if (!name.equals(floor.name)) return false;
-        return Objects.equals(id, floor.id);
+        if (!Objects.equals(id, floor.id)) return false;
+        return Objects.equals(name, floor.name);
     }
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + (id != null ? id.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 

@@ -4,7 +4,7 @@ package ua.com.foxminded.studenthostel.dao.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.RoomDao;
@@ -16,7 +16,9 @@ import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
@@ -27,6 +29,7 @@ public class StudentDaoImpl implements StudentDao {
 
     @PersistenceContext
     private EntityManager entityManager;
+
     @Autowired
     private RoomDao roomDao;
 
@@ -35,12 +38,14 @@ public class StudentDaoImpl implements StudentDao {
         LOGGER.debug("inserting student {}", student);
         try {
             entityManager.persist(student);
+            entityManager.flush();
 
             BigInteger id = student.getId();
             LOGGER.debug("inserting complete, id = {}", id);
             return id;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
+            LOGGER.error("insertion error {}", student, ex);
             throw new DaoException("Insertion error: " + student, ex);
         }
     }
@@ -145,13 +150,19 @@ public class StudentDaoImpl implements StudentDao {
         Student student = this.getById(studentId);
         Room newRoom = roomDao.getById(newRoomId);
 
-        if (student.getRoom().equals(newRoom)) {
-            LOGGER.warn("student {} is already in this room {}", studentId, newRoomId);
-            throw new DaoException("student is already in this room " + newRoom);
-        }
         student.setRoom(newRoom);
 
-        return entityManager.merge(student);
+        try {
+            Student result = entityManager.merge(student);
+            entityManager.flush();
+
+            LOGGER.debug("changeRoom complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
+            LOGGER.error("changeRoom error student {}, room {}", studentId, newRoomId);
+            throw new DaoException("changeRoom error student: + " + student + " room: " + newRoom);
+        }
     }
 
     @Override
@@ -161,7 +172,17 @@ public class StudentDaoImpl implements StudentDao {
         Student student = this.getById(studentId);
         student.setHoursDebt(newHoursDebt);
 
-        return entityManager.merge(student);
+        try {
+            Student result = entityManager.merge(student);
+            entityManager.flush();
+
+            LOGGER.debug("changeDebt complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
+            LOGGER.error("changeDebt error student {}, debt {}", studentId, newHoursDebt);
+            throw new DaoException("changeDebt error student: + " + student + " debt: " + newHoursDebt);
+        }
     }
 
     @Override
@@ -170,10 +191,12 @@ public class StudentDaoImpl implements StudentDao {
 
         try {
             Student result = entityManager.merge(student);
+            entityManager.flush();
+
             LOGGER.debug("updating complete, result: {}", result);
             return result;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", student, ex);
             throw new DaoException("Updating error: " + student, ex);
         }
@@ -186,8 +209,9 @@ public class StudentDaoImpl implements StudentDao {
         try {
             Student student = entityManager.find(Student.class, id);
             entityManager.remove(student);
+            entityManager.flush();
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

@@ -16,7 +16,6 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 @NamedQuery(name = "CourseNumber.getAll", query = "SELECT m FROM CourseNumber m")
-@SequenceGenerator(name = "course_seq", initialValue = 10)
 @NotNull
 @Entity
 @Table(name = "course_numbers")
@@ -38,7 +37,7 @@ public class CourseNumber {
 
     @Id
     @Column(name = "course_number_id", nullable = false, unique = true)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     public BigInteger getId() {
         return id;
     }
@@ -56,16 +55,16 @@ public class CourseNumber {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CourseNumber courseNumber = (CourseNumber) o;
+        CourseNumber that = (CourseNumber) o;
 
-        if (!name.equals(courseNumber.name)) return false;
-        return Objects.equals(id, courseNumber.id);
+        if (!Objects.equals(id, that.id)) return false;
+        return Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + (id != null ? id.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 

@@ -4,8 +4,8 @@ VALUES (1, 'testfacultyname');
 INSERT INTO course_numbers (course_number_id, course_number_name)
 VALUES (1, 'coursenumbertestname');
 
-INSERT INTO groups (group_name, faculty_id, course_number_id)
-VALUES ('testname', 1, 1);
+INSERT INTO groups (group_id, group_name, faculty_id, course_number_id)
+VALUES (1,'testname', 1, 1);
 
 INSERT INTO floors (floor_id, floor_name)
 VALUES (1, 'testfloor');
@@ -19,7 +19,7 @@ VALUES (1, 'test', 'test', 1);
 INSERT INTO tasks (task_id, task_name, task_description, cost)
 VALUES (4, 'testtwo', 'testtwo', 4);
 
-INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
+INSERT INTO students (student_id, first_name, last_name, hoursdebt, group_id, room_id)
 VALUES (1, 'testfirstname', 'testlastname', 10, 1, 1);
 
 INSERT INTO students_tasks (student_id, task_id)

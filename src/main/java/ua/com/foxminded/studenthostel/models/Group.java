@@ -45,7 +45,7 @@ public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "group_id")
+    @Column(name = "group_id",nullable = false, unique = true)
     public BigInteger getId() {
         return id;
     }
@@ -85,18 +85,14 @@ public class Group {
 
         Group group = (Group) o;
 
-        if (!Objects.equals(name, group.name)) return false;
         if (!Objects.equals(id, group.id)) return false;
-        if (!Objects.equals(faculty, group.faculty)) return false;
-        return Objects.equals(courseNumber, group.courseNumber);
+        return Objects.equals(name, group.name);
     }
 
     @Override
     public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        result = 31 * result + (faculty != null ? faculty.hashCode() : 0);
-        result = 31 * result + (courseNumber != null ? courseNumber.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 

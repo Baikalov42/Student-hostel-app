@@ -3,7 +3,7 @@ package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
@@ -13,6 +13,7 @@ import ua.com.foxminded.studenthostel.models.Floor;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -30,12 +31,14 @@ public class FloorDaoImpl implements FloorDao {
         LOGGER.debug("inserting floor {}", floor);
         try {
             entityManager.persist(floor);
+            entityManager.flush();
 
             BigInteger id = floor.getId();
             LOGGER.debug("inserting complete, id = {}", id);
             return id;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
+            LOGGER.error("insertion error {}", floor, ex);
             throw new DaoException("Insertion error: " + floor, ex);
         }
     }
@@ -73,10 +76,12 @@ public class FloorDaoImpl implements FloorDao {
 
         try {
             Floor result = entityManager.merge(floor);
+            entityManager.flush();
+
             LOGGER.debug("updating complete, result: {}", result);
             return result;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", floor, ex);
             throw new DaoException("Updating error: " + floor, ex);
         }
@@ -89,8 +94,9 @@ public class FloorDaoImpl implements FloorDao {
         try {
             Floor floor = entityManager.find(Floor.class, id);
             entityManager.remove(floor);
+            entityManager.flush();
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

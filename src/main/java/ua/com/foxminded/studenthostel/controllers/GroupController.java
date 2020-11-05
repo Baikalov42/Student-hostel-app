@@ -37,8 +37,6 @@ public class GroupController {
 
         BigInteger id = groupService.insert(group);
 
-        System.err.println(group);
-
         model.addAttribute("message", "Adding completed.");
         model.addAttribute("id", "New ID = " + id);
 
@@ -83,7 +81,7 @@ public class GroupController {
 
     @PostMapping("/groups/update/{id}")
     public String update(@PathVariable long id, Model model, Group group) {
-        LOGGER.debug("(POST) update id = {}", id);
+        LOGGER.debug("(POST) update group = {}", group);
 
         Group updated = groupService.update(group);
 

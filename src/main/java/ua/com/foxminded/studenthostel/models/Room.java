@@ -86,14 +86,12 @@ public class Room {
         Room room = (Room) o;
 
         if (!Objects.equals(id, room.id)) return false;
-        if (!Objects.equals(floor, room.floor)) return false;
         return Objects.equals(name, room.name);
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (floor != null ? floor.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }

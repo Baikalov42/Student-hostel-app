@@ -2,7 +2,8 @@ package ua.com.foxminded.studenthostel.dao.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
@@ -12,13 +13,13 @@ import ua.com.foxminded.studenthostel.models.CourseNumber;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
 import java.util.List;
 
-@Transactional
 @Repository
+@Transactional
 public class CourseNumberDaoImpl implements CourseNumberDao {
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseNumberDaoImpl.class);
 
@@ -31,13 +32,15 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         try {
             entityManager.persist(courseNumber);
+            entityManager.flush();
 
             BigInteger id = courseNumber.getId();
             LOGGER.debug("inserting complete, id = {}", id);
             return id;
 
-        } catch (DataIntegrityViolationException ex) {
-            throw new DaoException("Insertion error: " + courseNumber, ex);
+        } catch (PersistenceException ex) {
+            LOGGER.error("insertion error {}", courseNumber, ex);
+            throw new DaoException("Insertion error : " + courseNumber, ex);
         }
     }
 
@@ -50,7 +53,7 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         if (courseNumber == null) {
             LOGGER.warn("Failed get by id {}", courseNumberId);
-            throw new NotFoundException("Failed get by id: " + courseNumberId);
+            throw new NotFoundException("Not found id: " + courseNumberId);
         }
         LOGGER.debug("getting complete {}", courseNumber);
         return courseNumber;
@@ -74,12 +77,14 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
 
         try {
             CourseNumber result = entityManager.merge(courseNumber);
+            entityManager.flush();
+
             LOGGER.debug("updating complete, result: {}", result);
             return result;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", courseNumber, ex);
-            throw new DaoException("Updating error: " + courseNumber, ex);
+            throw new DaoException("Updating errorRR: " + courseNumber, ex);
         }
     }
 
@@ -90,8 +95,9 @@ public class CourseNumberDaoImpl implements CourseNumberDao {
         try {
             CourseNumber courseNumber = entityManager.find(CourseNumber.class, id);
             entityManager.remove(courseNumber);
+            entityManager.flush();
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

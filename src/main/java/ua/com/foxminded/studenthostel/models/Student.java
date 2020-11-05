@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @NamedQuery(name = "Student.getAll", query = "SELECT m FROM Student m")
-@SequenceGenerator(name = "students_seq", initialValue = 10)
+@SequenceGenerator(name = "students_seq", initialValue = 1)
 @NotNull
 @Entity
 @Table(name = "students", uniqueConstraints =
@@ -55,6 +55,7 @@ public class Student {
 
     @NotNull
     private Group group;
+
     @NotNull
     private Room room;
 
@@ -66,8 +67,7 @@ public class Student {
     }
 
     public Student(BigInteger id, String firstName,
-                   String lastName, int hoursDebt, Group group, Room room,
-                   Set<Task> tasks, Set<Equipment> equipments) {
+                   String lastName, int hoursDebt, Group group, Room room) {
 
         this.id = id;
         this.firstName = firstName;
@@ -75,8 +75,6 @@ public class Student {
         this.hoursDebt = hoursDebt;
         this.group = group;
         this.room = room;
-        this.tasks = tasks;
-        this.equipments = equipments;
     }
 
     @Id
@@ -171,12 +169,9 @@ public class Student {
 
         Student student = (Student) o;
 
-        if (hoursDebt != student.hoursDebt) return false;
         if (!Objects.equals(id, student.id)) return false;
         if (!Objects.equals(firstName, student.firstName)) return false;
-        if (!Objects.equals(lastName, student.lastName)) return false;
-        if (!Objects.equals(group, student.group)) return false;
-        return Objects.equals(room, student.room);
+        return Objects.equals(lastName, student.lastName);
     }
 
     @Override
@@ -184,9 +179,20 @@ public class Student {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
         result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
-        result = 31 * result + hoursDebt;
-        result = 31 * result + (group != null ? group.hashCode() : 0);
-        result = 31 * result + (room != null ? room.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", hoursDebt=" + hoursDebt +
+                ", group=" + group +
+                ", room=" + room +
+                ", equipments=" + equipments +
+                ", tasks=" + tasks +
+                '}';
     }
 }

@@ -49,6 +49,7 @@ public class Faculty {
         this.name = name;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,14 +57,14 @@ public class Faculty {
 
         Faculty faculty = (Faculty) o;
 
-        if (!name.equals(faculty.name)) return false;
-        return Objects.equals(id, faculty.id);
+        if (!Objects.equals(id, faculty.id)) return false;
+        return Objects.equals(name, faculty.name);
     }
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + (id != null ? id.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 

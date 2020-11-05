@@ -110,7 +110,7 @@ public class RoomController {
 
     @PostMapping("/rooms/update/{id}")
     public String update(@PathVariable long id, Model model, Room room) {
-        LOGGER.debug("(POST) update id = {}", id);
+        LOGGER.debug("(POST) update room {}", room);
 
         roomService.update(room);
 

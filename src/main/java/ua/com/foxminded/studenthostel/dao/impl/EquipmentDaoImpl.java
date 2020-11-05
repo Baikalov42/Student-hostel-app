@@ -3,7 +3,8 @@ package ua.com.foxminded.studenthostel.dao.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.dao.EquipmentDao;
@@ -15,6 +16,7 @@ import ua.com.foxminded.studenthostel.models.Student;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -35,12 +37,14 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         try {
             entityManager.persist(equipment);
+            entityManager.flush();
 
             BigInteger id = equipment.getId();
             LOGGER.debug("inserting complete, id = {}", id);
             return id;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException  ex) {
+            LOGGER.error("insertion error {}", equipment, ex);
             throw new DaoException("Insertion error: " + equipment, ex);
         }
     }
@@ -49,16 +53,18 @@ public class EquipmentDaoImpl implements EquipmentDao {
     public void assignToStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("assigning, student {}, equipment {}", studentId, equipmentId);
 
-        Equipment equipment = this.getById(equipmentId);
-        Student student = studentDao.getById(studentId);
 
-        int before = student.getEquipments().size();
-        equipment.addStudent(student);
-        int after = student.getEquipments().size();
+        try {
+            Equipment equipment = this.getById(equipmentId);
+            Student student = studentDao.getById(studentId);
+            equipment.addStudent(student);
+            entityManager.flush();
 
-        if (before == after) {
-            LOGGER.warn("Duplicate equipment: {}", equipmentId);
-            throw new DaoException("Duplicate equipment: " + equipmentId);
+        } catch (PersistenceException  ex) {
+
+            LOGGER.error("failed assigning, student id {}, equipment id {}", studentId, equipmentId, ex);
+            String message = "student id =" + studentId + " equipment id =" + equipmentId;
+            throw new DaoException(message, ex);
         }
     }
 
@@ -66,16 +72,17 @@ public class EquipmentDaoImpl implements EquipmentDao {
     public void unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("un assigning, student id {}, equipment id {}", studentId, equipmentId);
 
-        Equipment equipment = this.getById(equipmentId);
-        Student student = studentDao.getById(studentId);
 
-        int before = student.getEquipments().size();
-        equipment.removeStudent(student);
-        int after = student.getEquipments().size();
 
-        if (before == after) {
-            LOGGER.warn("Student dont have equipment: {}", equipmentId);
-            throw new DaoException("Student dont have equipment:: " + equipmentId);
+        try {
+            Equipment equipment = this.getById(equipmentId);
+            Student student = studentDao.getById(studentId);
+            equipment.removeStudent(student);
+            entityManager.flush();
+
+        } catch (DataAccessException ex) {
+            LOGGER.error("failed un assigning, student id {}, equipment id {}", studentId, equipmentId, ex);
+            throw new DaoException("student id =" + studentId + " equipment id =" + equipmentId, ex);
         }
     }
 
@@ -127,10 +134,12 @@ public class EquipmentDaoImpl implements EquipmentDao {
 
         try {
             Equipment result = entityManager.merge(equipment);
+            entityManager.flush();
+
             LOGGER.debug("updating complete, result: {}", result);
             return result;
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", equipment, ex);
             throw new DaoException("Updating error: " + equipment, ex);
         }
@@ -143,8 +152,9 @@ public class EquipmentDaoImpl implements EquipmentDao {
         try {
             Equipment equipment = entityManager.find(Equipment.class, id);
             entityManager.remove(equipment);
+            entityManager.flush();
 
-        } catch (DataIntegrityViolationException ex) {
+        } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }
