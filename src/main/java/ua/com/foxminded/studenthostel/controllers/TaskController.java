@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.Task;
+import ua.com.foxminded.studenthostel.models.dto.PairDTO;
 import ua.com.foxminded.studenthostel.service.StudentService;
 import ua.com.foxminded.studenthostel.service.TaskService;
 
@@ -20,7 +21,7 @@ import java.util.List;
 public class TaskController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private TaskService taskService;
@@ -60,13 +61,13 @@ public class TaskController {
     }
 
     @GetMapping("/tasks/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Task> tasks = taskService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Task> tasks = taskService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("tasks", tasks);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, tasks.size());
@@ -89,20 +90,25 @@ public class TaskController {
         LOGGER.debug("(GET) assignToStudent, student id {}", studentId);
 
         Student student = studentService.getById(studentId);
+        PairDTO pair = new PairDTO();
+        pair.setStudentId(studentId);
+
         model.addAttribute("student", student);
+        model.addAttribute("pair",pair);
 
         return "tasks/task-assign-to-student";
     }
 
 
     @PostMapping("/tasks/assign")
-    public String assignToStudent(Student student, Model model) {
-        LOGGER.debug("(POST) assignToStudent, student id {}, task id {}", student.getId(), student.getGroupId());
+    public String assignToStudent(PairDTO pair, Model model) {
+        LOGGER.debug("(POST) assignToStudent, student id {}, task id {}", pair.getStudentId(),
+                pair.getSecondId());
 
-        taskService.assignToStudent(student.getId(), student.getGroupId());
+        taskService.assignToStudent(pair.getStudentId(), pair.getSecondId());
 
         model.addAttribute("message", "Assigning success");
-        model.addAttribute("id", "Student ID = " + student.getId() + ", Task ID = " + student.getGroupId());
+        model.addAttribute("id", "Student ID = " + pair.getStudentId() + ", Task ID = " + pair.getSecondId());
 
         LOGGER.debug("(POST) assignToStudent complete, model: {}", model);
         return "message";
@@ -151,10 +157,10 @@ public class TaskController {
     public String update(@PathVariable long id, Model model, Task task) {
         LOGGER.debug("(POST) update id = {}", id);
 
-        taskService.update(task);
+        Task updated = taskService.update(task);
 
         model.addAttribute("message", "Updating complete");
-        model.addAttribute("id", "Updated ID = " + task.getId());
+        model.addAttribute("id", "Updated ID = " + updated.getId());
 
         LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";

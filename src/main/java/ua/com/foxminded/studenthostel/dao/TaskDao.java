@@ -11,17 +11,17 @@ public interface TaskDao {
 
     Task getById(BigInteger taskId);
 
-    List<Task> getAll(long limit, long offset);
+    List<Task> getAll(int offset, int limit);
 
     List<Task> getAllByStudent(BigInteger studentId);
 
-    boolean assignToStudent(BigInteger studentId, BigInteger taskId);
+    void assignToStudent(BigInteger studentId, BigInteger taskId);
 
-    boolean unassignFromStudent(BigInteger studentId, BigInteger taskId);
+    void unassignFromStudent(BigInteger studentId, BigInteger taskId);
 
     boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId);
 
-    boolean update(Task task);
+    Task update(Task task);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

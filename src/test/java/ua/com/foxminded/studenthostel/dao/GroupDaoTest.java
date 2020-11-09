@@ -9,11 +9,15 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.CourseNumber;
+import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Group;
 
 import javax.sql.DataSource;
@@ -21,8 +25,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class GroupDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
 
     @Autowired
     private DataSource dataSource;
@@ -38,8 +46,6 @@ class GroupDaoTest {
     @BeforeEach
     public void addTablesScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
 
     @Test
@@ -49,10 +55,9 @@ class GroupDaoTest {
 
         Group group = new Group();
 
-        group.setCourseNumberId(BigInteger.valueOf(1));
+        group.setCourseNumber(getCourse());
         group.setName("test");
-        group.setFacultyId(BigInteger.valueOf(1));
-        group.setId(BigInteger.valueOf(2));
+        group.setFaculty(getFaculty());
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
         groupDao.insert(group);
@@ -68,10 +73,10 @@ class GroupDaoTest {
 
         Group group = new Group();
 
-        group.setId(BigInteger.valueOf(1));
+        group.setId(ONE);
         group.setName("testname");
-        group.setCourseNumberId(BigInteger.valueOf(1));
-        group.setFacultyId(BigInteger.valueOf(2));
+        group.setCourseNumber(getCourse());
+        group.setFaculty(getFaculty());
 
         Assertions.assertThrows(DaoException.class, () -> groupDao.insert(group));
     }
@@ -83,10 +88,10 @@ class GroupDaoTest {
 
         Group group = new Group();
 
-        group.setId(BigInteger.valueOf(1));
+        group.setId(ONE);
         group.setName("testname");
-        group.setCourseNumberId(BigInteger.valueOf(2));
-        group.setFacultyId(BigInteger.valueOf(1));
+        group.setCourseNumber(getCourse());
+        group.setFaculty(getFaculty());
 
         Assertions.assertThrows(DaoException.class, () -> groupDao.insert(group));
     }
@@ -98,88 +103,79 @@ class GroupDaoTest {
 
         Group expectGroup = new Group();
 
-        expectGroup.setId(BigInteger.valueOf(1));
+        expectGroup.setId(BigInteger.valueOf(2));
         expectGroup.setName("testname1");
-        expectGroup.setFacultyId(BigInteger.valueOf(1));
-        expectGroup.setCourseNumberId(BigInteger.valueOf(1));
+        expectGroup.setFaculty(getFaculty());
+        expectGroup.setCourseNumber(getCourse());
 
-        Assertions.assertEquals(expectGroup, groupDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expectGroup, groupDao.getById(BigInteger.valueOf(2)));
 
     }
 
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
         Assertions.assertThrows(NotFoundException.class,
-                () -> groupDao.getById(BigInteger.valueOf(1)));
+                () -> groupDao.getById(ONE));
     }
+
     @Test
-    public void getAll_ShouldReturnListOfGroups_WhenConditionCompleted(){
+    public void getAll_ShouldReturnListOfGroups_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Group group = new Group();
-        group.setId(BigInteger.valueOf(2));
+        group.setId(BigInteger.valueOf(3));
         group.setName("testname2");
-        group.setCourseNumberId(BigInteger.valueOf(1));
-        group.setFacultyId(BigInteger.valueOf(1));
+        group.setCourseNumber(getCourse());
+        group.setFaculty(getFaculty());
 
         List<Group> list = new ArrayList<>();
         list.add(group);
-        Assertions.assertEquals(list, groupDao.getAll(1,1));
+        Assertions.assertEquals(list, groupDao.getAll(1, 1));
     }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Group newValues = new Group();
-        newValues.setId(BigInteger.valueOf(1));
+        newValues.setId(BigInteger.valueOf(2));
         newValues.setName("newname");
-        newValues.setCourseNumberId(BigInteger.valueOf(1));
-        newValues.setFacultyId(BigInteger.valueOf(1));
+        newValues.setCourseNumber(getCourse());
+        newValues.setFaculty(getFaculty());
 
-        boolean isUpdated = groupDao.update(newValues);
+        groupDao.update(newValues);
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, groupDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(newValues, groupDao.getById(BigInteger.valueOf(2)));
     }
-
+    
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        Group newValues = new Group();
-        newValues.setId(BigInteger.valueOf(4));
-        newValues.setName("newname");
-        newValues.setCourseNumberId(BigInteger.valueOf(1));
-        newValues.setFacultyId(BigInteger.valueOf(1));
-
-        Assertions.assertFalse(groupDao.update(newValues));
-    }
-
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
-        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(1));
+        groupDao.deleteById(BigInteger.valueOf(2));
         int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
 
         Assertions.assertEquals(rowNumberBefore - 1, rowNumberAfter);
-        Assertions.assertTrue(isDeleted);
+
     }
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToGroupsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
-        boolean isDeleted = groupDao.deleteById(BigInteger.valueOf(4));
-        int rowNumberAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
+    CourseNumber getCourse() {
+        CourseNumber courseNumber = new CourseNumber();
+        courseNumber.setName("coursenumbertestname");
+        courseNumber.setId(ONE);
 
-        Assertions.assertEquals(rowNumberBefore , rowNumberAfter);
-        Assertions.assertFalse(isDeleted);
+        return courseNumber;
+    }
+
+    Faculty getFaculty() {
+        Faculty faculty = new Faculty();
+        faculty.setName("testfacultyname");
+        faculty.setId(ONE);
+
+        return faculty;
     }
 }

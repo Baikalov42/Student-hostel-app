@@ -146,15 +146,6 @@ class FacultyServiceTest {
                 () -> facultyService.getAll(10, 10));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Faculty faculty = new Faculty();
-        faculty.setName(VALID_NAME);
-        faculty.setId(VALID_ID);
-
-        Mockito.when(facultyDao.update(faculty)).thenReturn(true);
-        Assertions.assertTrue(facultyService.update(faculty));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
@@ -225,13 +216,6 @@ class FacultyServiceTest {
                 () -> facultyService.update(null));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(facultyDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(facultyDao.getById(VALID_ID)).thenReturn(new Faculty());
-
-        Assertions.assertTrue(facultyService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {

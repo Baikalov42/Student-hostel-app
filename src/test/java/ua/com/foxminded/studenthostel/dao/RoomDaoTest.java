@@ -9,20 +9,32 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.models.Room;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class RoomDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private DataSource dataSource;
@@ -41,9 +53,8 @@ class RoomDaoTest {
     @BeforeEach
     public void addTablesScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
+
 
     @Test
     public void insert_ShouldMakeEntry_InRoomsTable() {
@@ -53,7 +64,7 @@ class RoomDaoTest {
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
         room.setName("testnametwo");
-        room.setFloorId(BigInteger.valueOf(1));
+        room.setFloor(getFloor());
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
         roomDao.insert(room);
@@ -70,7 +81,7 @@ class RoomDaoTest {
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
         room.setName("testnametwo");
-        room.setFloorId(BigInteger.valueOf(12));
+        room.setFloor(getFloor());
 
         Assertions.assertThrows(DaoException.class,
                 () -> roomDao.insert(room));
@@ -82,11 +93,11 @@ class RoomDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room expectRoom = new Room();
-        expectRoom.setId(BigInteger.valueOf(1));
+        expectRoom.setId(ONE);
         expectRoom.setName("testroomone");
-        expectRoom.setFloorId(BigInteger.valueOf(1));
+        expectRoom.setFloor(getFloor());
 
-        Assertions.assertEquals(expectRoom, roomDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expectRoom, roomDao.getById(ONE));
     }
 
     @Test
@@ -103,7 +114,7 @@ class RoomDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room room = new Room();
-        room.setFloorId(BigInteger.valueOf(1));
+        room.setFloor(getFloor());
         room.setName("testroomtwo");
         room.setId(BigInteger.valueOf(2));
 
@@ -121,65 +132,57 @@ class RoomDaoTest {
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
         room.setName("testroomtwo");
-        room.setFloorId(BigInteger.valueOf(1));
+        room.setFloor(getFloor());
 
         List<Room> list = new ArrayList<>();
         list.add(room);
 
-        Assertions.assertEquals(list, roomDao.getAllByEquipment(BigInteger.valueOf(1)));
+        Assertions.assertEquals(list, roomDao.getAllByEquipment(ONE));
     }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room newValues = new Room();
-        newValues.setId(BigInteger.valueOf(1));
+        newValues.setId(ONE);
         newValues.setName("newname");
-        newValues.setFloorId(BigInteger.valueOf(1));
+        newValues.setFloor(getFloor());
 
-        boolean isUpdated = roomDao.update(newValues);
+        roomDao.update(newValues);
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, roomDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(newValues, roomDao.getById(ONE));
     }
 
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
+    public void update_ShouldThrowException_WhenDataNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Room newValues = new Room();
         newValues.setId(BigInteger.valueOf(4));
         newValues.setName("newname");
-        newValues.setFloorId(BigInteger.valueOf(1));
+        newValues.setFloor(getFloor());
 
-        Assertions.assertFalse(roomDao.update(newValues));
+        Assertions.assertThrows(DaoException.class, () -> roomDao.update(newValues));
     }
 
     @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
-        boolean isDeleted = roomDao.deleteById(BigInteger.valueOf(1));
+        roomDao.deleteById(BigInteger.valueOf(3));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
-        Assertions.assertTrue(isDeleted);
     }
 
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+    Floor getFloor() {
 
-        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
-        boolean isDeleted = roomDao.deleteById(BigInteger.valueOf(3));
-        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
-
-        Assertions.assertEquals(rowBefore, rowAfter);
-        Assertions.assertFalse(isDeleted);
+        Floor floor = entityManager.find(Floor.class, ONE);
+        return floor;
     }
 }

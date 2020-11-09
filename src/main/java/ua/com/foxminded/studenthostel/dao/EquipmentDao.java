@@ -8,17 +8,17 @@ import java.util.List;
 public interface EquipmentDao {
     BigInteger insert(Equipment equipment);
 
-    boolean assignToStudent(BigInteger studentId, BigInteger equipmentId);
+    void assignToStudent(BigInteger studentId, BigInteger equipmentId);
 
-    boolean unassignFromStudent(BigInteger studentId, BigInteger equipmentId);
+    void unassignFromStudent(BigInteger studentId, BigInteger equipmentId);
 
     Equipment getById(BigInteger equipmentId);
 
-    List<Equipment> getAll(long limit, long offset);
+    List<Equipment> getAll(int offset, int limit);
 
     List<Equipment> getAllByStudent(BigInteger studentId);
 
-    boolean update(Equipment equipment);
+    Equipment update(Equipment equipment);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

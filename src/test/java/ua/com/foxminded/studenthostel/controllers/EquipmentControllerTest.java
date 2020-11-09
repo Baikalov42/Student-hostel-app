@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -102,7 +103,7 @@ class EquipmentControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Equipment> equipments = Collections.singletonList(getEquipment());
-        Mockito.when(equipmentService.getAll(10, 0)).thenReturn(equipments);
+        Mockito.when(equipmentService.getAll(0, 10)).thenReturn(equipments);
 
         mockMvc.perform(get("/equipments/page/1"))
                 .andExpect(status().isOk())
@@ -112,7 +113,7 @@ class EquipmentControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(equipmentService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/equipments/page/1"))
                 .andExpect(status().isOk())
@@ -142,7 +143,7 @@ class EquipmentControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(equipmentService.update(getEquipment())).thenReturn(true);
+        Mockito.when(equipmentService.update(getEquipment())).thenReturn(getEquipment());
 
         mockMvc.perform(post("/equipments/update/1")
                 .param("name", "Testname")
@@ -168,7 +169,7 @@ class EquipmentControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(equipmentService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(equipmentService).deleteById(ONE);
 
         mockMvc.perform(post("/equipments/1"))
                 .andExpect(status().isOk())
@@ -179,7 +180,7 @@ class EquipmentControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfError_WhenEntryNotDeleted() throws Exception {
-        Mockito.when(equipmentService.deleteById(ONE)).thenThrow(DaoException.class);
+        doThrow(DaoException.class).when(equipmentService).deleteById(ONE);
 
         mockMvc.perform(post("/equipments/1"))
                 .andExpect(status().isOk())

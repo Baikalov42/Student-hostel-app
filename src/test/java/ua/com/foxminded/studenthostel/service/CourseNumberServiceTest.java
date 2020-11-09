@@ -139,16 +139,6 @@ class CourseNumberServiceTest {
                 () -> courseNumberService.getAll(10, 10));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setId(VALID_ID);
-        courseNumber.setName(VALID_NAME);
-
-        Mockito.when(courseNumberDao.update(courseNumber)).thenReturn(true);
-
-        Assertions.assertTrue(courseNumberService.update(courseNumber));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
@@ -219,13 +209,6 @@ class CourseNumberServiceTest {
                 () -> courseNumberService.update(null));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(courseNumberDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenReturn(new CourseNumber());
-
-        Assertions.assertTrue(courseNumberService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {

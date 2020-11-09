@@ -15,8 +15,9 @@ import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.CourseNumber;
+import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Group;
-import ua.com.foxminded.studenthostel.models.dto.GroupDTO;
 import ua.com.foxminded.studenthostel.service.GroupService;
 
 import java.math.BigInteger;
@@ -67,8 +68,8 @@ class GroupControllerTest {
 
         mockMvc.perform(post("/groups/insert")
                 .param("name", "Testname")
-                .param("facultyId", ONE.toString())
-                .param("courseNumberId", ONE.toString()))
+                .param("faculty.id", ONE.toString())
+                .param("courseNumber.id", ONE.toString()))
 
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("message", "Adding completed."))
@@ -82,8 +83,8 @@ class GroupControllerTest {
 
         mockMvc.perform(post("/groups/insert")
                 .param("name", "Testname")
-                .param("facultyId", ONE.toString())
-                .param("courseNumberId", ONE.toString()))
+                .param("faculty.id", ONE.toString())
+                .param("courseNumber.id", ONE.toString()))
 
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
@@ -91,17 +92,17 @@ class GroupControllerTest {
 
     @Test
     public void getById_ShouldReturnViewOfEntry_WhenIdIsExist() throws Exception {
-        Mockito.when(groupService.getDTOById(BigInteger.ONE)).thenReturn(getGroupDTO());
+        Mockito.when(groupService.getById(BigInteger.ONE)).thenReturn(getGroupFull());
 
         mockMvc.perform(get("/groups/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("groups/group-info"))
-                .andExpect(model().attribute("groupDTO", getGroupDTO()));
+                .andExpect(model().attribute("group", getGroupFull()));
     }
 
     @Test
     public void getById_ShouldReturnViewOfError_WhenIdNotExist() throws Exception {
-        Mockito.when(groupService.getDTOById(BigInteger.ONE)).thenThrow(NotFoundException.class);
+        Mockito.when(groupService.getById(BigInteger.ONE)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/groups/1"))
                 .andExpect(status().isOk())
@@ -111,7 +112,7 @@ class GroupControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Group> groups = Collections.singletonList(getGroup());
-        Mockito.when(groupService.getAll(10, 0)).thenReturn(groups);
+        Mockito.when(groupService.getAll(0, 10)).thenReturn(groups);
 
         mockMvc.perform(get("/groups/page/1"))
                 .andExpect(status().isOk())
@@ -121,7 +122,7 @@ class GroupControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(groupService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(groupService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/groups/page/1"))
                 .andExpect(status().isOk())
@@ -151,12 +152,12 @@ class GroupControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(groupService.update(getGroup())).thenReturn(true);
+        Mockito.when(groupService.update(getGroup())).thenReturn(getGroup());
 
         mockMvc.perform(post("/groups/update/1")
                 .param("name", "Testname")
-                .param("facultyId", ONE.toString())
-                .param("courseNumberId", ONE.toString())
+                .param("faculty.id", ONE.toString())
+                .param("courseNumber.id", ONE.toString())
                 .param("id", ONE.toString()))
 
                 .andExpect(status().isOk())
@@ -171,8 +172,8 @@ class GroupControllerTest {
 
         mockMvc.perform(post("/groups/update/1")
                 .param("name", "Testname")
-                .param("facultyId", ONE.toString())
-                .param("courseNumberId", ONE.toString())
+                .param("faculty.id", ONE.toString())
+                .param("courseNumber.id", ONE.toString())
                 .param("id", ONE.toString()))
 
                 .andExpect(status().isOk())
@@ -181,7 +182,7 @@ class GroupControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(groupService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(groupService).deleteById(ONE);
 
         mockMvc.perform(post("/groups/1"))
                 .andExpect(status().isOk())
@@ -191,31 +192,35 @@ class GroupControllerTest {
     }
 
     static Group getNullIdGroup() {
+        CourseNumber courseNumber = new CourseNumber();
+        courseNumber.setId(ONE);
+
+        Faculty faculty = new Faculty();
+        faculty.setId(ONE);
+
         Group group = new Group();
-        group.setCourseNumberId(ONE);
-        group.setFacultyId(ONE);
+        group.setCourseNumber(courseNumber);
+        group.setFaculty(faculty);
         group.setName("Testname");
 
         return group;
     }
 
     static Group getGroup() {
+
         Group group = getNullIdGroup();
         group.setId(BigInteger.ONE);
-
         return group;
     }
 
-    static GroupDTO getGroupDTO() {
+    static Group getGroupFull() {
         Group group = getGroup();
 
-        GroupDTO groupDTO = new GroupDTO();
+        group.setId(group.getId());
+        group.setName(group.getName());
+        group.setFaculty(FacultyControllerTest.getFaculty());
+        group.setCourseNumber(CourseNumberControllerTest.getCourseNumber());
 
-        groupDTO.setId(group.getId());
-        groupDTO.setName(group.getName());
-        groupDTO.setFaculty(FacultyControllerTest.getFaculty());
-        groupDTO.setCourseNumber(CourseNumberControllerTest.getCourseNumber());
-
-        return groupDTO;
+        return group;
     }
 }

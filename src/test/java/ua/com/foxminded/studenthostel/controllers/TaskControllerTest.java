@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -113,7 +114,7 @@ class TaskControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Task> floors = Collections.singletonList(getTask());
-        Mockito.when(taskService.getAll(10, 0)).thenReturn(floors);
+        Mockito.when(taskService.getAll(0, 10)).thenReturn(floors);
 
         mockMvc.perform(get("/tasks/page/1"))
                 .andExpect(status().isOk())
@@ -123,7 +124,7 @@ class TaskControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(taskService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(taskService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/tasks/page/1"))
                 .andExpect(status().isOk())
@@ -142,11 +143,11 @@ class TaskControllerTest {
 
     @Test
     public void assignToStudent_POST_ShouldReturnMessageView_WhenConditionComplete() throws Exception {
-        Mockito.when(taskService.assignToStudent(ONE, ONE)).thenReturn(true);
+        Mockito.doNothing().when(taskService).assignToStudent(ONE, ONE);
 
         mockMvc.perform(post("/tasks/assign")
-                .param("id", ONE.toString())
-                .param("groupId", ONE.toString()))
+                .param("studentId", ONE.toString())
+                .param("secondId", ONE.toString()))
 
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("message", "Assigning success"))
@@ -156,11 +157,11 @@ class TaskControllerTest {
 
     @Test
     public void assignToStudent_POST_ShouldReturnErrorView_WhenTaskNotAssigned() throws Exception {
-        Mockito.when(taskService.assignToStudent(ONE, ONE)).thenThrow(DaoException.class);
+        Mockito.doThrow(DaoException.class).when(taskService).assignToStudent(ONE, ONE);
 
         mockMvc.perform(post("/tasks/assign")
-                .param("id", ONE.toString())
-                .param("groupId", ONE.toString()))
+                .param("studentId", ONE.toString())
+                .param("secondId", ONE.toString()))
 
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
@@ -168,7 +169,7 @@ class TaskControllerTest {
 
     @Test
     public void unassignFromStudent_ShouldReturnFormView_WhenConditionComplete() throws Exception {
-        Mockito.when(taskService.unassignFromStudent(ONE, ONE)).thenReturn(true);
+        Mockito.doNothing().when(taskService).unassignFromStudent(ONE, ONE);
 
         mockMvc.perform(post("/tasks/unassign/1/1"))
                 .andExpect(status().isOk())
@@ -179,7 +180,8 @@ class TaskControllerTest {
 
     @Test
     public void unassignFromStudent_ShouldReturnErrorView_WhenTaskNotUnassigned() throws Exception {
-        Mockito.when(taskService.unassignFromStudent(ONE, ONE)).thenThrow(DaoException.class);
+
+        doThrow(DaoException.class).when(taskService).unassignFromStudent(ONE, ONE);
 
         mockMvc.perform(post("/tasks/unassign/1/1"))
                 .andExpect(status().isOk())
@@ -221,7 +223,7 @@ class TaskControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(taskService.update(getTask())).thenReturn(true);
+        Mockito.when(taskService.update(getTask())).thenReturn(getTask());
 
         mockMvc.perform(post("/tasks/update/1")
                 .param("id", ONE.toString())
@@ -251,7 +253,7 @@ class TaskControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(taskService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(taskService).deleteById(ONE);
 
         mockMvc.perform(post("/tasks/1"))
                 .andExpect(status().isOk())

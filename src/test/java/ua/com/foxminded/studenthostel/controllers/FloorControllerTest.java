@@ -105,7 +105,7 @@ class FloorControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Floor> floors = Collections.singletonList(getFloor());
-        Mockito.when(floorService.getAll(10, 0)).thenReturn(floors);
+        Mockito.when(floorService.getAll(0, 10)).thenReturn(floors);
 
         mockMvc.perform(get("/floors/page/1"))
                 .andExpect(status().isOk())
@@ -115,7 +115,7 @@ class FloorControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(floorService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(floorService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/floors/page/1"))
                 .andExpect(status().isOk())
@@ -145,7 +145,7 @@ class FloorControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(floorService.update(getFloor())).thenReturn(true);
+        Mockito.when(floorService.update(getFloor())).thenReturn(getFloor());
 
         mockMvc.perform(post("/floors/update/1")
                 .param("name", "Testname")
@@ -171,7 +171,7 @@ class FloorControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(floorService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(floorService).deleteById(ONE);
 
         mockMvc.perform(post("/floors/1"))
                 .andExpect(status().isOk())

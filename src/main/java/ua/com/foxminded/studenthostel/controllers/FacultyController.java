@@ -18,7 +18,7 @@ import java.util.List;
 public class FacultyController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FacultyController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private FacultyService facultyService;
@@ -56,13 +56,13 @@ public class FacultyController {
     }
 
     @GetMapping("/faculties/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , limit {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Faculty> faculties = facultyService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Faculty> faculties = facultyService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("faculties", faculties);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, faculties.size());
@@ -83,10 +83,10 @@ public class FacultyController {
     public String update(@PathVariable long id, Model model, Faculty faculty) {
         LOGGER.debug("(POST) update id = {}", id);
 
-        facultyService.update(faculty);
+        Faculty updated = facultyService.update(faculty);
 
         model.addAttribute("message", "Updating complete");
-        model.addAttribute("id", "Updated ID = " + faculty.getId());
+        model.addAttribute("id", "Updated ID = " + updated.getId());
 
         LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";

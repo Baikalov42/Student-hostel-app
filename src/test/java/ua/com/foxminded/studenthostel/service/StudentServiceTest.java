@@ -20,6 +20,7 @@ import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
+import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.Task;
@@ -93,10 +94,10 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(VALID_STUDENTS_COUNT);
         Mockito.when(studentDao.insert(student)).thenReturn(VALID_ID);
+        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(getRoom(VALID_ID));
 
         Assertions.assertEquals(VALID_ID, studentService.insert(student));
 
@@ -104,8 +105,7 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldThrowException_WhenFirstNameNotValid() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(VALID_STUDENTS_COUNT);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setFirstName("");
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
@@ -144,8 +144,7 @@ class StudentServiceTest {
     @Test
     public void insert_ShouldThrowException_WhenLastNameNotValid() {
 
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(VALID_STUDENTS_COUNT);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setLastName("");
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
@@ -183,8 +182,7 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldThrowException_WhenHoursDebtNotValid() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(VALID_STUDENTS_COUNT);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setHoursDebt(-1);
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
@@ -195,35 +193,35 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldThrowException_WhenRoomIdNotValid() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        student.setRoomId(ZERO_ID);
+        student.setRoom(getRoom(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
 
-        student.setRoomId(NEGATIVE_ID);
+        student.setRoom(getRoom(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
 
-        student.setRoomId(null);
+        student.setRoom(getRoom(null));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
     }
 
     @Test
     public void insert_ShouldThrowExceptionWhen_GroupIdNotValid() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        student.setGroupId(ZERO_ID);
+        student.setGroup(getGroup(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
 
-        student.setGroupId(NEGATIVE_ID);
+        student.setGroup(getGroup(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
 
-        student.setGroupId(null);
+        student.setGroup(getGroup(null));
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
     }
 
     @Test
     public void insert_ShouldThrowException_WhenGroupNotExist() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
         Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
@@ -231,23 +229,15 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldThrowException_WhenRoomNotExist() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
         Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
     }
 
     @Test
-    public void insert_ShouldThrowException_WhenRoomIsFull() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(4);
-
-        Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
-    }
-
-    @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         Mockito.when(studentDao.getById(VALID_ID)).thenReturn(student);
         Assertions.assertEquals(student, studentService.getById(VALID_ID));
@@ -272,7 +262,7 @@ class StudentServiceTest {
 
     @Test
     public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         List<Student> expectResult = new ArrayList<>();
         expectResult.add(student);
@@ -403,18 +393,6 @@ class StudentServiceTest {
     }
 
     @Test
-    public void changeRoom_ShouldReturnTrue_WhenRoomIsChanged() {
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(3);
-
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(new Room());
-
-        Mockito.when(studentDao.changeRoom(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(studentService.changeRoom(VALID_ID, VALID_ID));
-    }
-
-    @Test
     public void changeRoom_ShouldThrowException_WhenIdNotValid() {
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.changeRoom(ZERO_ID, VALID_ID));
@@ -456,28 +434,6 @@ class StudentServiceTest {
     }
 
     @Test
-    public void changeRoom_ShouldThrowException_WhenRoomIsFull() {
-
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(4);
-
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(new Room());
-
-        Mockito.when(studentDao.changeRoom(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertThrows(ValidationException.class,
-                () -> studentService.changeRoom(VALID_ID, VALID_ID));
-    }
-
-    @Test
-    public void changeDebt_ShouldReturnTrue_WhenDebitIsChanged() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(studentDao.changeDebt(10, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(studentService.changeDebt(10, VALID_ID));
-    }
-
-    @Test
     public void changeDebt_ShouldThrowException_WhenDebitNotValid() {
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.changeDebt(-1, VALID_ID));
@@ -495,19 +451,8 @@ class StudentServiceTest {
     }
 
     @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
-
-        Mockito.when(studentDao.getStudentsCountByRoom(VALID_ID)).thenReturn(VALID_STUDENTS_COUNT);
-        Mockito.when(studentDao.update(student)).thenReturn(true);
-
-        Assertions.assertTrue(studentService.update(student));
-
-    }
-
-    @Test
     public void update_ShouldThrowException_WhenFirstNameNotValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setFirstName("");
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -546,7 +491,7 @@ class StudentServiceTest {
     @Test
     public void update_ShouldThrowException_WhenLastNameNotValid() {
 
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setLastName("");
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -584,7 +529,7 @@ class StudentServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenHoursDebtNotValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
         student.setHoursDebt(-1);
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -595,35 +540,35 @@ class StudentServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenRoomIdNotValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        student.setRoomId(ZERO_ID);
+        student.setRoom(getRoom(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
 
-        student.setRoomId(NEGATIVE_ID);
+        student.setRoom(getRoom(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
 
-        student.setRoomId(null);
+        student.setRoom(getRoom(null));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
     }
 
     @Test
     public void update_ShouldThrowExceptionWhen_GroupIdNotValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        student.setGroupId(ZERO_ID);
+        student.setGroup(getGroup(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
 
-        student.setGroupId(NEGATIVE_ID);
+        student.setGroup(getGroup(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
 
-        student.setGroupId(null);
+        student.setGroup(getGroup(null));
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
     }
 
     @Test
     public void update_ShouldThrowException_WhenStudentNotExist() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
         Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -631,7 +576,7 @@ class StudentServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenGroupNotExist() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
         Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -639,7 +584,7 @@ class StudentServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenRoomNotExist() {
-        Student student = new Student(VALID_NAME, VALID_NAME, VALID_DEBT, VALID_ID, VALID_ID);
+        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
         Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
@@ -694,13 +639,6 @@ class StudentServiceTest {
                 () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(studentDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-
-        Assertions.assertTrue(studentService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {
@@ -720,5 +658,20 @@ class StudentServiceTest {
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.deleteById(VALID_ID));
+    }
+
+    Room getRoom(BigInteger id) {
+        Room room = new Room();
+        room.setName("name");
+        room.setId(id);
+
+        return room;
+    }
+
+    Group getGroup(BigInteger id) {
+        Group group = new Group();
+        group.setName("name");
+        group.setId(id);
+        return group;
     }
 }

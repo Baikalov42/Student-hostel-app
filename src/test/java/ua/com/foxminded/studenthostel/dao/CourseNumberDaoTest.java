@@ -1,44 +1,52 @@
 package ua.com.foxminded.studenthostel.dao;
 
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
+
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class CourseNumberDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
 
     @Autowired
     private DataSource dataSource;
 
     @Autowired
-    CourseNumberDao courseNumberDao;
+    private CourseNumberDao courseNumberDao;
 
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     private static ResourceDatabasePopulator sqlScripts;
 
     @BeforeEach
-    public void addTablesScript() {
+    public void initScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
 
     @Test
@@ -57,7 +65,8 @@ class CourseNumberDaoTest {
     public void insert_ShouldReturnId_WhenEntryIsInserted() {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setName("first");
-        Assertions.assertEquals(BigInteger.valueOf(1), courseNumberDao.insert(courseNumber));
+
+        Assertions.assertEquals(ONE, courseNumberDao.insert(courseNumber));
     }
 
     @Test
@@ -77,17 +86,17 @@ class CourseNumberDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setId(BigInteger.valueOf(1));
+        courseNumber.setId(ONE);
         courseNumber.setName("first");
 
-        Assertions.assertEquals(courseNumber, courseNumberDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(courseNumber, courseNumberDao.getById(ONE));
     }
 
     @Test
     public void getById_ShouldThrowException_WhenEntityNotExist() {
 
         Assertions.assertThrows(NotFoundException.class,
-                () -> courseNumberDao.getById(BigInteger.valueOf(1)));
+                () -> courseNumberDao.getById(ONE));
     }
 
     @Test
@@ -95,14 +104,15 @@ class CourseNumberDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        List<CourseNumber> courseNumbers = new ArrayList<>();
+
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(BigInteger.valueOf(4));
         courseNumber.setName("fourth");
 
+        List<CourseNumber> courseNumbers = new ArrayList<>();
         courseNumbers.add(courseNumber);
 
-        Assertions.assertEquals(courseNumbers, courseNumberDao.getAll(1, 3));
+        Assertions.assertEquals(courseNumbers, courseNumberDao.getAll(3, 1));
     }
 
     @Test
@@ -111,17 +121,16 @@ class CourseNumberDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         CourseNumber newValues = new CourseNumber();
-        newValues.setId(BigInteger.valueOf(1));
+        newValues.setId(ONE);
         newValues.setName("updated");
 
-        boolean isUpdated = courseNumberDao.update(newValues);
+        courseNumberDao.update(newValues);
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, courseNumberDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(newValues, courseNumberDao.getById(ONE));
     }
 
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
+    public void update_ShouldThrowException_WhenDataNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -129,32 +138,18 @@ class CourseNumberDaoTest {
         newValues.setId(BigInteger.valueOf(7));
         newValues.setName("updated");
 
-        Assertions.assertFalse(courseNumberDao.update(newValues));
+        Assertions.assertThrows(DaoException.class, () -> courseNumberDao.update(newValues));
     }
 
     @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "course_numbers");
-        boolean isDeleted = courseNumberDao.deleteById(BigInteger.valueOf(4));
+        courseNumberDao.deleteById(BigInteger.valueOf(4));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "course_numbers");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
-        Assertions.assertTrue(isDeleted);
-    }
-
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToCourseNumbersTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "course_numbers");
-        boolean isDeleted = courseNumberDao.deleteById(BigInteger.valueOf(6));
-        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "course_numbers");
-
-        Assertions.assertEquals(rowBefore, rowAfter);
-        Assertions.assertFalse(isDeleted);
     }
 }

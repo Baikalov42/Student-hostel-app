@@ -1,19 +1,36 @@
 package ua.com.foxminded.studenthostel.models;
 
+import org.hibernate.annotations.NamedQuery;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
+@NamedQuery(name = "Task.getAll", query = "SELECT m FROM Task m")
 @NotNull
+@Entity
+@Table(name = "tasks")
 public class Task {
 
     private static final String NAME_PATTERN = "[A-Z](\\s?[a-zA-Z0-9]+)*";
 
     private BigInteger id;
+
+    @ManyToMany(mappedBy = "tasks")
+    private Set<Student> students = new HashSet<>();
 
     @NotNull
     @Size(min = 3, max = 30)
@@ -30,32 +47,57 @@ public class Task {
     @NotNull
     private int costInHours;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "task_id")
     public BigInteger getId() {
         return id;
+    }
+
+    @Column(name = "cost", nullable = false)
+    public int getCostInHours() {
+        return costInHours;
+    }
+
+    @Column(name = "task_description", unique = true, nullable = false, length = 30)
+    public String getDescription() {
+        return description;
+    }
+
+    @Column(name = "task_name", unique = true, nullable = false, length = 30)
+    public String getName() {
+        return name;
+    }
+
+    @ManyToMany(mappedBy = "tasks")
+    public Set<Student> getStudents() {
+        return students;
+    }
+
+    public void addStudent(Student student) {
+        this.students.add(student);
+        student.getTasks().add(this);
+    }
+
+    public void removeStudent(Student student) {
+        this.students.remove(student);
+        student.getTasks().remove(this);
+    }
+
+    public void setStudents(Set<Student> students) {
+        this.students = students;
     }
 
     public void setId(BigInteger id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public int getCostInHours() {
-        return costInHours;
     }
 
     public void setCostInHours(int costInHours) {

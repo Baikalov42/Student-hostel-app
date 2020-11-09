@@ -111,15 +111,6 @@ class EquipmentServiceTest {
                 () -> equipmentService.insert(null));
     }
 
-    @Test
-    public void assignToStudent_ShouldReturnTrue_WhenEquipmentAssignedToStudent() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(new Equipment());
-
-        Mockito.when(equipmentDao.assignToStudent(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(equipmentService.assignToStudent(VALID_ID, VALID_ID));
-    }
 
     @Test
     public void assignToStudent_ShouldThrowException_WhenIdNotValid() {
@@ -155,15 +146,6 @@ class EquipmentServiceTest {
                 () -> equipmentService.assignToStudent(VALID_ID, VALID_ID));
     }
 
-    @Test
-    public void unassignFromStudent_ShouldReturnTrue_WhenEquipmentUnassignedFromStudent() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(new Equipment());
-
-        Mockito.when(equipmentDao.unassignFromStudent(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(equipmentService.unassignFromStudent(VALID_ID, VALID_ID));
-    }
 
     @Test
     public void unassignFromStudent_ShouldThrowException_WhenIdNotValid() {
@@ -250,17 +232,6 @@ class EquipmentServiceTest {
     }
 
     @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Equipment equipment = new Equipment();
-        equipment.setId(VALID_ID);
-        equipment.setName(VALID_NAME);
-
-        Mockito.when(equipmentDao.update(equipment)).thenReturn(true);
-
-        Assertions.assertTrue(equipmentService.update(equipment));
-    }
-
-    @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
         Equipment equipment = new Equipment();
         equipment.setId(BigInteger.ONE);
@@ -329,13 +300,6 @@ class EquipmentServiceTest {
                 () -> equipmentService.update(null));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(equipmentDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(new Equipment());
-
-        Assertions.assertTrue(equipmentService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {

@@ -17,8 +17,9 @@ import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Floor;
+import ua.com.foxminded.studenthostel.models.Group;
+import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
-import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
 import ua.com.foxminded.studenthostel.service.CourseNumberService;
 import ua.com.foxminded.studenthostel.service.FacultyService;
 import ua.com.foxminded.studenthostel.service.FloorService;
@@ -28,13 +29,14 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-import static ua.com.foxminded.studenthostel.controllers.GroupControllerTest.getGroupDTO;
-import static ua.com.foxminded.studenthostel.controllers.RoomControllerTest.getRoomDTO;
+import static ua.com.foxminded.studenthostel.controllers.GroupControllerTest.getGroupFull;
+import static ua.com.foxminded.studenthostel.controllers.RoomControllerTest.getRoomFull;
 import static ua.com.foxminded.studenthostel.controllers.FloorControllerTest.getFloor;
 import static ua.com.foxminded.studenthostel.controllers.FacultyControllerTest.getFaculty;
 import static ua.com.foxminded.studenthostel.controllers.CourseNumberControllerTest.getCourseNumber;
@@ -84,8 +86,8 @@ class StudentControllerTest {
         mockMvc.perform(post("/students/insert")
                 .param("firstName", "Firstname")
                 .param("lastName", "Lastname")
-                .param("roomId", ONE.toString())
-                .param("groupId", ONE.toString())
+                .param("room.id", ONE.toString())
+                .param("group.id", ONE.toString())
                 .param("hoursDebt", String.valueOf(10)))
 
                 .andExpect(status().isOk())
@@ -101,8 +103,8 @@ class StudentControllerTest {
         mockMvc.perform(post("/students/insert")
                 .param("firstName", "Firstname")
                 .param("lastName", "Lastname")
-                .param("roomId", ONE.toString())
-                .param("groupId", ONE.toString())
+                .param("room.id", ONE.toString())
+                .param("group.id", ONE.toString())
                 .param("hoursDebt", String.valueOf(10)))
 
                 .andExpect(status().isOk())
@@ -111,17 +113,17 @@ class StudentControllerTest {
 
     @Test
     public void getById_ShouldReturnViewOfEntry_WhenIdIsExist() throws Exception {
-        Mockito.when(studentService.getDTOById(BigInteger.ONE)).thenReturn(getStudentDTO());
+        Mockito.when(studentService.getById(BigInteger.ONE)).thenReturn(getStudentFull());
 
         mockMvc.perform(get("/students/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/student-info"))
-                .andExpect(model().attribute("studentDTO", getStudentDTO()));
+                .andExpect(model().attribute("student", getStudentFull()));
     }
 
     @Test
     public void getById_ShouldReturnViewOfError_WhenIdNotExist() throws Exception {
-        Mockito.when(studentService.getDTOById(BigInteger.ONE)).thenThrow(NotFoundException.class);
+        Mockito.when(studentService.getById(BigInteger.ONE)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/students/1"))
                 .andExpect(status().isOk())
@@ -131,7 +133,7 @@ class StudentControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Student> students = Collections.singletonList(getStudent());
-        Mockito.when(studentService.getAll(10, 0)).thenReturn(students);
+        Mockito.when(studentService.getAll(0, 10)).thenReturn(students);
 
         mockMvc.perform(get("/students/page/1"))
                 .andExpect(status().isOk())
@@ -141,7 +143,7 @@ class StudentControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(studentService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(studentService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/students/page/1"))
                 .andExpect(status().isOk())
@@ -151,7 +153,7 @@ class StudentControllerTest {
     @Test
     public void getAllByFloor_ShouldReturnViewListOfFloors_WhenFloorsExists() throws Exception {
         List<Floor> floors = Collections.singletonList(getFloor());
-        Mockito.when(floorService.getAll(10, 0))
+        Mockito.when(floorService.getAll(0, 10))
                 .thenReturn(floors);
 
         mockMvc.perform(get("/students/byFloor/page/1"))
@@ -163,7 +165,7 @@ class StudentControllerTest {
     @Test
     public void getAllByFloor_ShouldReturnViewOfError_WhenFloorsNotExists() throws Exception {
 
-        Mockito.when(floorService.getAll(10, 0))
+        Mockito.when(floorService.getAll(0, 10))
                 .thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/students/byFloor/page/1"))
@@ -173,7 +175,7 @@ class StudentControllerTest {
 
     @Test
     public void getAllByFloorResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
-        List<StudentDTO> students = Collections.singletonList(getStudentDTO());
+        List<Student> students = Collections.singletonList(getStudentFull());
         Mockito.when(studentService.getAllByFloor(getFloor().getId()))
                 .thenReturn(students);
 
@@ -197,7 +199,7 @@ class StudentControllerTest {
     @Test
     public void getAllByFaculty_ShouldReturnViewListOfFaculties_WhenFacultiesExists() throws Exception {
         List<Faculty> faculties = Collections.singletonList(getFaculty());
-        Mockito.when(facultyService.getAll(10, 0))
+        Mockito.when(facultyService.getAll(0, 10))
                 .thenReturn(faculties);
 
         mockMvc.perform(get("/students/byFaculty/page/1"))
@@ -209,7 +211,7 @@ class StudentControllerTest {
     @Test
     public void getAllByFaculty_ShouldReturnViewOfError_WhenFacultiesNotExists() throws Exception {
 
-        Mockito.when(facultyService.getAll(10, 0))
+        Mockito.when(facultyService.getAll(0, 10))
                 .thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/students/byFaculty/page/1"))
@@ -219,7 +221,7 @@ class StudentControllerTest {
 
     @Test
     public void getAllByFacultyResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
-        List<StudentDTO> students = Collections.singletonList(getStudentDTO());
+        List<Student> students = Collections.singletonList(getStudentFull());
         Mockito.when(studentService.getAllByFaculty(getFaculty().getId()))
                 .thenReturn(students);
 
@@ -243,7 +245,7 @@ class StudentControllerTest {
     @Test
     public void getAllByCourse_ShouldReturnViewListOfCourseNumbers_WhenCourseNumberExists() throws Exception {
         List<CourseNumber> courseNumbers = Collections.singletonList(getCourseNumber());
-        Mockito.when(courseNumberService.getAll(10, 0))
+        Mockito.when(courseNumberService.getAll(0, 10))
                 .thenReturn(courseNumbers);
 
         mockMvc.perform(get("/students/byCourse/page/1"))
@@ -255,7 +257,7 @@ class StudentControllerTest {
     @Test
     public void getAllByCourse_ShouldReturnViewOfError_WhenCourseNumbersNotExists() throws Exception {
 
-        Mockito.when(courseNumberService.getAll(10, 0))
+        Mockito.when(courseNumberService.getAll(0, 10))
                 .thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/students/byCourse/page/1"))
@@ -265,7 +267,7 @@ class StudentControllerTest {
 
     @Test
     public void getAllByCourseResult_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
-        List<StudentDTO> students = Collections.singletonList(getStudentDTO());
+        List<Student> students = Collections.singletonList(getStudentFull());
         Mockito.when(studentService.getAllByCourse(getCourseNumber().getId()))
                 .thenReturn(students);
 
@@ -296,7 +298,7 @@ class StudentControllerTest {
     @Test
     public void getAllByGroupWithDebt_ShouldReturnViewOfResult_WhenResultNotEmpty() throws Exception {
 
-        List<StudentDTO> students = Collections.singletonList(getStudentDTO());
+        List<Student> students = Collections.singletonList(getStudentFull());
         Mockito.when(studentService.getAllWithDebitByGroup(getCourseNumber().getId(), 30))
                 .thenReturn(students);
 
@@ -329,14 +331,14 @@ class StudentControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(studentService.update(getStudent())).thenReturn(true);
+        Mockito.when(studentService.update(getStudent())).thenReturn(getStudentFull());
 
         mockMvc.perform(post("/students/update/1")
                 .param("id", ONE.toString())
                 .param("firstName", "Firstname")
                 .param("lastName", "Lastname")
-                .param("roomId", ONE.toString())
-                .param("groupId", ONE.toString())
+                .param("room.id", ONE.toString())
+                .param("group.id", ONE.toString())
                 .param("hoursDebt", String.valueOf(10)))
 
                 .andExpect(status().isOk())
@@ -374,11 +376,11 @@ class StudentControllerTest {
 
     @Test
     public void changeRoom_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(studentService.changeRoom(ONE, ONE)).thenReturn(true);
+        Mockito.when(studentService.update(getStudentFull())).thenReturn(getStudentFull());
 
         mockMvc.perform(post("/students/update-room")
                 .param("id", ONE.toString())
-                .param("roomId", ONE.toString()))
+                .param("room.id", ONE.toString()))
 
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("message", "Updating complete"))
@@ -411,7 +413,6 @@ class StudentControllerTest {
 
     @Test
     public void changeDebt_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(studentService.changeDebt(10, ONE)).thenReturn(true);
 
         mockMvc.perform(post("/students/update-debt")
                 .param("id", ONE.toString())
@@ -437,7 +438,7 @@ class StudentControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(studentService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(studentService).deleteById(ONE);
 
         mockMvc.perform(post("/students/1"))
                 .andExpect(status().isOk())
@@ -447,12 +448,19 @@ class StudentControllerTest {
     }
 
     static Student getNullIdStudent() {
+
+        Group group = new Group();
+        group.setId(ONE);
+
+        Room room = new Room();
+        room.setId(ONE);
+
         Student student = new Student();
 
         student.setFirstName("Firstname");
         student.setLastName("Lastname");
-        student.setGroupId(BigInteger.ONE);
-        student.setRoomId(BigInteger.ONE);
+        student.setGroup(group);
+        student.setRoom(room);
         student.setHoursDebt(10);
 
         return student;
@@ -465,19 +473,21 @@ class StudentControllerTest {
         return student;
     }
 
-    static StudentDTO getStudentDTO() {
-        StudentDTO studentDTO = new StudentDTO();
+    static Student getStudentFull() {
         Student student = getStudent();
 
-        studentDTO.setId(BigInteger.ONE);
-        studentDTO.setFirstName(student.getFirstName());
-        studentDTO.setLastName(student.getLastName());
-        studentDTO.setGroupDTO(getGroupDTO());
-        studentDTO.setRoomDTO(getRoomDTO());
-        studentDTO.setHoursDebt(10);
-        studentDTO.setTasks(Collections.emptyList());
-        studentDTO.setEquipments(Collections.emptyList());
+        student.setId(BigInteger.ONE);
 
-        return studentDTO;
+        student.setFirstName(student.getFirstName());
+        student.setLastName(student.getLastName());
+
+        student.setGroup(getGroupFull());
+        student.setRoom(getRoomFull());
+
+        student.setHoursDebt(10);
+        student.setTasks(Collections.emptySet());
+        student.setEquipments(Collections.emptySet());
+
+        return student;
     }
 }

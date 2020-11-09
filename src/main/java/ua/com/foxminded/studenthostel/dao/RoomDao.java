@@ -6,15 +6,16 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface RoomDao {
+
     BigInteger insert(Room room);
 
     Room getById(BigInteger roomId);
 
-    List<Room> getAll(long limit, long offset);
+    List<Room> getAll(int offset, int limit);
 
     List<Room> getAllByEquipment(BigInteger equipmentId);
 
-    boolean update(Room room);
+    Room update(Room room);
 
-    boolean deleteById(BigInteger id);
+    void deleteById(BigInteger id);
 }

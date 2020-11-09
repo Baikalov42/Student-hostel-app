@@ -5,228 +5,211 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import ua.com.foxminded.studenthostel.dao.RoomDao;
 import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
-import ua.com.foxminded.studenthostel.models.mappers.StudentMapper;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
-import java.sql.PreparedStatement;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
+@Transactional
 public class StudentDaoImpl implements StudentDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StudentDaoImpl.class);
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private RoomDao roomDao;
 
     @Override
     public BigInteger insert(Student student) {
-        LOGGER.debug("inserting {}", student);
-
-        String query = "" +
-                "INSERT INTO students (first_name, last_name, hours_debt, group_id, room_id) " +
-                "VALUES (? , ? , ? , ? , ? )";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        LOGGER.debug("inserting student {}", student);
         try {
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(query, new String[]{"student_id"});
-                ps.setString(1, student.getFirstName());
-                ps.setString(2, student.getLastName());
-                ps.setInt(3, student.getHoursDebt());
-                ps.setLong(4, student.getGroupId().longValue());
-                ps.setLong(5, student.getRoomId().longValue());
+            entityManager.persist(student);
+            entityManager.flush();
 
-                return ps;
-            }, keyHolder);
-
-            long id = keyHolder.getKey().longValue();
+            BigInteger id = student.getId();
             LOGGER.debug("inserting complete, id = {}", id);
-            return BigInteger.valueOf(id);
+            return id;
 
-        } catch (DataAccessException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("insertion error {}", student, ex);
             throw new DaoException("Insertion error: " + student, ex);
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Student getById(BigInteger studentId) {
         LOGGER.debug("getting by id {}", studentId);
 
-        String query = "" +
-                "SELECT * FROM students " +
-                "WHERE student_id = ? ";
-        try {
-            Student student = jdbcTemplate.queryForObject(query, new StudentMapper(), studentId);
-            LOGGER.debug("getting complete {}", student);
-            return student;
+        Student student = entityManager.find(Student.class, studentId);
 
-        } catch (EmptyResultDataAccessException ex) {
-            LOGGER.warn("Failed get by id {}", studentId, ex);
-            throw new NotFoundException("Failed get by id: " + studentId, ex);
+        if (student == null) {
+            LOGGER.warn("Failed get by id {}", studentId);
+            throw new NotFoundException("Failed get by id: " + studentId);
         }
+        LOGGER.debug("getting complete {}", student);
+        return student;
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<Student> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+    public List<Student> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {}, limit {}  ", offset, limit);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM students " +
-                "ORDER BY student_id " +
-                "LIMIT ? OFFSET ?";
-
-        return jdbcTemplate.query(query, new StudentMapper(), limit, offset);
+        return entityManager
+                .createNamedQuery("Student.getAll", Student.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Student> getAllByFloor(BigInteger floorId) {
-        LOGGER.debug("getting all by floor id {} ", floorId);
+        LOGGER.debug("getting all by Floor id {}", floorId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM students " +
-                "INNER JOIN groups ON students.group_id = groups.group_id " +
-                "INNER JOIN rooms ON students.room_id = rooms.room_id " +
-                "INNER JOIN floors ON rooms.floor_id = floors.floor_id " +
-                "WHERE floors.floor_id = ?;";
-
-        return jdbcTemplate.query(query, new StudentMapper(), floorId);
+        return entityManager
+                .createQuery("" +
+                        "select st " +
+                        "from Student st " +
+                        "join st.room ro " +
+                        "join ro.floor fl " +
+                        "where fl.id =:id", Student.class)
+                .setParameter("id", floorId)
+                .getResultList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Student> getAllByFaculty(BigInteger facultyId) {
-        LOGGER.debug("getting all by faculty id {} ", facultyId);
+        LOGGER.debug("getting all by Faculty id {}", facultyId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM students " +
-                "INNER JOIN groups ON students.group_id = groups.group_id " +
-                "INNER JOIN faculties ON groups.faculty_id = faculties.faculty_id " +
-                "WHERE faculties.faculty_id = ? ";
-
-        return jdbcTemplate.query(query, new StudentMapper(), facultyId);
+        return entityManager
+                .createQuery("" +
+                        "select st " +
+                        "from Student st " +
+                        "join st.group gr " +
+                        "join gr.faculty fa " +
+                        "where fa.id = :id", Student.class)
+                .setParameter("id", facultyId)
+                .getResultList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Student> getAllByCourse(BigInteger courseId) {
-        LOGGER.debug("getting all by course id {} ", courseId);
+        LOGGER.debug("getting all by Course id {}", courseId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM students " +
-                "INNER JOIN groups ON students.group_id = groups.group_id " +
-                "INNER JOIN course_numbers ON groups.course_number_id = course_numbers.course_number_id " +
-                "WHERE course_numbers.course_number_id = ? ";
+        return entityManager
+                .createQuery("" +
+                        "select st " +
+                        "from Student st " +
+                        "join st.group gr " +
+                        "join gr.courseNumber cn " +
+                        "where cn.id = :id ", Student.class)
+                .setParameter("id", courseId)
+                .getResultList();
 
-        return jdbcTemplate.query(query, new StudentMapper(), courseId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Student> getAllWithDebitByGroup(BigInteger groupId, int numberOfHoursDebt) {
-        LOGGER.debug("getting all by Group id ={} , with debt = {} ", groupId, numberOfHoursDebt);
+        LOGGER.debug("getting all by Group {}, debt {}", groupId, numberOfHoursDebt);
 
-        String query = "" +
-                "SELECT * FROM students " +
-                "INNER JOIN groups ON groups.group_id = students.student_id " +
-                "WHERE students.group_id = ? " +
-                "AND students.hours_debt > ? ";
-        return jdbcTemplate.query(query, new StudentMapper(), groupId, numberOfHoursDebt);
+        return entityManager
+                .createQuery("" +
+                        "select st " +
+                        "from Student st " +
+                        "join st.group gr " +
+                        "where gr.id = :id " +
+                        "and st.hoursDebt > :debt ", Student.class)
+                .setParameter("id", groupId)
+                .setParameter("debt", numberOfHoursDebt)
+                .getResultList();
     }
 
     @Override
-    public boolean changeRoom(BigInteger newRoomId, BigInteger studentId) {
-        LOGGER.debug("changing room id = {}, student id = {}", newRoomId, studentId);
+    public Student changeRoom(BigInteger newRoomId, BigInteger studentId) {
+        LOGGER.debug("changeRoom, new room {}, student {}", newRoomId, studentId);
 
-        String query = "" +
-                "UPDATE students " +
-                "SET room_id = ? " +
-                "WHERE student_id = ? ";
+        Student student = this.getById(studentId);
+        Room newRoom = roomDao.getById(newRoomId);
+
+        student.setRoom(newRoom);
+
         try {
-            return jdbcTemplate.update(query, newRoomId, studentId) == 1;
-        } catch (DataAccessException ex) {
+            Student result = entityManager.merge(student);
+            entityManager.flush();
 
-            LOGGER.error("failed to change new room id = {}, new student id = {}", newRoomId, studentId);
-            throw new DaoException("room id=" + newRoomId + " student id=" + studentId, ex);
+            LOGGER.debug("changeRoom complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
+            LOGGER.error("changeRoom error student {}, room {}", studentId, newRoomId);
+            throw new DaoException("changeRoom error student: + " + student + " room: " + newRoom);
         }
     }
 
     @Override
-    public boolean changeDebt(int newHoursDebt, BigInteger studentId) {
-        LOGGER.debug("changing debt, new debt = {}, student id = {}", newHoursDebt, studentId);
+    public Student changeDebt(int newHoursDebt, BigInteger studentId) {
+        LOGGER.debug("changeDebt, new debt {}, student {}", newHoursDebt, studentId);
 
-        String query = "" +
-                "UPDATE students " +
-                "SET hours_debt = ? " +
-                "WHERE student_id = ? ";
+        Student student = this.getById(studentId);
+        student.setHoursDebt(newHoursDebt);
+
         try {
-            return jdbcTemplate.update(query, newHoursDebt, studentId) == 1;
-        } catch (DataAccessException ex) {
+            Student result = entityManager.merge(student);
+            entityManager.flush();
 
-            LOGGER.error("failed to change debt, new debt = {}, student id = {}", newHoursDebt, studentId);
-            throw new DaoException("new hours=" + newHoursDebt + " student id=" + studentId, ex);
+            LOGGER.debug("changeDebt complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
+            LOGGER.error("changeDebt error student {}, debt {}", studentId, newHoursDebt);
+            throw new DaoException("changeDebt error student: + " + student + " debt: " + newHoursDebt);
         }
     }
 
     @Override
-    public Integer getStudentsCountByRoom(BigInteger roomID) {
-        LOGGER.debug("getting count of students, by room id {}", roomID);
-
-        String query = "" +
-                "SELECT count(*) " +
-                "FROM students " +
-                "WHERE room_id = ?";
-
-        int count = jdbcTemplate.queryForObject(query, Integer.class, roomID);
-        LOGGER.debug("getting count of students complete, count = {}", count);
-
-        return count;
-    }
-
-    @Override
-    public boolean update(Student student) {
+    public Student update(Student student) {
         LOGGER.debug("updating {}", student);
 
-        String query = "" +
-                "UPDATE students " +
-                "SET " +
-                "first_name = ? ," +
-                "last_name = ? ," +
-                "hours_debt = ? ," +
-                "group_id = ? ," +
-                "room_id = ? " +
-                "WHERE student_id = ? ";
-
         try {
-            return jdbcTemplate.update(query, student.getFirstName(), student.getLastName(),
-                    student.getHoursDebt(), student.getGroupId(), student.getRoomId(), student.getId()) == 1;
+            Student result = entityManager.merge(student);
+            entityManager.flush();
 
-        } catch (DataAccessException ex) {
+            LOGGER.debug("updating complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", student, ex);
             throw new DaoException("Updating error: " + student, ex);
         }
     }
 
     @Override
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
-        String query = "" +
-                "DELETE  from  students " +
-                "WHERE student_id = ? ";
         try {
-            return jdbcTemplate.update(query, id) == 1;
+            Student student = entityManager.find(Student.class, id);
+            entityManager.remove(student);
+            entityManager.flush();
 
         } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);

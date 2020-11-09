@@ -1,33 +1,74 @@
 package ua.com.foxminded.studenthostel.models;
 
+import org.hibernate.annotations.NamedQuery;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+@NamedQuery(name = "Equipment.getAll", query = "SELECT m FROM Equipment m")
 @NotNull
+@Entity
+@Table(name = "equipments")
 public class Equipment {
 
     private static final String NAME_PATTERN = "[A-Z](\\s?[a-zA-Z0-9]+)*";
+
+    private BigInteger id;
+
+    private Set<Student> students = new HashSet<>();
 
     @NotNull
     @Size(min = 4, max = 30)
     @Pattern(regexp = NAME_PATTERN)
     private String name;
 
-    private BigInteger id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @Column(name = "equipment_id")
+    public BigInteger getId() {
+        return id;
+    }
 
+    @Column(name = "equipment_name", unique = true, nullable = false, length = 30)
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @ManyToMany(mappedBy = "equipments")
+    public Set<Student> getStudents() {
+        return students;
     }
 
-    public BigInteger getId() {
-        return id;
+    public void addStudent(Student student) {
+        this.students.add(student);
+        student.getEquipments().add(this);
+    }
+
+    public void removeStudent(Student student) {
+        this.students.remove(student);
+        student.getEquipments().remove(this);
+    }
+
+    public void setStudents(Set<Student> students) {
+        this.students = students;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setId(BigInteger id) {

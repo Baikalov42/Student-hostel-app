@@ -8,8 +8,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
@@ -20,8 +22,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class TaskDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
 
     @Autowired
     private DataSource dataSource;
@@ -37,8 +43,6 @@ class TaskDaoTest {
     @BeforeEach
     public void addTablesScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
 
     @Test
@@ -47,7 +51,6 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Task task = new Task();
-        task.setId(BigInteger.valueOf(2));
         task.setName("testtaskname");
         task.setDescription("testdescription");
         task.setCostInHours(10);
@@ -66,12 +69,12 @@ class TaskDaoTest {
 
         Task task = new Task();
 
-        task.setId(BigInteger.valueOf(1));
+        task.setId(ONE);
         task.setName("test");
         task.setDescription("test");
         task.setCostInHours(1);
 
-        Assertions.assertEquals(task, taskDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(task, taskDao.getById(ONE));
     }
 
 
@@ -107,7 +110,7 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
-        taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(1));
+        taskDao.assignToStudent(ONE, ONE);
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
 
         Assertions.assertEquals(rowBefore + 1, rowAfter);
@@ -119,8 +122,8 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(3), BigInteger.valueOf(1)));
+        Assertions.assertThrows(NotFoundException.class,
+                () -> taskDao.assignToStudent(BigInteger.valueOf(3), ONE));
     }
 
     @Test
@@ -128,8 +131,8 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
-                () -> taskDao.assignToStudent(BigInteger.valueOf(1), BigInteger.valueOf(2)));
+        Assertions.assertThrows(NotFoundException.class,
+                () -> taskDao.assignToStudent(ONE, BigInteger.valueOf(2)));
     }
 
 
@@ -139,7 +142,7 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
-        taskDao.unassignFromStudent(BigInteger.valueOf(1), BigInteger.valueOf(4));
+        taskDao.unassignFromStudent(ONE, BigInteger.valueOf(4));
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students_tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
@@ -150,7 +153,7 @@ class TaskDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertTrue(taskDao.isStudentTaskRelationExist(BigInteger.valueOf(1), BigInteger.valueOf(4)));
+        Assertions.assertTrue(taskDao.isStudentTaskRelationExist(ONE, BigInteger.valueOf(4)));
     }
 
     @Test
@@ -159,19 +162,18 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Task newValues = new Task();
-        newValues.setId(BigInteger.valueOf(1));
+        newValues.setId(ONE);
         newValues.setName("newname");
         newValues.setDescription("newdescription");
         newValues.setCostInHours(1);
 
-        boolean isUpdated = taskDao.update(newValues);
+        taskDao.update(newValues);
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, taskDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(newValues, taskDao.getById(ONE));
     }
 
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
+    public void update_ShouldThrowException_WhenDataNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -181,32 +183,19 @@ class TaskDaoTest {
         newValues.setDescription("newdescription");
         newValues.setCostInHours(1);
 
-        Assertions.assertFalse(taskDao.update(newValues));
+        Assertions.assertThrows(DaoException.class, () -> taskDao.update(newValues));
     }
 
     @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
-        boolean isDeleted = taskDao.deleteById(BigInteger.valueOf(4));
+         taskDao.deleteById(ONE);
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
-        Assertions.assertTrue(isDeleted);
     }
 
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToTasksTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
-        boolean isDeleted = taskDao.deleteById(BigInteger.valueOf(5));
-        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
-
-        Assertions.assertEquals(rowBefore, rowAfter);
-        Assertions.assertFalse(isDeleted);
-    }
 }

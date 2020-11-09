@@ -12,7 +12,6 @@ import ua.com.foxminded.studenthostel.models.CourseNumber;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.models.Student;
-import ua.com.foxminded.studenthostel.models.dto.StudentDTO;
 import ua.com.foxminded.studenthostel.service.CourseNumberService;
 import ua.com.foxminded.studenthostel.service.FacultyService;
 import ua.com.foxminded.studenthostel.service.FloorService;
@@ -25,7 +24,7 @@ import java.util.List;
 public class StudentController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StudentController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private StudentService studentService;
@@ -60,21 +59,21 @@ public class StudentController {
     public String getById(@PathVariable long id, Model model) {
         LOGGER.debug("(GET) getById: {}", id);
 
-        StudentDTO studentDTO = studentService.getDTOById(BigInteger.valueOf(id));
-        model.addAttribute("studentDTO", studentDTO);
+        Student student = studentService.getById(BigInteger.valueOf(id));
+        model.addAttribute("student", student);
 
         LOGGER.debug("(GET) getById complete, model: {}", model);
         return "students/student-info";
     }
 
     @GetMapping("/students/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Student> students = studentService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Student> students = studentService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("students", students);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, students.size());
@@ -82,18 +81,16 @@ public class StudentController {
     }
 
     @GetMapping("/students/byFloor/page/{pageNumber}")
-    public String getAllByFloor(@PathVariable long pageNumber, Model model) {
+    public String getAllByFloor(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAllByFloor, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getting floors, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getting floors, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Floor> floors = floorService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Floor> floors = floorService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("floors", floors);
 
-
         LOGGER.debug("(GET) getAllByFloor complete, page number: {}, result size: {}", pageNumber, floors.size());
-
         return "students/students-by-floor";
     }
 
@@ -101,7 +98,7 @@ public class StudentController {
     public String getAllByFloorResult(@PathVariable long floorId, Model model) {
         LOGGER.debug("(GET) getAllByFloorResult, id: {}", floorId);
 
-        List<StudentDTO> students = studentService.getAllByFloor(BigInteger.valueOf(floorId));
+        List<Student> students = studentService.getAllByFloor(BigInteger.valueOf(floorId));
         model.addAttribute("students", students);
 
         LOGGER.debug("(GET) getAllByFloorResult complete, result size: {}", students.size());
@@ -109,13 +106,13 @@ public class StudentController {
     }
 
     @GetMapping("/students/byFaculty/page/{pageNumber}")
-    public String getAllByFaculty(@PathVariable long pageNumber, Model model) {
+    public String getAllByFaculty(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAllByFaculty, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getting faculties, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getting faculties, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Faculty> faculties = facultyService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Faculty> faculties = facultyService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("faculties", faculties);
 
         LOGGER.debug("(GET) getAllByFaculty complete, page number: {}, result size: {}", pageNumber, faculties.size());
@@ -126,7 +123,7 @@ public class StudentController {
     public String getAllByFacultyResult(@PathVariable long facultyId, Model model) {
         LOGGER.debug("(GET) getAllByFacultyResult, id: {}", facultyId);
 
-        List<StudentDTO> students = studentService.getAllByFaculty(BigInteger.valueOf(facultyId));
+        List<Student> students = studentService.getAllByFaculty(BigInteger.valueOf(facultyId));
         model.addAttribute("students", students);
 
         LOGGER.debug("(GET) getAllByFacultyResult complete, result size: {}", students.size());
@@ -134,13 +131,13 @@ public class StudentController {
     }
 
     @GetMapping("/students/byCourse/page/{pageNumber}")
-    public String getAllByCourse(@PathVariable long pageNumber, Model model) {
+    public String getAllByCourse(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAllByCourse, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getting courses, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getting courses, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<CourseNumber> courseNumbers = courseNumberService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<CourseNumber> courseNumbers = courseNumberService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("courseNumbers", courseNumbers);
 
         LOGGER.debug("(GET) getAllByCourse, page number: {}, result size: {}"
@@ -153,7 +150,7 @@ public class StudentController {
     public String getAllByCourseResult(@PathVariable long courseId, Model model) {
         LOGGER.debug("(GET) getAllByCourseResult, id: {}", courseId);
 
-        List<StudentDTO> students = studentService.getAllByCourse(BigInteger.valueOf(courseId));
+        List<Student> students = studentService.getAllByCourse(BigInteger.valueOf(courseId));
         model.addAttribute("students", students);
 
         LOGGER.debug("(GET) getAllByCourseResult complete, result size: {}", students.size());
@@ -174,7 +171,7 @@ public class StudentController {
 
         LOGGER.debug("(GET)getAllByGroupWithDebt, id: {}, debt: {}", groupId, debt);
 
-        List<StudentDTO> students = studentService.getAllWithDebitByGroup(BigInteger.valueOf(groupId), debt);
+        List<Student> students = studentService.getAllWithDebitByGroup(BigInteger.valueOf(groupId), debt);
         model.addAttribute("students", students);
 
         LOGGER.debug("(GET)getAllByGroupWithDebt complete, result size: {}", students.size());
@@ -194,10 +191,10 @@ public class StudentController {
     public String update(@PathVariable long id, Model model, Student student) {
         LOGGER.debug("(POST) update id = {}", id);
 
-        studentService.update(student);
+        Student updated = studentService.update(student);
 
         model.addAttribute("message", "Updating complete");
-        model.addAttribute("id", "Updated ID = " + student.getId());
+        model.addAttribute("id", "Updated ID = " + updated.getId());
 
         LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";
@@ -215,13 +212,15 @@ public class StudentController {
 
     @PostMapping("/students/update-room")
     public String changeRoom(Student student, Model model) {
-        LOGGER.debug("(GET) changeRoom, studentId = {}, roomId = {}", student.getId(), student.getRoomId());
+        LOGGER.debug("(GET) changeRoom, studentId = {}, roomId = {}",
+                student.getId(),
+                student.getRoom().getId());
 
         studentService.changeRoom(
-                BigInteger.valueOf(student.getRoomId().longValue()),
+                BigInteger.valueOf(student.getRoom().getId().longValue()),
                 BigInteger.valueOf(student.getId().longValue()));
 
-        String mes = "Student ID = " + student.getId() + ", updated room on ID = " + student.getRoomId();
+        String mes = "Student ID = " + student.getId() + ", updated room on ID = " +  student.getRoom().getId();
 
         model.addAttribute("message", "Updating complete");
         model.addAttribute("id", mes);

@@ -18,73 +18,73 @@
     <tbody>
     <tr>
         <td>ID</td>
-        <th scope="row" th:text="${studentDTO.id}"></th>
+        <th scope="row" th:text="${student.id}"></th>
     </tr>
     <tr>
         <td>First name</td>
-        <th th:text="${studentDTO.firstName}"></th>
+        <th th:text="${student.firstName}"></th>
     </tr>
     <tr>
         <td>Last name</td>
-        <th th:text="${studentDTO.lastName}"></th>
+        <th th:text="${student.lastName}"></th>
     </tr>
     <tr>
         <td>Group name</td>
         <th>
-            <a th:href="@{/groups/{id}(id=${studentDTO.groupDTO.id})}" style="color: lightslategrey"
-               th:text="${studentDTO.groupDTO.name}"></a>
+            <a th:href="@{/groups/{id}(id=${student.group.id})}" style="color: lightslategrey"
+               th:text="${student.group.name}"></a>
         </th>
     </tr>
     <tr>
         <td>Hours debt</td>
         <th>
-            <a th:text="${studentDTO.hoursDebt}"></a>
+            <a th:text="${student.hoursDebt}"></a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{/students/update-debt/{studentId}(studentId=${studentDTO.id})}"> Edit</a>
+               th:href="@{/students/update-debt/{studentId}(studentId=${student.id})}"> Edit</a>
         </th>
     </tr>
     <tr>
         <td>Room name</td>
         <th>
-            <a th:href="@{/rooms/{id}(id=${studentDTO.roomDTO.id})}" style="color: lightslategrey"
-               th:text="${studentDTO.roomDTO.name}"></a>
+            <a th:href="@{/rooms/{id}(id=${student.room.id})}" style="color: lightslategrey"
+               th:text="${student.room.name}"></a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{/students/update-room/{studentId}(studentId=${studentDTO.id})}"> Edit</a>
+               th:href="@{/students/update-room/{studentId}(studentId=${student.id})}"> Edit</a>
         </th>
     </tr>
     <tr>
         <td>Active tasks</td>
         <th>
-            <a th:text="${studentDTO.tasks.size()}"></a>
+            <a th:text="${student.tasks.size()}"></a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{~/tasks/assign/{id}(id = ${studentDTO.id})}">Add</a>
+               th:href="@{~/tasks/assign/{id}(id = ${student.id})}">Add</a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{/tasks/byStudent/{studentId}(studentId=${studentDTO.id})}"> Show</a>
+               th:href="@{/tasks/byStudent/{studentId}(studentId=${student.id})}"> Show</a>
         </th>
     </tr>
     <tr>
         <td>Active equipments</td>
         <th>
-            <a th:text="${studentDTO.equipments.size()}"></a>
+            <a th:text="${student.equipments.size()}"></a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{~/equipments/assign/{studentId}(studentId = ${studentDTO.id})}">Add</a>
+               th:href="@{~/equipments/assign/{studentId}(studentId = ${student.id})}">Add</a>
 
             <a class="to-right btn btn-info btn-sm"
-               th:href="@{/equipments/byStudent/{studentId}(studentId=${studentDTO.id})}"> Show</a>
+               th:href="@{/equipments/byStudent/{studentId}(studentId=${student.id})}"> Show</a>
         </th>
     </tr>
     </tbody>
 </table>
 
 <div class="edit-del-container">
-    <a class="btn btn-secondary edit-del-btn" th:href="@{/students/update/{id}(id = ${studentDTO.id})}">Edit</a>
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/students/update/{id}(id = ${student.id})}">Edit</a>
 
-    <form action="#" th:action="@{/students/{id}(id = ${studentDTO.id})}" method="post">
+    <form action="#" th:action="@{/students/{id}(id = ${student.id})}" method="post">
         <input type="hidden">
         <input type="submit" class="edit-del-btn btn btn-secondary "  value="Delete"/>
     </form>

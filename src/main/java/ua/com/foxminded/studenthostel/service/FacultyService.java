@@ -45,18 +45,18 @@ public class FacultyService {
     }
 
 
-    public List<Faculty> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
-        List<Faculty> result = facultyDao.getAll(limit, offset);
+    public List<Faculty> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
+        List<Faculty> result = facultyDao.getAll(offset, limit);
 
         if (result.isEmpty()) {
-            LOGGER.warn("result is empty, limit = {}, offset = {}", limit, offset);
-            throw new NotFoundException("Result with limit=" + limit + " and offset=" + offset + " is empty");
+            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
+            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
         }
         return result;
     }
 
-    public boolean update(Faculty faculty) {
+    public Faculty update(Faculty faculty) {
         LOGGER.debug("updating {}", faculty);
 
         validator.validate(faculty);
@@ -66,13 +66,13 @@ public class FacultyService {
         return facultyDao.update(faculty);
     }
 
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
         validator.validateId(id);
         validateExistence(id);
 
-        return facultyDao.deleteById(id);
+        facultyDao.deleteById(id);
     }
 
     void validateExistence(BigInteger id) {

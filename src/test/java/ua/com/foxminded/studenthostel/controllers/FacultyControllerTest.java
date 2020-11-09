@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -105,7 +106,7 @@ class FacultyControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Faculty> faculties = Collections.singletonList(getFaculty());
-        Mockito.when(facultyService.getAll(10, 0)).thenReturn(faculties);
+        Mockito.when(facultyService.getAll(0, 10)).thenReturn(faculties);
 
         mockMvc.perform(get("/faculties/page/1"))
                 .andExpect(status().isOk())
@@ -115,7 +116,7 @@ class FacultyControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(facultyService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/faculties/page/1"))
                 .andExpect(status().isOk())
@@ -145,7 +146,7 @@ class FacultyControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(facultyService.update(getFaculty())).thenReturn(true);
+        Mockito.when(facultyService.update(getFaculty())).thenReturn(getFaculty());
 
         mockMvc.perform(post("/faculties/update/1")
                 .param("name", "Testname")
@@ -171,7 +172,7 @@ class FacultyControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(facultyService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(facultyService).deleteById(ONE);
 
         mockMvc.perform(post("/faculties/1"))
                 .andExpect(status().isOk())
@@ -182,7 +183,7 @@ class FacultyControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfError_WhenEntryNotDeleted() throws Exception {
-        Mockito.when(facultyService.deleteById(ONE)).thenThrow(DaoException.class);
+        doThrow(DaoException.class).when(facultyService).deleteById(ONE);
 
         mockMvc.perform(post("/faculties/1"))
                 .andExpect(status().isOk())

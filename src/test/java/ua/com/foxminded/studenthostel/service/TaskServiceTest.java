@@ -226,16 +226,6 @@ class TaskServiceTest {
     }
 
     @Test
-    public void assignToStudent_ShouldReturnTrue_WhenEquipmentAssignedToStudent() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
-
-        Mockito.when(taskDao.assignToStudent(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(taskService.assignToStudent(VALID_ID, VALID_ID));
-    }
-
-    @Test
     public void assignToStudent_ShouldThrowException_WhenIdNotValid() {
 
 
@@ -270,15 +260,6 @@ class TaskServiceTest {
                 () -> taskService.assignToStudent(BigInteger.ONE, BigInteger.ONE));
     }
 
-    @Test
-    public void unassignFromStudent_ShouldReturnTrue_WhenTaskUnassignedFromStudent() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
-
-        Mockito.when(taskDao.unassignFromStudent(VALID_ID, VALID_ID)).thenReturn(true);
-
-        Assertions.assertTrue(taskService.unassignFromStudent(VALID_ID, VALID_ID));
-    }
 
     @Test
     public void unassignFromStudent_ShouldThrowException_WhenIdNotValid() {
@@ -373,19 +354,6 @@ class TaskServiceTest {
                 () -> taskService.isStudentTaskRelationExist(VALID_ID, NEGATIVE_ID));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Task task = new Task();
-        task.setId(VALID_ID);
-        task.setName(VALID_NAME);
-        task.setDescription(VALID_DESC);
-        task.setCostInHours(VALID_COST);
-
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(task);
-        Mockito.when(taskDao.update(task)).thenReturn(true);
-
-        Assertions.assertTrue(taskService.update(task));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
@@ -534,14 +502,6 @@ class TaskServiceTest {
     public void update_ShouldThrowExceptionWhenObjectIsNull() {
         Assertions.assertThrows(ValidationException.class,
                 () -> taskService.update(null));
-    }
-
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(taskDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
-
-        Assertions.assertTrue(taskService.deleteById(VALID_ID));
     }
 
     @Test

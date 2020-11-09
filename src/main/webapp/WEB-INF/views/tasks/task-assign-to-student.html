@@ -9,7 +9,7 @@
 <br>
 
 <form action="#" th:action="@{/tasks/assign}"
-      th:object="${student}"
+      th:object="${pair}"
       method="post" class="form-size">
     <br>
     <h2 th:text="${'Adding new Task to: ' + student.firstName + ' ' + student.lastName}"
@@ -17,12 +17,12 @@
 
     <div class="form-group">
         <label for="exampleFormControlInput1">new Task ID</label>
-        <input type="number" th:field="*{groupId}"
+        <input type="number" th:field="*{secondId}"
                id="exampleFormControlInput1"
                class="form-control">
     </div>
     <div hidden="hidden">
-        <input type="number" th:field="*{id}" th:value="${student.id}">
+        <input type="number" th:field="*{studentId}" th:value="${pair.studentId}">
     </div>
     <input type="submit" class="btn btn-info" value="Save"/>
 </form>

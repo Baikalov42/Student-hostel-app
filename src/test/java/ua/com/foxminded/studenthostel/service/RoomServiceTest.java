@@ -60,7 +60,7 @@ class RoomServiceTest {
         Room room = new Room();
 
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         Mockito.when(roomDao.insert(room)).thenReturn(VALID_ID);
         Mockito.when(floorDao.getById(VALID_ID)).thenReturn(new Floor());
@@ -71,7 +71,7 @@ class RoomServiceTest {
     @Test
     public void insert_ShouldThrowExceptionWhenNameNotValid() {
         Room room = new Room();
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         room.setName("");
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
@@ -118,15 +118,14 @@ class RoomServiceTest {
     public void insert_ShouldThrowExceptionWhen_FloorIdNotValid() {
         Room room = new Room();
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
 
-        room.setFloorId(ZERO_ID);
+        room.setFloor(getFloor(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
 
-        room.setFloorId(NEGATIVE_ID);
+        room.setFloor(getFloor(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
 
-        room.setFloorId(null);
+        room.setFloor(getFloor(null));
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
     }
 
@@ -135,7 +134,7 @@ class RoomServiceTest {
     public void insert_ShouldThrowExceptionWhen_FloorNotExist() {
         Room room = new Room();
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
@@ -172,7 +171,7 @@ class RoomServiceTest {
         Room room = new Room();
         room.setId(VALID_ID);
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         List<Room> expectResult = new ArrayList<>();
         expectResult.add(room);
@@ -216,27 +215,13 @@ class RoomServiceTest {
                 () -> roomService.getAllByEquipment(VALID_ID));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Room room = new Room();
-
-        room.setId(VALID_ID);
-        room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
-
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(new Room());
-        Mockito.when(floorDao.getById(VALID_ID)).thenReturn(new Floor());
-
-        Mockito.when(roomDao.update(room)).thenReturn(true);
-        Assertions.assertTrue(roomService.update(room));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
         Room room = new Room();
 
         room.setId(VALID_ID);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         room.setName("");
         Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
@@ -284,7 +269,7 @@ class RoomServiceTest {
         Room room = new Room();
 
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         room.setId(ZERO_ID);
         Assertions.assertThrows(ValidationException.class, () -> roomService.update(room));
@@ -301,7 +286,7 @@ class RoomServiceTest {
         Room room = new Room();
         room.setId(VALID_ID);
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
@@ -313,7 +298,7 @@ class RoomServiceTest {
         Room room = new Room();
         room.setId(VALID_ID);
         room.setName(VALID_NAME);
-        room.setFloorId(VALID_ID);
+        room.setFloor(getFloor(VALID_ID));
 
         Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
 
@@ -324,14 +309,6 @@ class RoomServiceTest {
     public void update_ShouldThrowExceptionWhenObjectIsNull() {
         Assertions.assertThrows(ValidationException.class,
                 () -> roomService.update(null));
-    }
-
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(roomDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(new Room());
-
-        Assertions.assertTrue(roomService.deleteById(VALID_ID));
     }
 
     @Test
@@ -352,5 +329,13 @@ class RoomServiceTest {
 
         Assertions.assertThrows(ValidationException.class,
                 () -> roomService.deleteById(VALID_ID));
+    }
+
+    Floor getFloor(BigInteger id) {
+        Floor floor = new Floor();
+        floor.setName("name");
+        floor.setId(id);
+
+        return floor;
     }
 }

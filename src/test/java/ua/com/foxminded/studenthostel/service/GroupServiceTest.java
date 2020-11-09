@@ -61,8 +61,8 @@ class GroupServiceTest {
         Group group = new Group();
 
         group.setName(VALID_NAME);
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         Mockito.when(groupDao.insert(group)).thenReturn(VALID_ID);
         Mockito.when(courseNumberDao.getById(VALID_ID)).thenReturn(new CourseNumber());
@@ -75,8 +75,8 @@ class GroupServiceTest {
     public void insert_ShouldThrowExceptionWhenNameNotValid() {
         Group group = new Group();
 
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         group.setName("");
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
@@ -120,15 +120,15 @@ class GroupServiceTest {
     public void insert_ShouldThrowExceptionWhen_CourseNumberIdNotValid() {
         Group group = new Group();
         group.setName(VALID_NAME);
-        group.setFacultyId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
 
-        group.setCourseNumberId(ZERO_ID);
+        group.setCourseNumber(getCourse(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
 
-        group.setCourseNumberId(NEGATIVE_ID);
+        group.setCourseNumber(getCourse(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
 
-        group.setCourseNumberId(null);
+        group.setCourseNumber(getCourse(null));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
     }
 
@@ -136,15 +136,15 @@ class GroupServiceTest {
     public void insert_ShouldThrowExceptionWhen_FacultyIdNotValid() {
         Group group = new Group();
         group.setName(VALID_NAME);
-        group.setCourseNumberId(VALID_ID);
+        group.setCourseNumber(getCourse(VALID_ID));
 
-        group.setFacultyId(ZERO_ID);
+        group.setFaculty(getFaculty(ZERO_ID));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
 
-        group.setFacultyId(NEGATIVE_ID);
+        group.setFaculty(getFaculty(NEGATIVE_ID));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
 
-        group.setFacultyId(null);
+        group.setFaculty(getFaculty(null));
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
     }
 
@@ -152,8 +152,8 @@ class GroupServiceTest {
     public void insert_ShouldThrowExceptionWhen_CourseNumberNotExist() {
         Group group = new Group();
         group.setName(VALID_NAME);
-        group.setCourseNumberId(VALID_ID);
-        group.setFacultyId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         Mockito.when(courseNumberDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
         Mockito.when(facultyDao.getById(VALID_ID)).thenReturn(new Faculty());
@@ -165,8 +165,8 @@ class GroupServiceTest {
     public void insert_ShouldThrowExceptionWhen_FacultyNotExist() {
         Group group = new Group();
         group.setName(VALID_NAME);
-        group.setCourseNumberId(VALID_ID);
-        group.setFacultyId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         Mockito.when(courseNumberDao.getById(VALID_ID)).thenReturn(new CourseNumber());
         Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
@@ -210,8 +210,8 @@ class GroupServiceTest {
     public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
         Group group = new Group();
         group.setName(VALID_NAME);
-        group.setCourseNumberId(VALID_ID);
-        group.setFacultyId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         List<Group> expectResult = new ArrayList<>();
         expectResult.add(group);
@@ -227,29 +227,13 @@ class GroupServiceTest {
                 () -> groupService.getAll(10, 10));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Group group = new Group();
-
-        group.setId(VALID_ID);
-        group.setName(VALID_NAME);
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
-
-        Mockito.when(groupDao.getById(group.getId())).thenReturn(new Group());
-        Mockito.when(courseNumberDao.getById(group.getId())).thenReturn(new CourseNumber());
-        Mockito.when(facultyDao.getById(group.getId())).thenReturn(new Faculty());
-
-        Mockito.when(groupDao.update(group)).thenReturn(true);
-        Assertions.assertTrue(groupService.update(group));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
         Group group = new Group();
         group.setId(VALID_ID);
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
 
         group.setName("");
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
@@ -292,8 +276,8 @@ class GroupServiceTest {
     public void update_ShouldThrowException_WhenIdNotValid() {
         Group group = new Group();
 
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
         group.setName(VALID_NAME);
 
         group.setId(ZERO_ID);
@@ -311,8 +295,8 @@ class GroupServiceTest {
     public void update_ShouldThrowException_WhenEntryNotExist() {
         Group group = new Group();
 
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
         group.setName(VALID_NAME);
         group.setId(VALID_ID);
 
@@ -325,8 +309,8 @@ class GroupServiceTest {
     public void update_ShouldThrowException_WhenFacultyNotExist() {
         Group group = new Group();
 
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
         group.setName(VALID_NAME);
         group.setId(VALID_ID);
 
@@ -339,8 +323,8 @@ class GroupServiceTest {
     public void update_ShouldThrowException_WhenCourseNumberNotExist() {
         Group group = new Group();
 
-        group.setFacultyId(VALID_ID);
-        group.setCourseNumberId(VALID_ID);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
         group.setName(VALID_NAME);
         group.setId(VALID_ID);
 
@@ -355,13 +339,6 @@ class GroupServiceTest {
                 () -> groupService.update(null));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(groupDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(groupDao.getById(VALID_ID)).thenReturn(new Group());
-
-        Assertions.assertTrue(groupService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {
@@ -378,5 +355,21 @@ class GroupServiceTest {
 
         Assertions.assertThrows(ValidationException.class,
                 () -> groupService.deleteById(VALID_ID));
+    }
+
+    CourseNumber getCourse(BigInteger id) {
+        CourseNumber courseNumber = new CourseNumber();
+        courseNumber.setName("coursenumbertestname");
+        courseNumber.setId(id);
+
+        return courseNumber;
+    }
+
+    Faculty getFaculty(BigInteger id) {
+        Faculty faculty = new Faculty();
+        faculty.setName("testfacultyname");
+        faculty.setId(id);
+
+        return faculty;
     }
 }

@@ -146,15 +146,6 @@ class FloorServiceTest {
                 () -> floorService.getAll(10, 10));
     }
 
-    @Test
-    public void update_ShouldReturnTrue_WhenEntryIsUpdated() {
-        Floor floor = new Floor();
-        floor.setName(VALID_NAME);
-        floor.setId(VALID_ID);
-
-        Mockito.when(floorDao.update(floor)).thenReturn(true);
-        Assertions.assertTrue(floorService.update(floor));
-    }
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
@@ -225,13 +216,6 @@ class FloorServiceTest {
                 () -> floorService.update(null));
     }
 
-    @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
-        Mockito.when(floorDao.deleteById(VALID_ID)).thenReturn(true);
-        Mockito.when(floorDao.getById(VALID_ID)).thenReturn(new Floor());
-
-        Assertions.assertTrue(floorService.deleteById(VALID_ID));
-    }
 
     @Test
     public void deleteById_ShouldThrowException_WhenIdNotValid() {

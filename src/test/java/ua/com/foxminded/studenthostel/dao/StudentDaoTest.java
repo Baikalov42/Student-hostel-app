@@ -8,20 +8,36 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.CourseNumber;
+import ua.com.foxminded.studenthostel.models.Faculty;
+import ua.com.foxminded.studenthostel.models.Floor;
+import ua.com.foxminded.studenthostel.models.Group;
+import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class StudentDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private DataSource dataSource;
@@ -37,8 +53,6 @@ class StudentDaoTest {
     @BeforeEach
     public void addTablesScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
 
     @Test
@@ -46,9 +60,7 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student student = new Student(BigInteger.valueOf(10), "firstnameones", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1));
-
+        Student student = getStudent();
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
         studentDao.insert(student);
@@ -62,11 +74,13 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student student = new Student(BigInteger.valueOf(10), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(5), BigInteger.valueOf(1));
+        Group group = new Group();
+        group.setId(BigInteger.TEN);
 
-        Assertions.assertThrows(DaoException.class,
-                () -> studentDao.insert(student));
+        Student student = getStudent();
+        student.setGroup(group);
+
+        Assertions.assertThrows(DaoException.class, () -> studentDao.insert(student));
     }
 
     @Test
@@ -74,11 +88,13 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student student = new Student(BigInteger.valueOf(10), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(5));
+        Room room = new Room();
+        room.setId(BigInteger.TEN);
 
-        Assertions.assertThrows(DaoException.class,
-                () -> studentDao.insert(student));
+        Student student = getStudent();
+        student.setRoom(room);
+
+        Assertions.assertThrows(DaoException.class, () -> studentDao.insert(student));
     }
 
     @Test
@@ -86,10 +102,9 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student student = new Student(BigInteger.valueOf(1), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1));
+        Student student = getStudent();
 
-        Assertions.assertEquals(student, studentDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(student, studentDao.getById(ONE));
     }
 
     @Test
@@ -100,16 +115,16 @@ class StudentDaoTest {
         Assertions.assertThrows(NotFoundException.class,
                 () -> studentDao.getById(BigInteger.valueOf(10)));
     }
+
     @Test
     public void getAll_ShouldReturnListOfStudents_WhenConditionCompleted() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         List<Student> list = new ArrayList<>();
-        list.add(new Student(BigInteger.valueOf(3),"firstnamethree", "lastnamethree",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+        list.add(getStudent());
 
-        Assertions.assertEquals(list, studentDao.getAll(1,2));
+        Assertions.assertEquals(list, studentDao.getAll(0, 1));
     }
 
     @Test
@@ -117,17 +132,19 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        Group group = entityManager.find(Group.class, BigInteger.valueOf(2));
+
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(BigInteger.valueOf(1), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+                10, getGroup(), getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(2), "firstnametwo", "lastnametwo",
-                0, BigInteger.valueOf(2), BigInteger.valueOf(1)));
+                0, group, getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+                10, getGroup(), getRoom()));
 
-        Assertions.assertEquals(expect, studentDao.getAllByFloor(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByFloor(ONE));
     }
 
     @Test
@@ -135,17 +152,19 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        Room room = entityManager.find(Room.class, BigInteger.valueOf(2));
+
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(BigInteger.valueOf(1), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+                10, getGroup(), getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+                10, getGroup(), getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
-                6, BigInteger.valueOf(1), BigInteger.valueOf(2)));
+                6, getGroup(), room));
 
-        Assertions.assertEquals(expect, studentDao.getAllByFaculty(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByFaculty(ONE));
 
     }
 
@@ -154,106 +173,131 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
+        Room room = entityManager.find(Room.class, BigInteger.valueOf(2));
+
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(BigInteger.valueOf(1), "firstnameone", "lastnameone",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+                10, getGroup(), getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1)));
+                10, getGroup(), getRoom()));
 
         expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
-                6, BigInteger.valueOf(1), BigInteger.valueOf(2)));
+                6, getGroup(), room));
 
-        Assertions.assertEquals(expect, studentDao.getAllByCourse(BigInteger.valueOf(1)));
+        Assertions.assertEquals(expect, studentDao.getAllByCourse(ONE));
 
     }
-    @Test
-    public void changeRoom_ShouldReturnTrue_WhenRoomIsChanged() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        BigInteger newRoomId = BigInteger.valueOf(2);
-        Student expect = studentDao.getById(BigInteger.valueOf(1));
-        expect.setRoomId(newRoomId);
-
-        boolean isChanged = studentDao.changeRoom(newRoomId, expect.getId());
-        Student actual = studentDao.getById(BigInteger.valueOf(1));
-
-        Assertions.assertEquals(expect, actual);
-        Assertions.assertTrue(isChanged);
-    }
 
     @Test
     public void changeRoom_ShouldThrowException_WhenNewRoomIdNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Assertions.assertThrows(DaoException.class,
-                () -> studentDao.changeRoom(BigInteger.valueOf(10), BigInteger.valueOf(1)));
+        Assertions.assertThrows(NotFoundException.class,
+                () -> studentDao.changeRoom(BigInteger.valueOf(10), ONE));
     }
+
     @Test
-    public void changeDebt_ShouldReturnTrue_WhenHoursDebtIsChanged(){
+    public void changeDebt_ShouldUpdateEntry_WhenDataIsCorrect() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToRoomsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int newHoursDebt = 15;
-        Student expect = studentDao.getById(BigInteger.valueOf(1));
+        Student expect = studentDao.getById(ONE);
         expect.setHoursDebt(15);
 
-        boolean isChanged = studentDao.changeDebt(newHoursDebt, expect.getId());
-        Student actual = studentDao.getById(BigInteger.valueOf(1));
+        studentDao.changeDebt(newHoursDebt, expect.getId());
+        Student actual = studentDao.getById(ONE);
 
         Assertions.assertEquals(expect, actual);
-        Assertions.assertTrue(isChanged);
     }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);;
+        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student newValues = new Student(BigInteger.valueOf(1), "newfirstname", "newlastname",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1));;
 
-        boolean isUpdated = studentDao.update(newValues);
+        Student newValues = new Student(ONE, "newfirstname", "newlastname",
+                10, getGroup(), getRoom());
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, studentDao.getById(BigInteger.valueOf(1)));
+        studentDao.update(newValues);
+        Assertions.assertEquals(newValues, studentDao.getById(ONE));
     }
 
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
+    public void update_ShouldThrowException_WhenDataNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Student newValues = new Student(BigInteger.valueOf(7), "newfirstname", "newlastname",
-                10, BigInteger.valueOf(1), BigInteger.valueOf(1));;;
+                10, getGroup(), getRoom());
 
-        Assertions.assertFalse(studentDao.update(newValues));
+        Assertions.assertThrows(DaoException.class, () -> studentDao.update(newValues));
     }
 
     @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
-        boolean isDeleted = studentDao.deleteById(BigInteger.valueOf(1));
+        studentDao.deleteById(ONE);
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
-        Assertions.assertTrue(isDeleted);
     }
 
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
+    Student getStudent() {
+        Student student = new Student();
+        student.setId(ONE);
+        student.setFirstName("firstnameone");
+        student.setLastName("lastnameone");
+        student.setHoursDebt(10);
+        student.setRoom(getRoom());
+        student.setGroup(getGroup());
 
-        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
-        boolean isDeleted = studentDao.deleteById(BigInteger.valueOf(7));
-        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "students");
+        return student;
+    }
 
-        Assertions.assertEquals(rowBefore, rowAfter);
-        Assertions.assertFalse(isDeleted);
+    Room getRoom() {
+        Room room = new Room();
+        room.setName("roomnameone");
+        room.setFloor(getfloor());
+        room.setId(ONE);
+
+        return room;
+    }
+
+    Group getGroup() {
+        Group group = new Group();
+        group.setId(ONE);
+        group.setCourseNumber(getCourse());
+        group.setFaculty(getFaculty());
+        return group;
+    }
+
+    CourseNumber getCourse() {
+        CourseNumber courseNumber = new CourseNumber();
+        courseNumber.setId(ONE);
+        courseNumber.setName("courseone");
+
+        return courseNumber;
+    }
+    Faculty getFaculty() {
+        Faculty faculty = new Faculty();
+        faculty.setId(ONE);
+        faculty.setName("facultyone");
+
+        return faculty;
+    }
+    Floor getfloor() {
+        Floor floor = new Floor();
+        floor.setId(ONE);
+        floor.setName("firstfloor");
+
+        return floor;
     }
 }

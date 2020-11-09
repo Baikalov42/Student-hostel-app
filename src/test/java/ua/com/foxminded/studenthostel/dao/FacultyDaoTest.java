@@ -8,8 +8,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
@@ -20,8 +22,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @SpringJUnitConfig(SpringConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class FacultyDaoTest {
+
+    private static final BigInteger ONE = BigInteger.ONE;
 
     @Autowired
     private DataSource dataSource;
@@ -37,9 +43,8 @@ class FacultyDaoTest {
     @BeforeEach
     public void addTablesScript() {
         sqlScripts = new ResourceDatabasePopulator();
-        sqlScripts.addScript(new ClassPathResource("sql\\CreateTables.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
     }
+
     @Test
     public void insert_ShouldMakeEntry_InFacultiesTable() {
         Faculty faculty = new Faculty();
@@ -56,8 +61,9 @@ class FacultyDaoTest {
     public void insert_ShouldReturnId_WhenEntryIsInserted() {
         Faculty faculty = new Faculty();
         faculty.setName("web design");
-        Assertions.assertEquals(BigInteger.valueOf(1), facultyDao.insert(faculty));
+        Assertions.assertEquals(ONE, facultyDao.insert(faculty));
     }
+
     @Test
     public void insert_ShouldThrowException_WhenNameNotUnique() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
@@ -75,16 +81,16 @@ class FacultyDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Faculty faculty = new Faculty();
-        faculty.setId(BigInteger.valueOf(1));
+        faculty.setId(ONE);
         faculty.setName("web design");
-        Assertions.assertEquals(faculty, facultyDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(faculty, facultyDao.getById(ONE));
     }
 
     @Test
     public void getById_ShouldThrowException_WhenEntryNotExist() {
 
         Assertions.assertThrows(NotFoundException.class,
-                () -> facultyDao.getById(BigInteger.valueOf(1)));
+                () -> facultyDao.getById(ONE));
     }
 
     @Test
@@ -99,25 +105,25 @@ class FacultyDaoTest {
         List<Faculty> list = new ArrayList<>();
         list.add(faculty);
 
-        Assertions.assertEquals(list, facultyDao.getAll(1, 3));
+        Assertions.assertEquals(list, facultyDao.getAll(3, 1));
     }
+
     @Test
     public void update_ShouldUpdateEntry_WhenDataExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Faculty newValues = new Faculty();
-        newValues.setId(BigInteger.valueOf(1));
+        newValues.setId(ONE);
         newValues.setName("newname");
 
-        boolean isUpdated = facultyDao.update(newValues);
+        facultyDao.update(newValues);
 
-        Assertions.assertTrue(isUpdated);
-        Assertions.assertEquals(newValues, facultyDao.getById(BigInteger.valueOf(1)));
+        Assertions.assertEquals(newValues, facultyDao.getById(ONE));
     }
 
     @Test
-    public void update_ShouldReturnFalse_WhenDataNotExist() {
+    public void update_ShouldThrowException_WhenDataNotExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
@@ -125,31 +131,18 @@ class FacultyDaoTest {
         newValues.setId(BigInteger.valueOf(7));
         newValues.setName("newname");
 
-        Assertions.assertFalse(facultyDao.update(newValues));
+        Assertions.assertThrows(DaoException.class, () -> facultyDao.update(newValues));
     }
+
     @Test
-    public void deleteById_ShouldReturnTrue_WhenEntryIsDeleted() {
+    public void deleteById_ShouldDeleteEntry_WhenEntryIsExist() {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "faculties");
-        boolean isDeleted = facultyDao.deleteById(BigInteger.valueOf(5));
+        facultyDao.deleteById(ONE);
         int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "faculties");
 
         Assertions.assertEquals(rowBefore - 1, rowAfter);
-        Assertions.assertTrue(isDeleted);
-    }
-
-    @Test
-    public void deleteById_ShouldReturnFalse_WhenEntryNotDeleted() {
-        sqlScripts.addScript(new ClassPathResource("sql\\AddDataToFacultiesTable.sql"));
-        DatabasePopulatorUtils.execute(sqlScripts, dataSource);
-
-        int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "faculties");
-        boolean isDeleted = facultyDao.deleteById(BigInteger.valueOf(6));
-        int rowAfter = JdbcTestUtils.countRowsInTable(jdbcTemplate, "faculties");
-
-        Assertions.assertEquals(rowBefore, rowAfter);
-        Assertions.assertFalse(isDeleted);
     }
 }

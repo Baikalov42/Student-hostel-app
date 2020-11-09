@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Room;
-import ua.com.foxminded.studenthostel.models.dto.RoomDTO;
 import ua.com.foxminded.studenthostel.service.EquipmentService;
 import ua.com.foxminded.studenthostel.service.RoomService;
 
@@ -21,7 +20,7 @@ import java.util.List;
 public class RoomController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private RoomService roomService;
@@ -53,21 +52,21 @@ public class RoomController {
     public String getById(@PathVariable long id, Model model) {
         LOGGER.debug("(GET) getById: {}", id);
 
-        RoomDTO roomDTO = roomService.getDTOById(BigInteger.valueOf(id));
-        model.addAttribute("roomDTO", roomDTO);
+        Room room = roomService.getById(BigInteger.valueOf(id));
+        model.addAttribute("room", room);
 
         LOGGER.debug("(GET) getById complete, model: {}", model);
         return "rooms/room-info";
     }
 
     @GetMapping("/rooms/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Room> rooms = roomService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Room> rooms = roomService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("rooms", rooms);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, rooms.size());
@@ -75,17 +74,16 @@ public class RoomController {
     }
 
     @GetMapping("/rooms/byEquipment/page/{pageNumber}")
-    public String getAllByEquipment(@PathVariable long pageNumber, Model model) {
+    public String getAllByEquipment(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAllByEquipment, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getting Equipments, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getting Equipments, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<Equipment> equipments = equipmentService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<Equipment> equipments = equipmentService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("equipments", equipments);
 
-        LOGGER.debug("(GET) getAllByEquipment complete, page number: {}, result size: {}"
-                , pageNumber, equipments.size());
+        LOGGER.debug("(GET) getAllByEquipment complete, page number: {}, result size: {}", pageNumber, equipments.size());
         return "rooms/rooms-by-equipment";
     }
 
@@ -93,7 +91,7 @@ public class RoomController {
     public String getAllByEquipmentResult(@PathVariable long equipmentId, Model model) {
         LOGGER.debug("(GET) getAllByEquipmentResult , id: {}", equipmentId);
 
-        List<RoomDTO> rooms = roomService.getAllByEquipment(BigInteger.valueOf(equipmentId));
+        List<Room> rooms = roomService.getAllByEquipment(BigInteger.valueOf(equipmentId));
         model.addAttribute("rooms", rooms);
 
         LOGGER.debug("(GET) getAllByEquipmentResult complete, result size: {}", rooms.size());
@@ -112,7 +110,7 @@ public class RoomController {
 
     @PostMapping("/rooms/update/{id}")
     public String update(@PathVariable long id, Model model, Room room) {
-        LOGGER.debug("(POST) update id = {}", id);
+        LOGGER.debug("(POST) update room {}", room);
 
         roomService.update(room);
 

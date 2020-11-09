@@ -19,7 +19,7 @@ import java.util.List;
 public class CourseNumberController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseNumberController.class);
-    private static final long LINES_LIMIT_ON_PAGE = 10;
+    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private CourseNumberService courseNumberService;
@@ -57,13 +57,13 @@ public class CourseNumberController {
     }
 
     @GetMapping("/courseNumbers/page/{pageNumber}")
-    public String getAll(@PathVariable long pageNumber, Model model) {
+    public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        long offset = LINES_LIMIT_ON_PAGE * pageNumber - LINES_LIMIT_ON_PAGE;
-        LOGGER.debug("(GET) getAll, limit {} , offset {} ", LINES_LIMIT_ON_PAGE, offset);
+        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
+        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
 
-        List<CourseNumber> courseNumbers = courseNumberService.getAll(LINES_LIMIT_ON_PAGE, offset);
+        List<CourseNumber> courseNumbers = courseNumberService.getAll(offset, LINES_LIMIT_ON_PAGE );
         model.addAttribute("courses", courseNumbers);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, courseNumbers.size());
@@ -84,10 +84,10 @@ public class CourseNumberController {
     public String update(@PathVariable long id, Model model, CourseNumber courseNumber) {
         LOGGER.debug("(POST) update id = {}", id);
 
-        courseNumberService.update(courseNumber);
+        CourseNumber updated = courseNumberService.update(courseNumber);
 
         model.addAttribute("message", "Updating complete");
-        model.addAttribute("id", "Updated ID = " + courseNumber.getId());
+        model.addAttribute("id", "Updated ID = " + updated.getId());
 
         LOGGER.debug("(POST) update complete, model: {}", model);
         return "message";

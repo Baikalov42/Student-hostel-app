@@ -5,176 +5,165 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import ua.com.foxminded.studenthostel.dao.StudentDao;
 import ua.com.foxminded.studenthostel.dao.TaskDao;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
+import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.Task;
-import ua.com.foxminded.studenthostel.models.mappers.TaskMapper;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import java.math.BigInteger;
-import java.sql.PreparedStatement;
 import java.util.List;
 
+@Transactional
 @Repository
 public class TaskDaoImpl implements TaskDao {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskDaoImpl.class);
 
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private StudentDao studentDao;
 
     @Override
     public BigInteger insert(Task task) {
-        LOGGER.debug("inserting {}", task);
-
-        String query = "" +
-                "INSERT INTO tasks (task_name, task_description, cost) " +
-                "VALUES (?,?,?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        LOGGER.debug("inserting task {}", task);
 
         try {
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(query, new String[]{"task_id"});
-                ps.setString(1, task.getName());
-                ps.setString(2, task.getDescription());
-                ps.setInt(3, task.getCostInHours());
+            entityManager.persist(task);
+            entityManager.flush();
 
-                return ps;
-            }, keyHolder);
-
-            long id = keyHolder.getKey().longValue();
+            BigInteger id = task.getId();
             LOGGER.debug("inserting complete, id = {}", id);
-            return BigInteger.valueOf(id);
+            return id;
 
-        } catch (DataAccessException ex) {
+        } catch (PersistenceException ex) {
             LOGGER.error("insertion error {}", task, ex);
             throw new DaoException("Insertion error: " + task, ex);
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Task getById(BigInteger taskId) {
         LOGGER.debug("getting by id {}", taskId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM tasks " +
-                "WHERE task_id = ? ";
-        try {
-            Task task = jdbcTemplate.queryForObject(query, new TaskMapper(), taskId);
-            LOGGER.debug("getting complete {}", task);
-            return task;
+        Task task = entityManager.find(Task.class, taskId);
 
-        } catch (EmptyResultDataAccessException ex) {
-            LOGGER.warn("Failed get by id {}", taskId, ex);
-            throw new NotFoundException("Failed get by id: " + taskId, ex);
+        if (task == null) {
+            LOGGER.warn("Failed get by id {}", taskId);
+            throw new NotFoundException("Failed get by id: " + taskId);
         }
+        LOGGER.debug("getting complete {}", task);
+        return task;
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<Task> getAll(long limit, long offset) {
-        LOGGER.debug("getting all, limit {} , offset {} ", limit, offset);
+    public List<Task> getAll(int offset, int limit) {
+        LOGGER.debug("getting all, offset {}, limit {}  ", offset, limit);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM tasks " +
-                "ORDER BY task_id " +
-                "LIMIT ? OFFSET ?";
-
-        return jdbcTemplate.query(query, new TaskMapper(), limit, offset);
+        return entityManager
+                .createNamedQuery("Task.getAll", Task.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Task> getAllByStudent(BigInteger studentId) {
-        LOGGER.debug("getting all by student id {} ", studentId);
+        LOGGER.debug("getting all by Student {}", studentId);
 
-        String query = "" +
-                "SELECT * " +
-                "FROM students_tasks " +
-                "INNER JOIN tasks ON students_tasks.task_id = tasks.task_id " +
-                "WHERE student_id = ? ";
-        return jdbcTemplate.query(query, new TaskMapper(), studentId);
+        return entityManager
+                .createQuery("" +
+                        "select ta " +
+                        "from Task ta " +
+                        "inner join ta.students st " +
+                        "where st.id = :id ", Task.class)
+                .setParameter("id", studentId)
+                .getResultList();
     }
 
     @Override
-    public boolean assignToStudent(BigInteger studentId, BigInteger taskId) {
-        LOGGER.debug("assigning, student id {}, task id {}", studentId, taskId);
-
-        String query = "" +
-                "INSERT INTO students_tasks(student_id, task_id) " +
-                "VALUES (?,?)";
+    public void assignToStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("assigning, student {}, task {}", studentId, taskId);
         try {
-            return jdbcTemplate.update(query, studentId, taskId) == 1;
+            Student student = studentDao.getById(studentId);
+            Task task = this.getById(taskId);
+            task.addStudent(student);
+            entityManager.flush();
 
-        } catch (DataAccessException ex) {
-            LOGGER.error("failed assigning, student id {}, task id {}", studentId, taskId, ex);
-            throw new DaoException("task id=" + taskId + " student id=" + studentId, ex);
+        } catch (PersistenceException ex) {
+
+            LOGGER.error("failed assigning, student id {}, equipment id {}", studentId, taskId, ex);
+            String message = "student id =" + studentId + " equipment id =" + taskId;
+            throw new DaoException(message, ex);
         }
     }
 
     @Override
-    public boolean unassignFromStudent(BigInteger studentId, BigInteger taskId) {
-        LOGGER.debug("un assigning, student id {}, task id {}", studentId, taskId);
-
-        String query = "" +
-                "DELETE FROM students_tasks " +
-                "WHERE student_id = ? AND task_id = ?";
+    public void unassignFromStudent(BigInteger studentId, BigInteger taskId) {
+        LOGGER.debug("un assigning, student {}, task {}", studentId, taskId);
         try {
-            return jdbcTemplate.update(query, studentId, taskId) == 1;
+            Student student = studentDao.getById(studentId);
+            Task task = this.getById(taskId);
+            task.removeStudent(student);
+            entityManager.flush();
 
         } catch (DataAccessException ex) {
-
-            LOGGER.error("failed un assigning, student id {}, task id {}", studentId, taskId, ex);
-            throw new DaoException("task id=" + taskId + " student id=" + studentId, ex);
+            LOGGER.error("failed un assigning, student id {}, equipment id {}", studentId, taskId, ex);
+            throw new DaoException("student id =" + studentId + " equipment id =" + taskId, ex);
         }
     }
 
     @Override
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
-        LOGGER.debug("is relation exist between student id = {}, task id = {}", studentId, taskId);
+        LOGGER.debug("is student {} , contains task {}", studentId, taskId);
 
-        String query = "" +
-                "SELECT count(*) FROM students_tasks " +
-                "WHERE student_id = ? AND task_id = ?";
+        Task task = entityManager.find(Task.class, taskId);
+        Student student = entityManager.find(Student.class, studentId);
 
-        return jdbcTemplate.queryForObject(query, Integer.class, studentId, taskId) == 1;
+        if (task == null || student == null) {
+            LOGGER.warn("not exist, student {}, task {}", studentId, taskId);
+            throw new NotFoundException("not exist student: " + studentId + " task: " + taskId);
+        }
+        return task.getStudents().contains(student);
     }
 
     @Override
-    public boolean update(Task task) {
+    public Task update(Task task) {
         LOGGER.debug("updating {}", task);
 
-        String query = "" +
-                "UPDATE  tasks " +
-                "SET " +
-                "task_name = ? ," +
-                "task_description = ? " +
-                "WHERE task_id = ? ";
         try {
-            return jdbcTemplate.update(query, task.getName(), task.getDescription(), task.getId()) == 1;
+            Task result = entityManager.merge(task);
+            entityManager.flush();
 
-        } catch (DataAccessException ex) {
+            LOGGER.debug("updating complete, result: {}", result);
+            return result;
+
+        } catch (PersistenceException ex) {
             LOGGER.error("updating error {}", task, ex);
             throw new DaoException("Updating error: " + task, ex);
         }
     }
 
     @Override
-    public boolean deleteById(BigInteger id) {
+    public void deleteById(BigInteger id) {
         LOGGER.debug("deleting by id {}", id);
 
-        String query = "" +
-                "DELETE FROM tasks " +
-                "WHERE task_id  = ? ";
         try {
-            return jdbcTemplate.update(query, id) == 1;
-        } catch (DataAccessException ex) {
+            Task task = entityManager.find(Task.class, id);
+            entityManager.remove(task);
+            entityManager.flush();
 
+        } catch (DataAccessException ex) {
             LOGGER.error("deleting error {}", id, ex);
             throw new DaoException("Deleting error: " + id, ex);
         }

@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -104,7 +105,7 @@ class CourseNumberControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<CourseNumber> courseNumbers = Collections.singletonList(getCourseNumber());
-        Mockito.when(courseNumberService.getAll(10, 0)).thenReturn(courseNumbers);
+        Mockito.when(courseNumberService.getAll(0, 10)).thenReturn(courseNumbers);
 
         mockMvc.perform(get("/courseNumbers/page/1"))
                 .andExpect(status().isOk())
@@ -114,7 +115,7 @@ class CourseNumberControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(courseNumberService.getAll(10, 0)).thenThrow(NotFoundException.class);
+        Mockito.when(courseNumberService.getAll(0, 10)).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/courseNumbers/page/1"))
                 .andExpect(status().isOk())
@@ -144,7 +145,7 @@ class CourseNumberControllerTest {
 
     @Test
     public void update_POST_ShouldReturnViewOfMessage_WhenEntryUpdated() throws Exception {
-        Mockito.when(courseNumberService.update(getCourseNumber())).thenReturn(true);
+        Mockito.when(courseNumberService.update(getCourseNumber())).thenReturn(getCourseNumber());
 
         mockMvc.perform(post("/courseNumbers/update/1")
                 .param("name", "Testname")
@@ -170,7 +171,7 @@ class CourseNumberControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfMessage_WhenEntryDeleted() throws Exception {
-        Mockito.when(courseNumberService.deleteById(ONE)).thenReturn(true);
+        Mockito.doNothing().when(courseNumberService).deleteById(ONE);
 
         mockMvc.perform(post("/courseNumbers/1"))
                 .andExpect(status().isOk())
@@ -181,14 +182,14 @@ class CourseNumberControllerTest {
 
     @Test
     public void delete_ShouldReturnViewOfError_WhenEntryNotDeleted() throws Exception {
-        Mockito.when(courseNumberService.deleteById(ONE)).thenThrow(DaoException.class);
+        Mockito.doThrow(DaoException.class).when(courseNumberService).deleteById(ONE);
 
         mockMvc.perform(post("/courseNumbers/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
 
-     static CourseNumber getCourseNumber() {
+    static CourseNumber getCourseNumber() {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(BigInteger.ONE);
         courseNumber.setName("Testname");
@@ -196,7 +197,7 @@ class CourseNumberControllerTest {
         return courseNumber;
     }
 
-     static CourseNumber getCourseNumberNullId() {
+    static CourseNumber getCourseNumberNullId() {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setName("Testname");
 
