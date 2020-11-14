@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Group info</title>
+</head>
+<body>
+<div th:insert="templates/fragments :: navbar"></div>
+<br>
+
+<table class="table-size table table-bordered">
+    <thead class="thead-light">
+    <tr>
+        <th class="text-to-center" scope="col" colspan="2">Group card</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>ID</td>
+        <th scope="row" th:text="${group.id}"></th>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <th th:text="${group.name}"></th>
+    </tr>
+    <tr>
+        <td>Course name</td>
+        <th>
+            <a th:href="@{/courseNumbers/{id}(id=${group.courseNumber.id})}" style="color: lightslategrey"
+               th:text="${group.courseNumber.name}"></a>
+        </th>
+    </tr>
+    <tr>
+        <td>Faculty name</td>
+        <th>
+            <a th:href="@{/faculties/{id}(id=${group.faculty.id})}" style="color:lightslategrey"
+               th:text="${group.faculty.name}"></a>
+        </th>
+    </tr>
+    </tbody>
+</table>
+
+<div class="edit-del-container">
+    <a class="btn btn-secondary edit-del-btn" th:href="@{/groups/update/{id}(id = ${group.id})}">Edit</a>
+
+    <form action="#" th:action="@{/groups/{id}(id = ${group.id})}" method="post">
+        <input type="hidden">
+        <input type="submit" class="edit-del-btn btn btn-secondary " value="Delete"/>
+    </form>
+</div>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="templates/fragments :: style"></div>
+    <title>Student adding</title>
+</head>
+<body>
+<div th:insert="templates/fragments :: navbar" ></div>
+
+<form action="#" th:action="@{/students/insert}" th:object="${student}" method="post" class="form-size">
+
+    <h2 align="center" >Adding a new student</h2>
+    <div class="form-group">
+        <label for="exampleFormControlInput1">First name</label>
+        <input type="text" th:field="*{firstName}"
+               id="exampleFormControlInput1"
+               class="form-control" placeholder="Name">
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlInput2">Last name</label>
+        <input type="text" th:field="*{lastName}"
+               id="exampleFormControlInput2"
+               class="form-control" placeholder="Surname">
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlInput3">Hours debt</label>
+        <input type="number" th:field="*{hoursDebt}"
+               id="exampleFormControlInput3"
+               class="form-control" placeholder="40">
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlInput4">Group ID</label>
+        <input type="number" th:field="*{group.id}"
+               id="exampleFormControlInput4"
+               class="form-control" placeholder="1">
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlInput5">Room ID</label>
+        <input type="number" th:field="*{room.id}"
+               id="exampleFormControlInput5"
+               class="form-control" placeholder="1">
+    </div>
+    <input type="submit" class="btn btn-info" value="Submit"/>
+</form>
+
+<div th:insert="templates/fragments :: js"></div>
+</body>
+</html>
