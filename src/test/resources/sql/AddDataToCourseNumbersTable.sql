@@ -1,10 +1,10 @@
 INSERT INTO course_numbers (course_number_id, course_number_name)
-values (1, 'first');
+values (1, 'First');
 INSERT INTO course_numbers (course_number_id, course_number_name)
-values (2, 'second');
+values (2, 'Second');
 INSERT INTO course_numbers (course_number_id, course_number_name)
-values (3, 'third');
+values (3, 'Third');
 INSERT INTO course_numbers (course_number_id, course_number_name)
-values (4, 'fourth');
+values (4, 'Fourth');
 INSERT INTO course_numbers (course_number_id, course_number_name)
-values (5, 'fifth');
+values (5, 'Fifth');

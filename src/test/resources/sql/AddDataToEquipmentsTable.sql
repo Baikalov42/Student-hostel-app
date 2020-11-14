@@ -1,17 +1,17 @@
 INSERT INTO equipments (equipment_id, equipment_name)
-values (1, 'table');
+values (1, 'Table');
 
 INSERT INTO equipments (equipment_id, equipment_name)
-values (2, 'bedside table');
+values (2, 'Bedside table');
 
 INSERT INTO equipments (equipment_id, equipment_name)
-values (3, 'chair');
+values (3, 'Chair');
 
 INSERT INTO equipments (equipment_id, equipment_name)
-values (4, 'bed');
+values (4, 'Bed');
 
 INSERT INTO equipments (equipment_id, equipment_name)
-values (5, 'mattress');
+values (5, 'Mattress');
 
 INSERT INTO equipments (equipment_id, equipment_name)
-values (6, 'linen');
+values (6, 'Linen');
