@@ -94,6 +94,11 @@ public class Student {
         return lastName;
     }
 
+    @Column(name = "hours_debt", nullable = false)
+    public int getHoursDebt() {
+        return hoursDebt;
+    }
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id", referencedColumnName = "group_id")
     public Group getGroup() {
@@ -124,10 +129,6 @@ public class Student {
     )
     public Set<Task> getTasks() {
         return tasks;
-    }
-
-    public int getHoursDebt() {
-        return hoursDebt;
     }
 
     public void setEquipments(Set<Equipment> equipments) {

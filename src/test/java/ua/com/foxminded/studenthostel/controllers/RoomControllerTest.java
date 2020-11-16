@@ -7,10 +7,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
@@ -24,7 +23,6 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -32,9 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static ua.com.foxminded.studenthostel.controllers.EquipmentControllerTest.getEquipment;
 import static ua.com.foxminded.studenthostel.controllers.FloorControllerTest.getFloor;
-import static ua.com.foxminded.studenthostel.controllers.FloorControllerTest.getNullIdFloor;
 
-@SpringJUnitWebConfig(WebConfig.class)
+@SpringBootTest
 class RoomControllerTest {
 
     private static final BigInteger ONE = BigInteger.ONE;

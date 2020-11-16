@@ -8,8 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
@@ -20,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
 class CourseNumberServiceTest {
 
     public static final BigInteger VALID_ID = BigInteger.ONE;

@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Faculty;
@@ -22,9 +22,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class FacultyDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -48,7 +49,7 @@ class FacultyDaoTest {
     @Test
     public void insert_ShouldMakeEntry_InFacultiesTable() {
         Faculty faculty = new Faculty();
-        faculty.setName("web design");
+        faculty.setName("Web design");
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "faculties");
         facultyDao.insert(faculty);
@@ -60,7 +61,7 @@ class FacultyDaoTest {
     @Test
     public void insert_ShouldReturnId_WhenEntryIsInserted() {
         Faculty faculty = new Faculty();
-        faculty.setName("web design");
+        faculty.setName("Web design");
         Assertions.assertEquals(ONE, facultyDao.insert(faculty));
     }
 
@@ -70,7 +71,7 @@ class FacultyDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Faculty faculty = new Faculty();
-        faculty.setName("web design");
+        faculty.setName("Web design");
 
         Assertions.assertThrows(DaoException.class, () -> facultyDao.insert(faculty));
     }
@@ -82,7 +83,7 @@ class FacultyDaoTest {
 
         Faculty faculty = new Faculty();
         faculty.setId(ONE);
-        faculty.setName("web design");
+        faculty.setName("Web design");
         Assertions.assertEquals(faculty, facultyDao.getById(ONE));
     }
 
@@ -100,7 +101,7 @@ class FacultyDaoTest {
 
         Faculty faculty = new Faculty();
         faculty.setId(BigInteger.valueOf(4));
-        faculty.setName("front end development");
+        faculty.setName("Front end development");
 
         List<Faculty> list = new ArrayList<>();
         list.add(faculty);
@@ -115,7 +116,7 @@ class FacultyDaoTest {
 
         Faculty newValues = new Faculty();
         newValues.setId(ONE);
-        newValues.setName("newname");
+        newValues.setName("Newname");
 
         facultyDao.update(newValues);
 
@@ -129,7 +130,7 @@ class FacultyDaoTest {
 
         Faculty newValues = new Faculty();
         newValues.setId(BigInteger.valueOf(7));
-        newValues.setName("newname");
+        newValues.setName("Newname");
 
         Assertions.assertThrows(DaoException.class, () -> facultyDao.update(newValues));
     }

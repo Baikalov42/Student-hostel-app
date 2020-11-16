@@ -7,10 +7,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
@@ -30,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 
-@SpringJUnitWebConfig(WebConfig.class)
+@SpringBootTest
 class TaskControllerTest {
 
     private static final BigInteger ONE = BigInteger.ONE;

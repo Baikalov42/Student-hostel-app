@@ -7,14 +7,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
-import ua.com.foxminded.studenthostel.models.Equipment;
 import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.service.FacultyService;
 
@@ -29,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@SpringJUnitWebConfig(WebConfig.class)
+@SpringBootTest
 class FacultyControllerTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -190,14 +188,14 @@ class FacultyControllerTest {
                 .andExpect(view().name("error"));
     }
 
-     static Faculty getFaculty() {
+    static Faculty getFaculty() {
         Faculty faculty = getNullIdFaculty();
         faculty.setId(ONE);
 
         return faculty;
     }
 
-     static Faculty getNullIdFaculty() {
+    static Faculty getNullIdFaculty() {
         Faculty faculty = new Faculty();
         faculty.setName("Testname");
 

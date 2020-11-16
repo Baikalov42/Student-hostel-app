@@ -2,16 +2,14 @@ package ua.com.foxminded.studenthostel.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ua.com.foxminded.studenthostel.config.WebConfig;
 import ua.com.foxminded.studenthostel.controllers.handlers.ExceptionController;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
@@ -30,8 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringJUnitWebConfig(WebConfig.class)
+@SpringBootTest
 class GroupControllerTest {
 
     private static final BigInteger ONE = BigInteger.ONE;

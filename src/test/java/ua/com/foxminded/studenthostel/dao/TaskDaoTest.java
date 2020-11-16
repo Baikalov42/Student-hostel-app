@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Task;
@@ -22,9 +22,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class TaskDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -51,8 +52,8 @@ class TaskDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Task task = new Task();
-        task.setName("testtaskname");
-        task.setDescription("testdescription");
+        task.setName("Testtaskname");
+        task.setDescription("Testdescription");
         task.setCostInHours(10);
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "tasks");
@@ -70,8 +71,8 @@ class TaskDaoTest {
         Task task = new Task();
 
         task.setId(ONE);
-        task.setName("test");
-        task.setDescription("test");
+        task.setName("Test");
+        task.setDescription("Test");
         task.setCostInHours(1);
 
         Assertions.assertEquals(task, taskDao.getById(ONE));
@@ -94,8 +95,8 @@ class TaskDaoTest {
 
         Task task = new Task();
         task.setId(BigInteger.valueOf(4));
-        task.setName("testtwo");
-        task.setDescription("testtwo");
+        task.setName("Testtwo");
+        task.setDescription("Testtwo");
         task.setCostInHours(4);
 
         List<Task> list = new ArrayList<>();
@@ -163,8 +164,8 @@ class TaskDaoTest {
 
         Task newValues = new Task();
         newValues.setId(ONE);
-        newValues.setName("newname");
-        newValues.setDescription("newdescription");
+        newValues.setName("Newname");
+        newValues.setDescription("Newdescription");
         newValues.setCostInHours(1);
 
         taskDao.update(newValues);
@@ -179,8 +180,8 @@ class TaskDaoTest {
 
         Task newValues = new Task();
         newValues.setId(BigInteger.valueOf(3));
-        newValues.setName("newname");
-        newValues.setDescription("newdescription");
+        newValues.setName("Newname");
+        newValues.setDescription("Newdescription");
         newValues.setCostInHours(1);
 
         Assertions.assertThrows(DaoException.class, () -> taskDao.update(newValues));

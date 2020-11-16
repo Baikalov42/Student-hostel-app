@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
@@ -29,9 +29,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class StudentDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -135,13 +136,13 @@ class StudentDaoTest {
         Group group = entityManager.find(Group.class, BigInteger.valueOf(2));
 
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+        expect.add(new Student(ONE, "Namefirst", "Lastfirst",
                 10, getGroup(), getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(2), "firstnametwo", "lastnametwo",
+        expect.add(new Student(BigInteger.valueOf(2), "Namesec", "Lastsec",
                 0, group, getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
+        expect.add(new Student(BigInteger.valueOf(3), "Namethree", "Lastthree",
                 10, getGroup(), getRoom()));
 
         Assertions.assertEquals(expect, studentDao.getAllByFloor(ONE));
@@ -155,13 +156,13 @@ class StudentDaoTest {
         Room room = entityManager.find(Room.class, BigInteger.valueOf(2));
 
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+        expect.add(new Student(ONE, "Namefirst", "Lastfirst",
                 10, getGroup(), getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
+        expect.add(new Student(BigInteger.valueOf(3), "Namethree", "Lastthree",
                 10, getGroup(), getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
+        expect.add(new Student(BigInteger.valueOf(5), "Namefive", "Lastfive",
                 6, getGroup(), room));
 
         Assertions.assertEquals(expect, studentDao.getAllByFaculty(ONE));
@@ -176,13 +177,13 @@ class StudentDaoTest {
         Room room = entityManager.find(Room.class, BigInteger.valueOf(2));
 
         List<Student> expect = new ArrayList<>();
-        expect.add(new Student(ONE, "firstnameone", "lastnameone",
+        expect.add(new Student(ONE, "Namefirst", "Lastfirst",
                 10, getGroup(), getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(3), "firstnamethree", "lastnamethree",
+        expect.add(new Student(BigInteger.valueOf(3), "Namethree", "Lastthree",
                 10, getGroup(), getRoom()));
 
-        expect.add(new Student(BigInteger.valueOf(5), "firstnamefive", "lastnamefive",
+        expect.add(new Student(BigInteger.valueOf(5), "Namefive", "Lastfive",
                 6, getGroup(), room));
 
         Assertions.assertEquals(expect, studentDao.getAllByCourse(ONE));
@@ -220,7 +221,7 @@ class StudentDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
 
-        Student newValues = new Student(ONE, "newfirstname", "newlastname",
+        Student newValues = new Student(ONE, "Newfirstname", "Newlastname",
                 10, getGroup(), getRoom());
 
         studentDao.update(newValues);
@@ -232,7 +233,7 @@ class StudentDaoTest {
         sqlScripts.addScript(new ClassPathResource("sql\\AddDataToStudentsTable.sql"));
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
-        Student newValues = new Student(BigInteger.valueOf(7), "newfirstname", "newlastname",
+        Student newValues = new Student(BigInteger.valueOf(7), "Newfirstname", "Newlastname",
                 10, getGroup(), getRoom());
 
         Assertions.assertThrows(DaoException.class, () -> studentDao.update(newValues));
@@ -253,8 +254,8 @@ class StudentDaoTest {
     Student getStudent() {
         Student student = new Student();
         student.setId(ONE);
-        student.setFirstName("firstnameone");
-        student.setLastName("lastnameone");
+        student.setFirstName("Namefirst");
+        student.setLastName("Lastfirst");
         student.setHoursDebt(10);
         student.setRoom(getRoom());
         student.setGroup(getGroup());
@@ -264,7 +265,7 @@ class StudentDaoTest {
 
     Room getRoom() {
         Room room = new Room();
-        room.setName("roomnameone");
+        room.setName("RM-0001");
         room.setFloor(getfloor());
         room.setId(ONE);
 
@@ -282,21 +283,21 @@ class StudentDaoTest {
     CourseNumber getCourse() {
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(ONE);
-        courseNumber.setName("courseone");
+        courseNumber.setName("Courseone");
 
         return courseNumber;
     }
     Faculty getFaculty() {
         Faculty faculty = new Faculty();
         faculty.setId(ONE);
-        faculty.setName("facultyone");
+        faculty.setName("Facultyone");
 
         return faculty;
     }
     Floor getfloor() {
         Floor floor = new Floor();
         floor.setId(ONE);
-        floor.setName("firstfloor");
+        floor.setName("Firstfloor");
 
         return floor;
     }

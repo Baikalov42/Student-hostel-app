@@ -8,8 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import ua.com.foxminded.studenthostel.dao.EquipmentDao;
 import ua.com.foxminded.studenthostel.dao.FloorDao;
 import ua.com.foxminded.studenthostel.dao.RoomDao;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
 class RoomServiceTest {
 
     public static final BigInteger VALID_ID = BigInteger.ONE;

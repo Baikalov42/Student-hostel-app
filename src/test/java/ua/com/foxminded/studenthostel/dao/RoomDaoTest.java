@@ -1,19 +1,18 @@
 package ua.com.foxminded.studenthostel.dao;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Floor;
@@ -26,9 +25,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class RoomDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -63,7 +63,7 @@ class RoomDaoTest {
 
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
-        room.setName("testnametwo");
+        room.setName("RM-0002");
         room.setFloor(getFloor());
 
         int rowBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "rooms");
@@ -80,7 +80,7 @@ class RoomDaoTest {
 
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
-        room.setName("testnametwo");
+        room.setName("RM-0002");
         room.setFloor(getFloor());
 
         Assertions.assertThrows(DaoException.class,
@@ -94,7 +94,7 @@ class RoomDaoTest {
 
         Room expectRoom = new Room();
         expectRoom.setId(ONE);
-        expectRoom.setName("testroomone");
+        expectRoom.setName("RM-0001");
         expectRoom.setFloor(getFloor());
 
         Assertions.assertEquals(expectRoom, roomDao.getById(ONE));
@@ -115,7 +115,7 @@ class RoomDaoTest {
 
         Room room = new Room();
         room.setFloor(getFloor());
-        room.setName("testroomtwo");
+        room.setName("RM-0002");
         room.setId(BigInteger.valueOf(2));
 
         List<Room> list = new ArrayList<>();
@@ -131,7 +131,7 @@ class RoomDaoTest {
 
         Room room = new Room();
         room.setId(BigInteger.valueOf(2));
-        room.setName("testroomtwo");
+        room.setName("RM-0002");
         room.setFloor(getFloor());
 
         List<Room> list = new ArrayList<>();
@@ -147,7 +147,7 @@ class RoomDaoTest {
 
         Room newValues = new Room();
         newValues.setId(ONE);
-        newValues.setName("newname");
+        newValues.setName("NW-0001");
         newValues.setFloor(getFloor());
 
         roomDao.update(newValues);
@@ -162,7 +162,7 @@ class RoomDaoTest {
 
         Room newValues = new Room();
         newValues.setId(BigInteger.valueOf(4));
-        newValues.setName("newname");
+        newValues.setName("NW-0001");
         newValues.setFloor(getFloor());
 
         Assertions.assertThrows(DaoException.class, () -> roomDao.update(newValues));

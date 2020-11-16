@@ -1,24 +1,21 @@
 package ua.com.foxminded.studenthostel.dao;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
-
 
 import javax.sql.DataSource;
 import java.math.BigInteger;
@@ -26,9 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class CourseNumberDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -52,7 +50,7 @@ class CourseNumberDaoTest {
     @Test
     public void insert_ShouldMakeEntry_InCourseNumbersTable() {
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setName("first");
+        courseNumber.setName("First");
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "course_numbers");
         courseNumberDao.insert(courseNumber);
@@ -64,7 +62,7 @@ class CourseNumberDaoTest {
     @Test
     public void insert_ShouldReturnId_WhenEntryIsInserted() {
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setName("first");
+        courseNumber.setName("First");
 
         Assertions.assertEquals(ONE, courseNumberDao.insert(courseNumber));
     }
@@ -75,7 +73,7 @@ class CourseNumberDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setName("first");
+        courseNumber.setName("First");
 
         Assertions.assertThrows(DaoException.class, () -> courseNumberDao.insert(courseNumber));
     }
@@ -87,7 +85,7 @@ class CourseNumberDaoTest {
 
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(ONE);
-        courseNumber.setName("first");
+        courseNumber.setName("First");
 
         Assertions.assertEquals(courseNumber, courseNumberDao.getById(ONE));
     }
@@ -107,7 +105,7 @@ class CourseNumberDaoTest {
 
         CourseNumber courseNumber = new CourseNumber();
         courseNumber.setId(BigInteger.valueOf(4));
-        courseNumber.setName("fourth");
+        courseNumber.setName("Fourth");
 
         List<CourseNumber> courseNumbers = new ArrayList<>();
         courseNumbers.add(courseNumber);
@@ -122,7 +120,7 @@ class CourseNumberDaoTest {
 
         CourseNumber newValues = new CourseNumber();
         newValues.setId(ONE);
-        newValues.setName("updated");
+        newValues.setName("Updated");
 
         courseNumberDao.update(newValues);
 
@@ -136,7 +134,7 @@ class CourseNumberDaoTest {
 
         CourseNumber newValues = new CourseNumber();
         newValues.setId(BigInteger.valueOf(7));
-        newValues.setName("updated");
+        newValues.setName("Updated");
 
         Assertions.assertThrows(DaoException.class, () -> courseNumberDao.update(newValues));
     }

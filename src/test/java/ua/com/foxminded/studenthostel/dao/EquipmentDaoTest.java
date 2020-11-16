@@ -1,19 +1,18 @@
 package ua.com.foxminded.studenthostel.dao;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.Equipment;
@@ -23,9 +22,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class EquipmentDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -49,7 +49,7 @@ class EquipmentDaoTest {
     @Test
     public void insert_ShouldMakeEntry_InEquipmentsTable() {
         Equipment equipment = new Equipment();
-        equipment.setName("table");
+        equipment.setName("Table");
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "equipments");
         equipmentDao.insert(equipment);
@@ -61,7 +61,7 @@ class EquipmentDaoTest {
     @Test
     public void insert_ShouldReturnId_WhenEntryIsInserted() {
         Equipment equipment = new Equipment();
-        equipment.setName("table");
+        equipment.setName("Table");
 
         Assertions.assertEquals(ONE, equipmentDao.insert(equipment));
     }
@@ -72,7 +72,7 @@ class EquipmentDaoTest {
         DatabasePopulatorUtils.execute(sqlScripts, dataSource);
 
         Equipment equipment = new Equipment();
-        equipment.setName("table");
+        equipment.setName("Table");
 
         Assertions.assertThrows(DaoException.class, () -> equipmentDao.insert(equipment));
     }
@@ -110,7 +110,7 @@ class EquipmentDaoTest {
 
         Equipment equipment = new Equipment();
         equipment.setId(ONE);
-        equipment.setName("table");
+        equipment.setName("Table");
 
         Assertions.assertEquals(equipment, equipmentDao.getById(ONE));
     }
@@ -129,7 +129,7 @@ class EquipmentDaoTest {
 
         Equipment equipment = new Equipment();
         equipment.setId(BigInteger.valueOf(5));
-        equipment.setName("mattress");
+        equipment.setName("Mattress");
 
         List<Equipment> list = new ArrayList<>();
         list.add(equipment);
@@ -171,7 +171,7 @@ class EquipmentDaoTest {
 
         Equipment newValues = new Equipment();
         newValues.setId(ONE);
-        newValues.setName("newname");
+        newValues.setName("Newname");
 
          equipmentDao.update(newValues);
 
@@ -185,7 +185,7 @@ class EquipmentDaoTest {
 
         Equipment newValues = new Equipment();
         newValues.setId(BigInteger.valueOf(7));
-        newValues.setName("newname");
+        newValues.setName("Newname");
 
         Assertions.assertThrows(DaoException.class, () -> equipmentDao.update(newValues));
     }

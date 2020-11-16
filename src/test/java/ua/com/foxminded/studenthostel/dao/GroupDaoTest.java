@@ -1,19 +1,18 @@
 package ua.com.foxminded.studenthostel.dao;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-import ua.com.foxminded.studenthostel.config.SpringConfig;
 import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
@@ -25,9 +24,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transactional
-@SpringJUnitConfig(SpringConfig.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 class GroupDaoTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
@@ -56,7 +56,7 @@ class GroupDaoTest {
         Group group = new Group();
 
         group.setCourseNumber(getCourse());
-        group.setName("test");
+        group.setName("GRP-1234");
         group.setFaculty(getFaculty());
 
         int rowNumberBefore = JdbcTestUtils.countRowsInTable(jdbcTemplate, "groups");
@@ -74,7 +74,7 @@ class GroupDaoTest {
         Group group = new Group();
 
         group.setId(ONE);
-        group.setName("testname");
+        group.setName("GRP-1234");
         group.setCourseNumber(getCourse());
         group.setFaculty(getFaculty());
 
@@ -89,7 +89,7 @@ class GroupDaoTest {
         Group group = new Group();
 
         group.setId(ONE);
-        group.setName("testname");
+        group.setName("GRP-1234");
         group.setCourseNumber(getCourse());
         group.setFaculty(getFaculty());
 
@@ -104,7 +104,7 @@ class GroupDaoTest {
         Group expectGroup = new Group();
 
         expectGroup.setId(BigInteger.valueOf(2));
-        expectGroup.setName("testname1");
+        expectGroup.setName("GRP-1111");
         expectGroup.setFaculty(getFaculty());
         expectGroup.setCourseNumber(getCourse());
 
@@ -125,7 +125,7 @@ class GroupDaoTest {
 
         Group group = new Group();
         group.setId(BigInteger.valueOf(3));
-        group.setName("testname2");
+        group.setName("GRP-2222");
         group.setCourseNumber(getCourse());
         group.setFaculty(getFaculty());
 
@@ -141,7 +141,7 @@ class GroupDaoTest {
 
         Group newValues = new Group();
         newValues.setId(BigInteger.valueOf(2));
-        newValues.setName("newname");
+        newValues.setName("NEW-1111");
         newValues.setCourseNumber(getCourse());
         newValues.setFaculty(getFaculty());
 
@@ -165,7 +165,7 @@ class GroupDaoTest {
 
     CourseNumber getCourse() {
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setName("coursenumbertestname");
+        courseNumber.setName("Course");
         courseNumber.setId(ONE);
 
         return courseNumber;
@@ -173,7 +173,7 @@ class GroupDaoTest {
 
     Faculty getFaculty() {
         Faculty faculty = new Faculty();
-        faculty.setName("testfacultyname");
+        faculty.setName("Faculty");
         faculty.setId(ONE);
 
         return faculty;
