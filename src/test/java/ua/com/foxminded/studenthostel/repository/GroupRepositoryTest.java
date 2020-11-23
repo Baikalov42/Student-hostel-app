@@ -24,7 +24,7 @@ import java.util.List;
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class GroupDaoTest {
+class GroupRepositoryTest {
 
     private static final BigInteger ONE = BigInteger.ONE;
 
