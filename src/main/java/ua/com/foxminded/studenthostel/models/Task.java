@@ -1,7 +1,5 @@
 package ua.com.foxminded.studenthostel.models;
 
-import org.hibernate.annotations.NamedQuery;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +17,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@NamedQuery(name = "Task.getAll", query = "SELECT m FROM Task m")
 @NotNull
 @Entity
 @Table(name = "tasks")
@@ -49,7 +46,7 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "task_id")
+    @Column(name = "task_id", nullable = false, unique = true)
     public BigInteger getId() {
         return id;
     }

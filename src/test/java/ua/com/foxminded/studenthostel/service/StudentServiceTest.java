@@ -9,25 +9,29 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
-import ua.com.foxminded.studenthostel.dao.EquipmentDao;
-import ua.com.foxminded.studenthostel.dao.FacultyDao;
-import ua.com.foxminded.studenthostel.dao.FloorDao;
-import ua.com.foxminded.studenthostel.dao.GroupDao;
-import ua.com.foxminded.studenthostel.dao.RoomDao;
-import ua.com.foxminded.studenthostel.dao.StudentDao;
-import ua.com.foxminded.studenthostel.dao.TaskDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.CourseNumberRepository;
+import ua.com.foxminded.studenthostel.repository.EquipmentRepository;
+import ua.com.foxminded.studenthostel.repository.FacultyRepository;
+import ua.com.foxminded.studenthostel.repository.FloorRepository;
+import ua.com.foxminded.studenthostel.repository.GroupRepository;
+import ua.com.foxminded.studenthostel.repository.RoomRepository;
+import ua.com.foxminded.studenthostel.repository.StudentRepository;
+import ua.com.foxminded.studenthostel.repository.TaskRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Group;
 import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
-import ua.com.foxminded.studenthostel.models.Task;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 
 @SpringBootTest
@@ -39,11 +43,12 @@ class StudentServiceTest {
 
     public static final String VALID_NAME = "Validname";
     public static final int VALID_DEBT = 20;
-    public static final int VALID_STUDENTS_COUNT = 2;
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
+
 
     @InjectMocks
     @Autowired
-    StudentService studentService;
+    private StudentService studentService;
 
     @InjectMocks
     @Autowired
@@ -70,21 +75,21 @@ class StudentServiceTest {
     private FloorService floorService;
 
     @Mock
-    private StudentDao studentDao;
+    private StudentRepository studentRepository;
     @Mock
-    private GroupDao groupDao;
+    private GroupRepository groupRepository;
     @Mock
-    private RoomDao roomDao;
+    private RoomRepository roomRepository;
     @Mock
-    private EquipmentDao equipmentDao;
+    private EquipmentRepository equipmentRepository;
     @Mock
-    private TaskDao taskDao;
+    private TaskRepository taskRepository;
     @Mock
-    private FloorDao floorDao;
+    private FloorRepository floorRepository;
     @Mock
-    private CourseNumberDao courseNumberDao;
+    private CourseNumberRepository courseNumberRepository;
     @Mock
-    private FacultyDao facultyDao;
+    private FacultyRepository facultyRepository;
 
     @BeforeEach
     public void initMock() {
@@ -93,12 +98,20 @@ class StudentServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
+        Room room = getRoom(VALID_ID);
+        Set<Student> students = new HashSet<>();
+        room.setStudents(students);
 
-        Mockito.when(studentDao.insert(student)).thenReturn(VALID_ID);
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(getRoom(VALID_ID));
+        Student toDB = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
+        Student fromDB = getValidStudent();
 
-        Assertions.assertEquals(VALID_ID, studentService.insert(student));
+        Mockito.when(studentRepository.save(toDB)).thenReturn(fromDB);
+
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(roomRepository.findById(VALID_ID)).thenReturn(Optional.of(room));
+
+        Assertions.assertEquals(VALID_ID, studentService.insert(toDB));
 
     }
 
@@ -221,25 +234,29 @@ class StudentServiceTest {
     @Test
     public void insert_ShouldThrowException_WhenGroupNotExist() {
         Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
     }
 
     @Test
     public void insert_ShouldThrowException_WhenRoomNotExist() {
-        Student student = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Student toDB = new Student(null, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
 
-        Assertions.assertThrows(ValidationException.class, () -> studentService.insert(student));
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(false);
+
+        Assertions.assertThrows(ValidationException.class, () -> studentService.insert(toDB));
     }
 
     @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
+        Student fromDB = getValidStudent();
 
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(student);
-        Assertions.assertEquals(student, studentService.getById(VALID_ID));
+        Mockito.when(studentRepository.findById(VALID_ID)).thenReturn(Optional.of(fromDB));
+        Assertions.assertEquals(fromDB, studentService.getById(VALID_ID));
     }
 
     @Test
@@ -255,26 +272,15 @@ class StudentServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.findById(VALID_ID)).thenReturn(Optional.empty());
         Assertions.assertThrows(NotFoundException.class, () -> studentService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-
-        List<Student> expectResult = new ArrayList<>();
-        expectResult.add(student);
-
-        Mockito.when(studentDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, studentService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(studentDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(studentRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> studentService.getAll(10, 10));
+                () -> studentService.getAll(0));
     }
 
     @Test
@@ -291,7 +297,7 @@ class StudentServiceTest {
 
     @Test
     public void getAllByFloor_ShouldThrowException_WhenFloorNotExist() {
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.getAllByFloor(VALID_ID));
@@ -299,7 +305,8 @@ class StudentServiceTest {
 
     @Test
     public void getAllByFloor_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(studentDao.getAllByFloor(VALID_ID)).thenReturn(Collections.emptyList());
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(studentRepository.getAllByFloor(VALID_ID)).thenReturn(Collections.emptyList());
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> studentService.getAllByFloor(VALID_ID));
@@ -319,7 +326,7 @@ class StudentServiceTest {
 
     @Test
     public void getAllByFaculty_ShouldThrowException_WhenFacultyNotExist() {
-        Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.getAllByFaculty(VALID_ID));
@@ -327,7 +334,8 @@ class StudentServiceTest {
 
     @Test
     public void getAllByFaculty_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(studentDao.getAllByFaculty(VALID_ID)).thenReturn(Collections.emptyList());
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(studentRepository.getAllByFaculty(VALID_ID)).thenReturn(Collections.emptyList());
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> studentService.getAllByFaculty(VALID_ID));
@@ -347,7 +355,7 @@ class StudentServiceTest {
 
     @Test
     public void getAllByCourse_ShouldThrowException_WhenCourseNotExist() {
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.getAllByCourse(VALID_ID));
@@ -355,7 +363,8 @@ class StudentServiceTest {
 
     @Test
     public void getAllByCourse_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(studentDao.getAllByCourse(VALID_ID)).thenReturn(Collections.emptyList());
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(studentRepository.getAllByCourse(VALID_ID)).thenReturn(Collections.emptyList());
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> studentService.getAllByCourse(VALID_ID));
@@ -375,7 +384,7 @@ class StudentServiceTest {
 
     @Test
     public void getAllWithDebitByGroup_ShouldThrowException_WhenGroupNotExist() {
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.getAllWithDebitByGroup(VALID_ID, 20));
@@ -383,7 +392,9 @@ class StudentServiceTest {
 
     @Test
     public void getAllWithDebitByGroup_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(studentDao.getAllWithDebitByGroup(VALID_ID,
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(true);
+
+        Mockito.when(studentRepository.getAllWithDebitByGroup(VALID_ID,
                 10)).thenReturn(Collections.emptyList());
 
         Assertions.assertThrows(NotFoundException.class,
@@ -416,8 +427,8 @@ class StudentServiceTest {
     @Test
     public void changeRoom_ShouldThrowException_WhenStudentNotExist() {
 
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(new Room());
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.changeRoom(VALID_ID, VALID_ID));
@@ -425,8 +436,8 @@ class StudentServiceTest {
 
     @Test
     public void changeRoom_ShouldThrowException_WhenRoomNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.changeRoom(VALID_ID, VALID_ID));
@@ -443,7 +454,7 @@ class StudentServiceTest {
 
     @Test
     public void changeDebt_ShouldThrowException_WhenStudentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.changeDebt(10, VALID_ID));
@@ -567,24 +578,24 @@ class StudentServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenStudentNotExist() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Student student = getValidStudent();
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
     }
 
     @Test
     public void update_ShouldThrowException_WhenGroupNotExist() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Student student = getValidStudent();
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
     }
 
     @Test
     public void update_ShouldThrowException_WhenRoomNotExist() {
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Student student = getValidStudent();
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> studentService.update(student));
     }
@@ -612,8 +623,8 @@ class StudentServiceTest {
 
     @Test
     public void acceptHoursAndUpdate_ShouldThrowException_WhenStudentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(taskRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
@@ -621,8 +632,8 @@ class StudentServiceTest {
 
     @Test
     public void acceptHoursAndUpdate_ShouldThrowException_WhenTaskNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(taskDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(taskRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
@@ -630,9 +641,9 @@ class StudentServiceTest {
 
     @Test
     public void acceptHoursAndUpdate_ShouldThrowException_WhenStudentTaskRelation_NotExist() {
-        Mockito.when(taskDao.getById(VALID_ID)).thenReturn(new Task());
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(taskDao.isStudentTaskRelationExist(VALID_ID, VALID_ID)).thenReturn(false);
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(taskRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(taskRepository.isStudentTaskRelationExist(VALID_ID, VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.acceptTaskAndUpdateHours(VALID_ID, VALID_ID));
@@ -653,23 +664,30 @@ class StudentServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> studentService.deleteById(VALID_ID));
     }
 
-    Room getRoom(BigInteger id) {
+    private Student getValidStudent() {
+        Student student = new Student(
+                VALID_ID, VALID_NAME, VALID_NAME, VALID_DEBT, getGroup(VALID_ID), getRoom(VALID_ID));
+
+        return student;
+    }
+
+    private Room getRoom(BigInteger id) {
         Room room = new Room();
-        room.setName("name");
+        room.setName("AB-0001");
         room.setId(id);
 
         return room;
     }
 
-    Group getGroup(BigInteger id) {
+    private Group getGroup(BigInteger id) {
         Group group = new Group();
-        group.setName("name");
+        group.setName("SEN-1111");
         group.setId(id);
         return group;
     }

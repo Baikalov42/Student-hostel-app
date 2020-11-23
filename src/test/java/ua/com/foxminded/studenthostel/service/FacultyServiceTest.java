@@ -9,15 +9,17 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.FacultyDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.FacultyRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Faculty;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 class FacultyServiceTest {
@@ -26,13 +28,14 @@ class FacultyServiceTest {
     public static final BigInteger NEGATIVE_ID = BigInteger.valueOf(-1);
     public static final BigInteger ZERO_ID = BigInteger.ZERO;
     public static final String VALID_NAME = "Name name";
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
 
     @Autowired
     @InjectMocks
-    FacultyService facultyService;
+    private FacultyService facultyService;
 
     @Mock
-    FacultyDao facultyDao;
+    private FacultyRepository facultyRepository;
 
     @BeforeEach
     public void init() {
@@ -41,18 +44,21 @@ class FacultyServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Faculty faculty = new Faculty();
-        Mockito.when(facultyDao.insert(faculty)).thenReturn(VALID_ID);
+        Faculty toDB = new Faculty();
+        Faculty fromDB = getFaculty(VALID_ID, VALID_NAME);
 
-        faculty.setName("Name Name");
-        Assertions.assertEquals(BigInteger.ONE, facultyService.insert(faculty));
+        Mockito.when(facultyRepository.save(toDB)).thenReturn(fromDB);
 
-        faculty.setName("Name NAME");
-        Assertions.assertEquals(BigInteger.ONE, facultyService.insert(faculty));
+        toDB.setName("Name Name");
+        Assertions.assertEquals(VALID_ID, facultyService.insert(toDB));
 
-        faculty.setName("NAme NAmE123");
-        Assertions.assertEquals(BigInteger.ONE, facultyService.insert(faculty));
+        toDB.setName("Name NAME");
+        Assertions.assertEquals(VALID_ID, facultyService.insert(toDB));
+
+        toDB.setName("NAme NAmE123");
+        Assertions.assertEquals(VALID_ID, facultyService.insert(toDB));
     }
+
 
     @Test
     public void insert_ShouldThrowExceptionWhenNameNotValid() {
@@ -100,11 +106,9 @@ class FacultyServiceTest {
 
     @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Faculty faculty = new Faculty();
-        faculty.setName(VALID_NAME);
-        faculty.setId(VALID_ID);
+        Faculty faculty = getFaculty(VALID_ID, VALID_NAME);
 
-        Mockito.when(facultyDao.getById(VALID_ID)).thenReturn(faculty);
+        Mockito.when(facultyRepository.findById(VALID_ID)).thenReturn(Optional.of(faculty));
         Assertions.assertEquals(faculty, facultyService.getById(VALID_ID));
     }
 
@@ -121,35 +125,21 @@ class FacultyServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyRepository.findById(VALID_ID)).thenReturn(Optional.empty());
         Assertions.assertThrows(NotFoundException.class, () -> facultyService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Faculty faculty = new Faculty();
-        faculty.setName(VALID_NAME);
-        faculty.setId(VALID_ID);
-
-        List<Faculty> expectResult = new ArrayList<>();
-        expectResult.add(faculty);
-
-        Mockito.when(facultyDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, facultyService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(facultyDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(facultyRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> facultyService.getAll(10, 10));
+                () -> facultyService.getAll(0));
     }
-
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
         Faculty faculty = new Faculty();
-        faculty.setId(BigInteger.ONE);
+        faculty.setId(VALID_ID);
 
         faculty.setName("notvalid");
         Assertions.assertThrows(ValidationException.class, () -> facultyService.update(faculty));
@@ -200,11 +190,8 @@ class FacultyServiceTest {
     @Test
     public void update_ShouldThrowException_WhenEntryNotExist() {
 
-        Mockito.when(facultyDao.getById(BigInteger.ONE)).thenThrow(NotFoundException.class);
-
-        Faculty faculty = new Faculty();
-        faculty.setName(VALID_NAME);
-        faculty.setId(VALID_ID);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(false);
+        Faculty faculty = getFaculty(VALID_ID, VALID_NAME);
 
         Assertions.assertThrows(ValidationException.class, () -> facultyService.update(faculty));
     }
@@ -230,9 +217,16 @@ class FacultyServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> facultyService.deleteById(VALID_ID));
+    }
+
+    private Faculty getFaculty(BigInteger id, String name) {
+        Faculty faculty = new Faculty();
+        faculty.setName(name);
+        faculty.setId(id);
+        return faculty;
     }
 }

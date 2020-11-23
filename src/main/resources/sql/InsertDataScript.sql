@@ -8,6 +8,18 @@ INSERT INTO course_numbers(course_number_id, course_number_name)
 values (4, 'Fourth');
 INSERT INTO course_numbers (course_number_id, course_number_name)
 values (5, 'Fifth');
+INSERT INTO course_numbers (course_number_id, course_number_name)
+values (6, 'Six');
+INSERT INTO course_numbers (course_number_id, course_number_name)
+values (7, 'Seven');
+INSERT INTO course_numbers (course_number_id, course_number_name)
+values (8, 'Eight');
+INSERT INTO course_numbers(course_number_id, course_number_name)
+values (9, 'Nine');
+INSERT INTO course_numbers (course_number_id, course_number_name)
+values (10, 'Ten');
+INSERT INTO course_numbers (course_number_id, course_number_name)
+values (11, 'Eleven');
 
 INSERT INTO faculties (faculty_id, faculty_name)
 values (1, 'Web design');

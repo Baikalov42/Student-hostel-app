@@ -18,7 +18,6 @@ import java.util.List;
 public class FloorController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FloorController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private FloorService floorService;
@@ -59,10 +58,7 @@ public class FloorController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , offset {} ", LINES_LIMIT_ON_PAGE , offset);
-
-        List<Floor> floors = floorService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Floor> floors = floorService.getAll(pageNumber);
         model.addAttribute("floors", floors);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, floors.size());

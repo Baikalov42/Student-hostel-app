@@ -9,15 +9,17 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.FloorDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.FloorRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Floor;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 class FloorServiceTest {
@@ -26,13 +28,14 @@ class FloorServiceTest {
     public static final BigInteger NEGATIVE_ID = BigInteger.valueOf(-1);
     public static final BigInteger ZERO_ID = BigInteger.ZERO;
     public static final String VALID_NAME = "Name name";
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
 
     @Autowired
     @InjectMocks
-    FloorService floorService;
+    private FloorService floorService;
 
     @Mock
-    FloorDao floorDao;
+    private FloorRepository floorRepository;
 
     @BeforeEach
     public void init() {
@@ -41,18 +44,21 @@ class FloorServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Floor floor = new Floor();
-        Mockito.when(floorDao.insert(floor)).thenReturn(VALID_ID);
+        Floor toDB = new Floor();
+        Floor fromDB = getFloor(VALID_ID, VALID_NAME);
 
-        floor.setName("Name Name");
-        Assertions.assertEquals(VALID_ID, floorService.insert(floor));
+        Mockito.when(floorRepository.save(toDB)).thenReturn(fromDB);
 
-        floor.setName("Name NAME");
-        Assertions.assertEquals(VALID_ID, floorService.insert(floor));
+        toDB.setName("Name Name");
+        Assertions.assertEquals(VALID_ID, floorService.insert(toDB));
 
-        floor.setName("NAme NAmE123");
-        Assertions.assertEquals(VALID_ID, floorService.insert(floor));
+        toDB.setName("Name NAME");
+        Assertions.assertEquals(VALID_ID, floorService.insert(toDB));
+
+        toDB.setName("NAme NAmE123");
+        Assertions.assertEquals(VALID_ID, floorService.insert(toDB));
     }
+
 
     @Test
     public void insert_ShouldThrowExceptionWhenNameNotValid() {
@@ -100,12 +106,10 @@ class FloorServiceTest {
 
     @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Floor floor = new Floor();
-        floor.setName(VALID_NAME);
-        floor.setId(VALID_ID);
+        Floor fromDB = getFloor(VALID_ID, VALID_NAME);
 
-        Mockito.when(floorDao.getById(VALID_ID)).thenReturn(floor);
-        Assertions.assertEquals(floor, floorService.getById(VALID_ID));
+        Mockito.when(floorRepository.findById(VALID_ID)).thenReturn(Optional.of(fromDB));
+        Assertions.assertEquals(fromDB, floorService.getById(VALID_ID));
     }
 
     @Test
@@ -121,28 +125,15 @@ class FloorServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(floorRepository.findById(VALID_ID)).thenReturn(Optional.empty());
         Assertions.assertThrows(NotFoundException.class, () -> floorService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Floor floor = new Floor();
-        floor.setName(VALID_NAME);
-        floor.setId(VALID_ID);
-
-        List<Floor> expectResult = new ArrayList<>();
-        expectResult.add(floor);
-
-        Mockito.when(floorDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, floorService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(floorDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(floorRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> floorService.getAll(10, 10));
+                () -> floorService.getAll(0));
     }
 
 
@@ -200,11 +191,9 @@ class FloorServiceTest {
     @Test
     public void update_ShouldThrowException_WhenEntryNotExist() {
 
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(false);
 
-        Floor floor = new Floor();
-        floor.setName(VALID_NAME);
-        floor.setId(VALID_ID);
+        Floor floor = getFloor(VALID_ID, VALID_NAME);
 
         Assertions.assertThrows(ValidationException.class, () -> floorService.update(floor));
     }
@@ -231,9 +220,16 @@ class FloorServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> floorService.deleteById(VALID_ID));
+    }
+
+    private Floor getFloor(BigInteger id, String name) {
+        Floor floor = new Floor();
+        floor.setId(id);
+        floor.setName(name);
+        return floor;
     }
 }

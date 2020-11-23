@@ -3,15 +3,17 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
-import ua.com.foxminded.studenthostel.dao.GroupDao;
-import ua.com.foxminded.studenthostel.dao.StudentDao;
-import ua.com.foxminded.studenthostel.dao.TaskDao;
+import ua.com.foxminded.studenthostel.repository.StudentRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
-import ua.com.foxminded.studenthostel.models.Room;
 import ua.com.foxminded.studenthostel.models.Student;
 import ua.com.foxminded.studenthostel.models.Task;
 import ua.com.foxminded.studenthostel.service.utils.ValidatorEntity;
@@ -24,17 +26,13 @@ import java.util.Set;
 public class StudentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StudentService.class);
-
+    private static final int PAGE_SIZE = 10;
     public static final int MAX_HOURS_DEBT = 40;
     public static final int MIN_HOURS_DEBT = 0;
     public static final int MAX_STUDENTS_IN_ROOM = 4;
 
     @Autowired
-    private StudentDao studentDao;
-    @Autowired
-    private GroupDao groupDao;
-    @Autowired
-    private TaskDao taskDao;
+    private StudentRepository studentRepository;
 
     @Autowired
     private RoomService roomService;
@@ -63,30 +61,33 @@ public class StudentService {
 
         validateRoomVacancy(student.getRoom().getId());
 
-        BigInteger id = studentDao.insert(student);
+        try {
+            return studentRepository.save(student).getId();
 
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", student, ex);
+            throw new DaoException("Insertion error : " + student, ex);
+        }
     }
 
     public Student getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Student student = studentDao.getById(id);
 
-        LOGGER.debug("getting complete {}", student);
-        return student;
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Student not found, id = " + id));
     }
 
-    public List<Student> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
+    public List<Student> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
 
-        List<Student> result = studentDao.getAll(offset, limit);
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Student> result = studentRepository.findAll(pageable).getContent();
+
         if (result.isEmpty()) {
-
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -97,7 +98,7 @@ public class StudentService {
         validator.validateId(floorId);
         floorService.validateExistence(floorId);
 
-        List<Student> students = studentDao.getAllByFloor(floorId);
+        List<Student> students = studentRepository.getAllByFloor(floorId);
 
         if (students.isEmpty()) {
             LOGGER.warn("result is empty, floor id = {}", floorId);
@@ -112,13 +113,12 @@ public class StudentService {
         validator.validateId(facultyId);
         facultyService.validateExistence(facultyId);
 
-        List<Student> students = studentDao.getAllByFaculty(facultyId);
+        List<Student> students = studentRepository.getAllByFaculty(facultyId);
 
         if (students.isEmpty()) {
             LOGGER.warn("result is empty, faculty id = {}", facultyId);
             throw new NotFoundException("result is empty, faculty id = " + facultyId);
         }
-
         return students;
     }
 
@@ -128,13 +128,12 @@ public class StudentService {
         validator.validateId(courseNumberId);
         courseNumberService.validateExistence(courseNumberId);
 
-        List<Student> students = studentDao.getAllByCourse(courseNumberId);
+        List<Student> students = studentRepository.getAllByCourse(courseNumberId);
 
         if (students.isEmpty()) {
             LOGGER.warn("result is empty, course id = {}", courseNumberId);
             throw new NotFoundException("result is empty, course id = " + courseNumberId);
         }
-
         return students;
     }
 
@@ -144,13 +143,12 @@ public class StudentService {
         validator.validateId(groupId);
         groupService.validateExistence(groupId);
 
-        List<Student> students = studentDao.getAllWithDebitByGroup(groupId, hoursDebt);
+        List<Student> students = studentRepository.getAllWithDebitByGroup(groupId, hoursDebt);
 
         if (students.isEmpty()) {
-            LOGGER.warn("result is empty, group id = {}, debt = {}", groupDao, hoursDebt);
+            LOGGER.warn("result is empty, group id = {}, debt = {}", groupId, hoursDebt);
             throw new NotFoundException("result is empty, group id = " + groupId + "debt = " + hoursDebt);
         }
-
         return students;
     }
 
@@ -163,7 +161,7 @@ public class StudentService {
 
         validateRoomVacancy(newRoomId);
 
-        return studentDao.changeRoom(newRoomId, studentId);
+        return studentRepository.changeRoom(newRoomId, studentId);
     }
 
     public Student changeDebt(Integer newHoursDebt, BigInteger studentId) {
@@ -174,7 +172,7 @@ public class StudentService {
             throw new ValidationException("the value must be in the range from 0 to 40");
         }
         validateExistence(studentId);
-        return studentDao.changeDebt(newHoursDebt, studentId);
+        return studentRepository.changeDebt(newHoursDebt, studentId);
     }
 
     public Student update(Student student) {
@@ -187,7 +185,13 @@ public class StudentService {
         groupService.validateExistence(student.getGroup().getId());
         roomService.validateExistence(student.getRoom().getId());
 
-        return studentDao.update(student);
+        try {
+            return studentRepository.save(student);
+
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", student, ex);
+            throw new DaoException("Updating error: " + student, ex);
+        }
     }
 
     public int acceptTaskAndUpdateHours(BigInteger studentId, BigInteger taskId) {
@@ -203,8 +207,10 @@ public class StudentService {
             throw new ValidationException("Relation student id = " + studentId + " and task id = " + taskId + " not exist");
         }
 
-        Student student = studentDao.getById(studentId);
-        Task task = taskDao.getById(taskId);
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Student not found, id = " + studentId));
+
+        Task task = taskService.getById(taskId);
 
         int newHoursDebt = student.getHoursDebt() - task.getCostInHours();
         if (newHoursDebt < 0) {
@@ -212,8 +218,8 @@ public class StudentService {
         }
         student.setHoursDebt(newHoursDebt);
 
-        taskDao.unassignFromStudent(studentId, taskId);
-        studentDao.update(student);
+        taskService.unassignFromStudent(studentId, taskId);
+        studentRepository.save(student);
 
         LOGGER.debug("accept hours and update is complete, new hours debt ={}", newHoursDebt);
 
@@ -226,17 +232,21 @@ public class StudentService {
         validator.validateId(id);
         validateExistence(id);
 
-        studentDao.deleteById(id);
+        try {
+            studentRepository.deleteById(id);
+
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            studentDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!studentRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 

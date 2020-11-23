@@ -3,10 +3,13 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ua.com.foxminded.studenthostel.dao.FloorDao;
-import ua.com.foxminded.studenthostel.dao.RoomDao;
-import ua.com.foxminded.studenthostel.dao.StudentDao;
+import ua.com.foxminded.studenthostel.repository.RoomRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Room;
@@ -19,13 +22,10 @@ import java.util.List;
 public class RoomService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomService.class);
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private RoomDao roomDao;
-    @Autowired
-    private FloorDao floorDao;
-    @Autowired
-    private StudentDao studentDao;
+    private RoomRepository roomRepository;
     @Autowired
     private EquipmentService equipmentService;
     @Autowired
@@ -38,32 +38,33 @@ public class RoomService {
 
         validator.validate(room);
         floorService.validateExistence(room.getFloor().getId());
+        try {
+            return roomRepository.save(room).getId();
 
-        BigInteger id = roomDao.insert(room);
-
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", room, ex);
+            throw new DaoException("Insertion error : " + room, ex);
+        }
     }
 
     public Room getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Room room = roomDao.getById(id);
-
-        LOGGER.debug("getting complete {}", room);
-        return room;
+        return roomRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found, id = " + id));
     }
 
 
-    public List<Room> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
-        List<Room> result = roomDao.getAll(offset, limit);
+    public List<Room> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
+
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Room> result = roomRepository.findAll(pageable).getContent();
 
         if (result.isEmpty()) {
-
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -75,10 +76,9 @@ public class RoomService {
         validator.validateId(equipmentId);
         equipmentService.validateExistence(equipmentId);
 
-        List<Room> rooms = roomDao.getAllByEquipment(equipmentId);
+        List<Room> rooms = roomRepository.getAllByEquipment(equipmentId);
 
         if (rooms.isEmpty()) {
-
             LOGGER.warn("Result is empty, equipment id = {}", equipmentId);
             throw new NotFoundException("Result with equipment id=" + equipmentId + " is empty");
         }
@@ -92,9 +92,16 @@ public class RoomService {
         validator.validateId(room.getId());
 
         validateExistence(room.getId());
-        floorService.validateExistence(room.getFloor().getId());
+        floorService.validateExistence(room
+                .getFloor()
+                .getId());
+        try {
+            return roomRepository.save(room);
 
-        return roomDao.update(room);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", room, ex);
+            throw new DaoException("Updating error: " + room, ex);
+        }
     }
 
     public void deleteById(BigInteger id) {
@@ -102,18 +109,21 @@ public class RoomService {
 
         validator.validateId(id);
         validateExistence(id);
+        try {
+            roomRepository.deleteById(id);
 
-        roomDao.deleteById(id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            roomDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!roomRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 }

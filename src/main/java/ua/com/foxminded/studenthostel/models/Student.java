@@ -1,6 +1,5 @@
 package ua.com.foxminded.studenthostel.models;
 
-import org.hibernate.annotations.NamedQuery;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -26,8 +25,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@NamedQuery(name = "Student.getAll", query = "SELECT m FROM Student m")
-@SequenceGenerator(name = "students_seq", initialValue = 1)
 @NotNull
 @Entity
 @Table(name = "students", uniqueConstraints =
@@ -78,7 +75,7 @@ public class Student {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "students_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "student_id")
     public BigInteger getId() {
         return id;

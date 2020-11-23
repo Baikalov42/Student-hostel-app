@@ -9,18 +9,21 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.EquipmentDao;
-import ua.com.foxminded.studenthostel.dao.FloorDao;
-import ua.com.foxminded.studenthostel.dao.RoomDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.EquipmentRepository;
+import ua.com.foxminded.studenthostel.repository.FloorRepository;
+import ua.com.foxminded.studenthostel.repository.RoomRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Floor;
 import ua.com.foxminded.studenthostel.models.Room;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 class RoomServiceTest {
@@ -29,6 +32,7 @@ class RoomServiceTest {
     public static final BigInteger NEGATIVE_ID = BigInteger.valueOf(-1);
     public static final BigInteger ZERO_ID = BigInteger.ZERO;
     public static final String VALID_NAME = "AB-1234";
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
 
     @Autowired
     @InjectMocks
@@ -43,11 +47,11 @@ class RoomServiceTest {
     private FloorService floorService;
 
     @Mock
-    private RoomDao roomDao;
+    private RoomRepository roomRepository;
     @Mock
-    private FloorDao floorDao;
+    private FloorRepository floorRepository;
     @Mock
-    private EquipmentDao equipmentDao;
+    private EquipmentRepository equipmentRepository;
 
     @BeforeEach
     public void initMock() {
@@ -56,15 +60,17 @@ class RoomServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Room room = new Room();
+        Room toDB = new Room();
+        toDB.setName(VALID_NAME);
+        toDB.setName(VALID_NAME);
+        toDB.setFloor(getFloor(VALID_ID));
 
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
+        Room fromDB = getRoom(VALID_ID, VALID_NAME);
 
-        Mockito.when(roomDao.insert(room)).thenReturn(VALID_ID);
-        Mockito.when(floorDao.getById(VALID_ID)).thenReturn(new Floor());
+        Mockito.when(roomRepository.save(toDB)).thenReturn(fromDB);
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(true);
 
-        Assertions.assertEquals(VALID_ID, roomService.insert(room));
+        Assertions.assertEquals(VALID_ID, roomService.insert(toDB));
     }
 
     @Test
@@ -115,37 +121,36 @@ class RoomServiceTest {
 
     @Test
     public void insert_ShouldThrowExceptionWhen_FloorIdNotValid() {
-        Room room = new Room();
-        room.setName(VALID_NAME);
+        Room toDB = new Room();
+        toDB.setName(VALID_NAME);
 
-        room.setFloor(getFloor(ZERO_ID));
-        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
+        toDB.setFloor(getFloor(ZERO_ID));
+        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(toDB));
 
-        room.setFloor(getFloor(NEGATIVE_ID));
-        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
+        toDB.setFloor(getFloor(NEGATIVE_ID));
+        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(toDB));
 
-        room.setFloor(getFloor(null));
-        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
+        toDB.setFloor(getFloor(null));
+        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(toDB));
     }
 
 
     @Test
     public void insert_ShouldThrowExceptionWhen_FloorNotExist() {
-        Room room = new Room();
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
+        Room toDB = new Room();
+        toDB.setName(VALID_NAME);
+        toDB.setFloor(getFloor(VALID_ID));
 
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(room));
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(false);
+        Assertions.assertThrows(ValidationException.class, () -> roomService.insert(toDB));
     }
 
     @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Room room = new Room();
-        room.setName(VALID_NAME);
+        Room fromDB = getRoom(VALID_ID, VALID_NAME);
 
-        Mockito.when(roomDao.getById(VALID_ID)).thenReturn(room);
-        Assertions.assertEquals(room, roomService.getById(VALID_ID));
+        Mockito.when(roomRepository.findById(VALID_ID)).thenReturn(Optional.of(fromDB));
+        Assertions.assertEquals(fromDB, roomService.getById(VALID_ID));
     }
 
     @Test
@@ -161,29 +166,15 @@ class RoomServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(roomRepository.findById(VALID_ID)).thenReturn(Optional.empty());
         Assertions.assertThrows(NotFoundException.class, () -> roomService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Room room = new Room();
-        room.setId(VALID_ID);
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
-
-        List<Room> expectResult = new ArrayList<>();
-        expectResult.add(room);
-
-        Mockito.when(roomDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, roomService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(roomDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(roomRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> roomService.getAll(10, 10));
+                () -> roomService.getAll(0));
     }
 
     @Test
@@ -200,7 +191,7 @@ class RoomServiceTest {
 
     @Test
     public void getAllByEquipment_ShouldThrowException_WhenEquipmentNotExist() {
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> roomService.getAllByEquipment(VALID_ID));
@@ -208,7 +199,8 @@ class RoomServiceTest {
 
     @Test
     public void getAllByEquipment_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(roomDao.getAllByEquipment(VALID_ID)).thenReturn(Collections.emptyList());
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(roomRepository.getAllByEquipment(VALID_ID)).thenReturn(Collections.emptyList());
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> roomService.getAllByEquipment(VALID_ID));
@@ -265,10 +257,7 @@ class RoomServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenIdNotValid() {
-        Room room = new Room();
-
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
+        Room room = getRoom(VALID_ID, VALID_NAME);
 
         room.setId(ZERO_ID);
         Assertions.assertThrows(ValidationException.class, () -> roomService.update(room));
@@ -282,24 +271,18 @@ class RoomServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenEntryNotExist() {
-        Room room = new Room();
-        room.setId(VALID_ID);
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
+        Room room = getRoom(VALID_ID, VALID_NAME);
 
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> roomService.update(room));
     }
 
     @Test
-    public void update_ShouldThrowException_WhenFacultyNotExist() {
-        Room room = new Room();
-        room.setId(VALID_ID);
-        room.setName(VALID_NAME);
-        room.setFloor(getFloor(VALID_ID));
+    public void update_ShouldThrowException_WhenFloorNotExist() {
+        Room room = getRoom(VALID_ID, VALID_NAME);
 
-        Mockito.when(floorDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(floorRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> roomService.update(room));
     }
@@ -324,13 +307,22 @@ class RoomServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(roomDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(roomRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> roomService.deleteById(VALID_ID));
     }
 
-    Floor getFloor(BigInteger id) {
+    private Room getRoom(BigInteger id, String name) {
+        Room room = new Room();
+        room.setId(id);
+        room.setName(name);
+        room.setFloor(getFloor(VALID_ID));
+
+        return room;
+    }
+
+    private Floor getFloor(BigInteger id) {
         Floor floor = new Floor();
         floor.setName("name");
         floor.setId(id);

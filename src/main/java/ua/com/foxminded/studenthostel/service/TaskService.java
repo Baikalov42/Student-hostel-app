@@ -3,8 +3,13 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ua.com.foxminded.studenthostel.dao.TaskDao;
+import ua.com.foxminded.studenthostel.repository.TaskRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Task;
@@ -17,13 +22,12 @@ import java.util.List;
 public class TaskService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private TaskDao taskDao;
-
+    private TaskRepository taskRepository;
     @Autowired
-    StudentService studentService;
-
+    private StudentService studentService;
     @Autowired
     private ValidatorEntity<Task> validator;
 
@@ -31,29 +35,33 @@ public class TaskService {
         LOGGER.debug("inserting {}", task);
 
         validator.validate(task);
-        BigInteger id = taskDao.insert(task);
+        try {
+            return taskRepository.save(task).getId();
 
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", task, ex);
+            throw new DaoException("Insertion error : " + task, ex);
+        }
     }
 
     public Task getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Task task = taskDao.getById(id);
 
-        LOGGER.debug("getting complete {}", task);
-        return task;
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found, id = " + id));
     }
 
-    public List<Task> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
-        List<Task> result = taskDao.getAll(offset, limit);
+    public List<Task> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
+
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Task> result = taskRepository.findAll(pageable).getContent();
 
         if (result.isEmpty()) {
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -64,7 +72,7 @@ public class TaskService {
         validator.validateId(studentId);
         studentService.validateExistence(studentId);
 
-        List<Task> tasks = taskDao.getAllByStudent(studentId);
+        List<Task> tasks = taskRepository.getAllByStudent(studentId);
 
         if (tasks.isEmpty()) {
             LOGGER.warn("result is empty, student id = {}", studentId);
@@ -80,7 +88,7 @@ public class TaskService {
         validateExistence(taskId);
         studentService.validateExistence(studentId);
 
-        taskDao.assignToStudent(studentId, taskId);
+        taskRepository.assignToStudent(studentId, taskId);
     }
 
     public void unassignFromStudent(BigInteger studentId, BigInteger taskId) {
@@ -90,7 +98,7 @@ public class TaskService {
         validateExistence(taskId);
         studentService.validateExistence(studentId);
 
-        taskDao.unassignFromStudent(studentId, taskId);
+        taskRepository.unassignFromStudent(studentId, taskId);
     }
 
     public boolean isStudentTaskRelationExist(BigInteger studentId, BigInteger taskId) {
@@ -100,7 +108,7 @@ public class TaskService {
         validateExistence(taskId);
         studentService.validateExistence(studentId);
 
-        return taskDao.isStudentTaskRelationExist(studentId, taskId);
+        return taskRepository.isStudentTaskRelationExist(studentId, taskId);
     }
 
 
@@ -111,7 +119,13 @@ public class TaskService {
         validator.validateId(task.getId());
         validateExistence(task.getId());
 
-        return taskDao.update(task);
+        try {
+            return taskRepository.save(task);
+
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", task, ex);
+            throw new DaoException("Updating error: " + task, ex);
+        }
     }
 
     public void deleteById(BigInteger id) {
@@ -120,17 +134,21 @@ public class TaskService {
         validator.validateId(id);
         validateExistence(id);
 
-        taskDao.deleteById(id);
+        try {
+            taskRepository.deleteById(id);
+
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            taskDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!taskRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 }

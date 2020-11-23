@@ -22,7 +22,6 @@ import java.util.List;
 public class EquipmentController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EquipmentController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private EquipmentService equipmentService;
@@ -65,10 +64,7 @@ public class EquipmentController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<Equipment> equipments = equipmentService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Equipment> equipments = equipmentService.getAll(pageNumber);
         model.addAttribute("equipments", equipments);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, equipments.size());

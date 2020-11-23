@@ -11,19 +11,19 @@ INSERT INTO floors (floor_id, floor_name)
 VALUES (1, 'Floor');
 
 INSERT INTO rooms (room_id, room_name, floor_id)
-VALUES (1, 'RM-0001', 1);
-
-INSERT INTO rooms (room_id, room_name, floor_id)
 VALUES (2, 'RM-0002', 1);
 
 INSERT INTO rooms (room_id, room_name, floor_id)
 VALUES (3, 'RM-0003', 1);
 
-INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
-VALUES (1, 'Name', 'Lastname', 10, 1, 1);
+INSERT INTO rooms (room_id, room_name, floor_id)
+VALUES (4, 'RM-0004', 1);
 
 INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
-VALUES (6, 'Namesecond', 'Lastnamesecond', 10, 1, 2);
+VALUES (1, 'Name', 'Lastname', 10, 1, 2);
+
+INSERT INTO students (student_id, first_name, last_name, hours_debt, group_id, room_id)
+VALUES (6, 'Namesecond', 'Lastnamesecond', 10, 1, 3);
 
 INSERT INTO equipments (equipment_id, equipment_name)
 VALUES (1, 'Equipment');

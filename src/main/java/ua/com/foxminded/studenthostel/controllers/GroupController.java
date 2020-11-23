@@ -18,7 +18,6 @@ import java.util.List;
 public class GroupController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private GroupService groupService;
@@ -59,10 +58,7 @@ public class GroupController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , limit {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<Group> groups = groupService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Group> groups = groupService.getAll(pageNumber);
         model.addAttribute("groups", groups);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, groups.size());
