@@ -3,8 +3,13 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ua.com.foxminded.studenthostel.dao.EquipmentDao;
+import ua.com.foxminded.studenthostel.repository.EquipmentRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Equipment;
@@ -17,9 +22,10 @@ import java.util.List;
 public class EquipmentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EquipmentService.class);
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private EquipmentDao equipmentDao;
+    private EquipmentRepository equipmentRepository;
     @Autowired
     private StudentService studentService;
     @Autowired
@@ -29,52 +35,52 @@ public class EquipmentService {
         LOGGER.debug("inserting {}", equipment);
 
         validator.validate(equipment);
-        BigInteger id = equipmentDao.insert(equipment);
+        try {
+            return equipmentRepository.save(equipment).getId();
 
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", equipment, ex);
+            throw new DaoException("Insertion error : " + equipment, ex);
+        }
     }
 
     public void assignToStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("assigning, student id {}, equipment id {}", studentId, equipmentId);
 
         validator.validateId(studentId, equipmentId);
-        validateExistence(equipmentId);
+        this.validateExistence(equipmentId);
         studentService.validateExistence(studentId);
 
-         equipmentDao.assignToStudent(studentId, equipmentId);
+        equipmentRepository.assignToStudent(studentId, equipmentId);
     }
 
     public void unassignFromStudent(BigInteger studentId, BigInteger equipmentId) {
         LOGGER.debug("un assigning, student id {}, equipment id {}", studentId, equipmentId);
 
         validator.validateId(studentId, equipmentId);
-        validateExistence(equipmentId);
+        this.validateExistence(equipmentId);
         studentService.validateExistence(studentId);
 
-         equipmentDao.unassignFromStudent(studentId, equipmentId);
+        equipmentRepository.unassignFromStudent(studentId, equipmentId);
     }
-
 
     public Equipment getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Equipment equipment = equipmentDao.getById(id);
-
-        LOGGER.debug("getting complete {}", equipment);
-        return equipment;
+        return equipmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found, id = " + id));
     }
 
+    public List<Equipment> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
 
-    public List<Equipment> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Equipment> result = equipmentRepository.findAll(pageable).getContent();
 
-        List<Equipment> result = equipmentDao.getAll(offset, limit);
         if (result.isEmpty()) {
-
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -85,13 +91,13 @@ public class EquipmentService {
         validator.validateId(studentId);
         studentService.validateExistence(studentId);
 
-        List<Equipment> tasks = equipmentDao.getAllByStudent(studentId);
+        List<Equipment> equipment = equipmentRepository.findAllByStudent(studentId);
 
-        if (tasks.isEmpty()) {
+        if (equipment.isEmpty()) {
             LOGGER.warn("result is empty, student id = {}", studentId);
             throw new NotFoundException("result is empty, student id = " + studentId);
         }
-        return tasks;
+        return equipment;
     }
 
     public Equipment update(Equipment equipment) {
@@ -101,7 +107,12 @@ public class EquipmentService {
         validator.validateId(equipment.getId());
         validateExistence(equipment.getId());
 
-        return equipmentDao.update(equipment);
+        try {
+            return equipmentRepository.save(equipment);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", equipment, ex);
+            throw new DaoException("Updating error: " + equipment, ex);
+        }
     }
 
     public void deleteById(BigInteger id) {
@@ -109,18 +120,20 @@ public class EquipmentService {
 
         validator.validateId(id);
         validateExistence(id);
-
-         equipmentDao.deleteById(id);
+        try {
+            equipmentRepository.deleteById(id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            equipmentDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!equipmentRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 }

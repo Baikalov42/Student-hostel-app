@@ -133,9 +133,9 @@ class StudentControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Student> students = Collections.singletonList(getStudent());
-        Mockito.when(studentService.getAll(0, 10)).thenReturn(students);
+        Mockito.when(studentService.getAll(0)).thenReturn(students);
 
-        mockMvc.perform(get("/students/page/1"))
+        mockMvc.perform(get("/students/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/students-list"))
                 .andExpect(model().attribute("students", students));
@@ -143,9 +143,9 @@ class StudentControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(studentService.getAll(0, 10)).thenThrow(NotFoundException.class);
+        Mockito.when(studentService.getAll(0)).thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/students/page/1"))
+        mockMvc.perform(get("/students/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
@@ -153,10 +153,10 @@ class StudentControllerTest {
     @Test
     public void getAllByFloor_ShouldReturnViewListOfFloors_WhenFloorsExists() throws Exception {
         List<Floor> floors = Collections.singletonList(getFloor());
-        Mockito.when(floorService.getAll(0, 10))
+        Mockito.when(floorService.getAll(0))
                 .thenReturn(floors);
 
-        mockMvc.perform(get("/students/byFloor/page/1"))
+        mockMvc.perform(get("/students/byFloor/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/students-by-floor"))
                 .andExpect(model().attribute("floors", floors));
@@ -165,10 +165,10 @@ class StudentControllerTest {
     @Test
     public void getAllByFloor_ShouldReturnViewOfError_WhenFloorsNotExists() throws Exception {
 
-        Mockito.when(floorService.getAll(0, 10))
+        Mockito.when(floorService.getAll(0))
                 .thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/students/byFloor/page/1"))
+        mockMvc.perform(get("/students/byFloor/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
@@ -199,10 +199,10 @@ class StudentControllerTest {
     @Test
     public void getAllByFaculty_ShouldReturnViewListOfFaculties_WhenFacultiesExists() throws Exception {
         List<Faculty> faculties = Collections.singletonList(getFaculty());
-        Mockito.when(facultyService.getAll(0, 10))
+        Mockito.when(facultyService.getAll(0))
                 .thenReturn(faculties);
 
-        mockMvc.perform(get("/students/byFaculty/page/1"))
+        mockMvc.perform(get("/students/byFaculty/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/students-by-faculty"))
                 .andExpect(model().attribute("faculties", faculties));
@@ -211,10 +211,10 @@ class StudentControllerTest {
     @Test
     public void getAllByFaculty_ShouldReturnViewOfError_WhenFacultiesNotExists() throws Exception {
 
-        Mockito.when(facultyService.getAll(0, 10))
+        Mockito.when(facultyService.getAll(0))
                 .thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/students/byFaculty/page/1"))
+        mockMvc.perform(get("/students/byFaculty/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
@@ -245,10 +245,10 @@ class StudentControllerTest {
     @Test
     public void getAllByCourse_ShouldReturnViewListOfCourseNumbers_WhenCourseNumberExists() throws Exception {
         List<CourseNumber> courseNumbers = Collections.singletonList(getCourseNumber());
-        Mockito.when(courseNumberService.getAll(0, 10))
+        Mockito.when(courseNumberService.getAll(0))
                 .thenReturn(courseNumbers);
 
-        mockMvc.perform(get("/students/byCourse/page/1"))
+        mockMvc.perform(get("/students/byCourse/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("students/students-by-course"))
                 .andExpect(model().attribute("courseNumbers", courseNumbers));
@@ -257,10 +257,10 @@ class StudentControllerTest {
     @Test
     public void getAllByCourse_ShouldReturnViewOfError_WhenCourseNumbersNotExists() throws Exception {
 
-        Mockito.when(courseNumberService.getAll(0, 10))
+        Mockito.when(courseNumberService.getAll(0))
                 .thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/students/byCourse/page/1"))
+        mockMvc.perform(get("/students/byCourse/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }

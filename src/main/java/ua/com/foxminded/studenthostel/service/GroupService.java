@@ -3,9 +3,14 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import ua.com.foxminded.studenthostel.dao.GroupDao;
+import ua.com.foxminded.studenthostel.repository.GroupRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Group;
@@ -20,9 +25,10 @@ import java.util.List;
 public class GroupService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupService.class);
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private GroupDao groupDao;
+    private GroupRepository groupRepository;
     @Autowired
     private FacultyService facultyService;
     @Autowired
@@ -39,30 +45,32 @@ public class GroupService {
         facultyService.validateExistence(group.getFaculty().getId());
         courseNumberService.validateExistence(group.getCourseNumber().getId());
 
-        BigInteger id = groupDao.insert(group);
+        try {
+            return groupRepository.save(group).getId();
 
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", group, ex);
+            throw new DaoException("Insertion error : " + group, ex);
+        }
     }
 
     public Group getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Group group = groupDao.getById(id);
-
-        LOGGER.debug("getting complete {}", group);
-        return group;
+        return groupRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found, id = " + id));
     }
 
-    public List<Group> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
-        List<Group> result = groupDao.getAll(offset, limit);
+    public List<Group> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
+
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Group> result = groupRepository.findAll(pageable).getContent();
 
         if (result.isEmpty()) {
-
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -82,8 +90,13 @@ public class GroupService {
         courseNumberService.validateExistence(group
                 .getCourseNumber()
                 .getId());
+        try {
+            return groupRepository.save(group);
 
-        return groupDao.update(group);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", group, ex);
+            throw new DaoException("Updating error: " + group, ex);
+        }
     }
 
     public void deleteById(BigInteger id) {
@@ -92,17 +105,20 @@ public class GroupService {
         validator.validateId(id);
         validateExistence(id);
 
-        groupDao.deleteById(id);
+        try {
+            groupRepository.deleteById(id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            groupDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!groupRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 }

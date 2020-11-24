@@ -21,7 +21,6 @@ import java.util.List;
 public class TaskController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private TaskService taskService;
@@ -64,10 +63,7 @@ public class TaskController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<Task> tasks = taskService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Task> tasks = taskService.getAll(pageNumber);
         model.addAttribute("tasks", tasks);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, tasks.size());

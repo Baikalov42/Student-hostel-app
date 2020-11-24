@@ -109,9 +109,9 @@ class GroupControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Group> groups = Collections.singletonList(getGroup());
-        Mockito.when(groupService.getAll(0, 10)).thenReturn(groups);
+        Mockito.when(groupService.getAll(0)).thenReturn(groups);
 
-        mockMvc.perform(get("/groups/page/1"))
+        mockMvc.perform(get("/groups/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("groups/groups-list"))
                 .andExpect(model().attribute("groups", groups));
@@ -119,9 +119,9 @@ class GroupControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(groupService.getAll(0, 10)).thenThrow(NotFoundException.class);
+        Mockito.when(groupService.getAll(0)).thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/groups/page/1"))
+        mockMvc.perform(get("/groups/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }

@@ -9,9 +9,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.CourseNumberDao;
-import ua.com.foxminded.studenthostel.dao.FacultyDao;
-import ua.com.foxminded.studenthostel.dao.GroupDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.CourseNumberRepository;
+import ua.com.foxminded.studenthostel.repository.FacultyRepository;
+import ua.com.foxminded.studenthostel.repository.GroupRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.CourseNumber;
@@ -19,9 +23,7 @@ import ua.com.foxminded.studenthostel.models.Faculty;
 import ua.com.foxminded.studenthostel.models.Group;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 class GroupServiceTest {
@@ -30,25 +32,26 @@ class GroupServiceTest {
     public static final BigInteger NEGATIVE_ID = BigInteger.valueOf(-1);
     public static final BigInteger ZERO_ID = BigInteger.ZERO;
     public static final String VALID_NAME = "ABC-1234";
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
 
     @Autowired
     @InjectMocks
-    GroupService groupService;
+    private GroupService groupService;
 
     @Autowired
     @InjectMocks
-    FacultyService facultyService;
+    private FacultyService facultyService;
 
     @Autowired
     @InjectMocks
-    CourseNumberService courseNumberService;
+    private CourseNumberService courseNumberService;
 
     @Mock
-    private GroupDao groupDao;
+    private GroupRepository groupRepository;
     @Mock
-    private FacultyDao facultyDao;
+    private FacultyRepository facultyRepository;
     @Mock
-    private CourseNumberDao courseNumberDao;
+    private CourseNumberRepository courseNumberRepository;
 
     @BeforeEach
     public void initMock() {
@@ -57,18 +60,20 @@ class GroupServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Group group = new Group();
+        Group toDB = new Group();
+        toDB.setName(VALID_NAME);
+        toDB.setCourseNumber(getCourse(VALID_ID));
+        toDB.setFaculty(getFaculty(VALID_ID));
 
-        group.setName(VALID_NAME);
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
+        Group fromDB = getGroup(VALID_ID, VALID_NAME);
 
-        Mockito.when(groupDao.insert(group)).thenReturn(VALID_ID);
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenReturn(new CourseNumber());
-        Mockito.when(facultyDao.getById(VALID_ID)).thenReturn(new Faculty());
+        Mockito.when(groupRepository.save(toDB)).thenReturn(fromDB);
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(true);
 
-        Assertions.assertEquals(VALID_ID, groupService.insert(group));
+        Assertions.assertEquals(VALID_ID, groupService.insert(toDB));
     }
+
 
     @Test
     public void insert_ShouldThrowExceptionWhenNameNotValid() {
@@ -154,8 +159,8 @@ class GroupServiceTest {
         group.setFaculty(getFaculty(VALID_ID));
         group.setCourseNumber(getCourse(VALID_ID));
 
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Mockito.when(facultyDao.getById(VALID_ID)).thenReturn(new Faculty());
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
     }
@@ -167,8 +172,8 @@ class GroupServiceTest {
         group.setFaculty(getFaculty(VALID_ID));
         group.setCourseNumber(getCourse(VALID_ID));
 
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenReturn(new CourseNumber());
-        Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> groupService.insert(group));
     }
@@ -181,11 +186,10 @@ class GroupServiceTest {
 
     @Test
     public void getById_ShouldReturnObject_WhenIdIsValid() {
-        Group group = new Group();
-        group.setName(VALID_NAME);
+        Group fromDB = getGroup(VALID_ID, VALID_NAME);
 
-        Mockito.when(groupDao.getById(VALID_ID)).thenReturn(group);
-        Assertions.assertEquals(group, groupService.getById(VALID_ID));
+        Mockito.when(groupRepository.findById(VALID_ID)).thenReturn(Optional.of(fromDB));
+        Assertions.assertEquals(fromDB, groupService.getById(VALID_ID));
     }
 
     @Test
@@ -201,38 +205,21 @@ class GroupServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(groupRepository.findById(VALID_ID)).thenReturn(Optional.empty());
         Assertions.assertThrows(NotFoundException.class, () -> groupService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Group group = new Group();
-        group.setName(VALID_NAME);
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
-
-        List<Group> expectResult = new ArrayList<>();
-        expectResult.add(group);
-
-        Mockito.when(groupDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, groupService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(groupDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(groupRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> groupService.getAll(10, 10));
+                () -> groupService.getAll(0));
     }
 
 
     @Test
     public void update_ShouldThrowException_WhenNameNotValid() {
-        Group group = new Group();
-        group.setId(VALID_ID);
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
+        Group group = getGroup(VALID_ID, VALID_NAME);
 
         group.setName("");
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
@@ -273,11 +260,7 @@ class GroupServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenIdNotValid() {
-        Group group = new Group();
-
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
-        group.setName(VALID_NAME);
+        Group group = getGroup(VALID_ID, VALID_NAME);
 
         group.setId(ZERO_ID);
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
@@ -292,42 +275,27 @@ class GroupServiceTest {
 
     @Test
     public void update_ShouldThrowException_WhenEntryNotExist() {
-        Group group = new Group();
+        Group group = getGroup(VALID_ID, VALID_NAME);
 
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
-        group.setName(VALID_NAME);
-        group.setId(VALID_ID);
-
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
     }
 
     @Test
     public void update_ShouldThrowException_WhenFacultyNotExist() {
-        Group group = new Group();
+        Group group = getGroup(VALID_ID, VALID_NAME);
 
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
-        group.setName(VALID_NAME);
-        group.setId(VALID_ID);
-
-        Mockito.when(facultyDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
     }
 
     @Test
     public void update_ShouldThrowException_WhenCourseNumberNotExist() {
-        Group group = new Group();
+        Group group = getGroup(VALID_ID, VALID_NAME);
 
-        group.setFaculty(getFaculty(VALID_ID));
-        group.setCourseNumber(getCourse(VALID_ID));
-        group.setName(VALID_NAME);
-        group.setId(VALID_ID);
-
-        Mockito.when(courseNumberDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(courseNumberRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class, () -> groupService.update(group));
     }
@@ -350,23 +318,32 @@ class GroupServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(groupDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(groupRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> groupService.deleteById(VALID_ID));
     }
 
-    CourseNumber getCourse(BigInteger id) {
+    private Group getGroup(BigInteger id, String name) {
+        Group group = new Group();
+        group.setId(id);
+        group.setName(name);
+        group.setFaculty(getFaculty(VALID_ID));
+        group.setCourseNumber(getCourse(VALID_ID));
+        return group;
+    }
+
+    private CourseNumber getCourse(BigInteger id) {
         CourseNumber courseNumber = new CourseNumber();
-        courseNumber.setName("coursenumbertestname");
+        courseNumber.setName("Coursename");
         courseNumber.setId(id);
 
         return courseNumber;
     }
 
-    Faculty getFaculty(BigInteger id) {
+    private Faculty getFaculty(BigInteger id) {
         Faculty faculty = new Faculty();
-        faculty.setName("testfacultyname");
+        faculty.setName("Facultyname");
         faculty.setId(id);
 
         return faculty;

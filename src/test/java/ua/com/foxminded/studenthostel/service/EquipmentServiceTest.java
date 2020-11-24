@@ -9,17 +9,18 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.com.foxminded.studenthostel.dao.EquipmentDao;
-import ua.com.foxminded.studenthostel.dao.StudentDao;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import ua.com.foxminded.studenthostel.repository.EquipmentRepository;
+import ua.com.foxminded.studenthostel.repository.StudentRepository;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Equipment;
-import ua.com.foxminded.studenthostel.models.Student;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 class EquipmentServiceTest {
@@ -28,6 +29,7 @@ class EquipmentServiceTest {
     public static final BigInteger NEGATIVE_ID = BigInteger.valueOf(-1);
     public static final BigInteger ZERO_ID = BigInteger.ZERO;
     public static final String VALID_NAME = "Name name";
+    public static final Pageable PAGEABLE = PageRequest.of(0, 10, Sort.Direction.ASC, "id");
 
     @Autowired
     @InjectMocks
@@ -38,9 +40,9 @@ class EquipmentServiceTest {
     private StudentService studentService;
 
     @Mock
-    private EquipmentDao equipmentDao;
+    private EquipmentRepository equipmentRepository;
     @Mock
-    private StudentDao studentDao;
+    private StudentRepository studentRepository;
 
 
     @BeforeEach
@@ -50,17 +52,19 @@ class EquipmentServiceTest {
 
     @Test
     public void insert_ShouldReturnId_WhenInputIsValid() {
-        Equipment equipment = new Equipment();
-        Mockito.when(equipmentDao.insert(equipment)).thenReturn(VALID_ID);
+        Equipment toDB = new Equipment();
+        Equipment fromDB = getEquipment(VALID_ID, VALID_NAME);
 
-        equipment.setName("Name Name");
-        Assertions.assertEquals(VALID_ID, equipmentService.insert(equipment));
+        Mockito.when(equipmentRepository.save(toDB)).thenReturn(fromDB);
 
-        equipment.setName("Name NAME");
-        Assertions.assertEquals(VALID_ID, equipmentService.insert(equipment));
+        toDB.setName("Name Name");
+        Assertions.assertEquals(VALID_ID, equipmentService.insert(toDB));
 
-        equipment.setName("NAme NAmE123");
-        Assertions.assertEquals(VALID_ID, equipmentService.insert(equipment));
+        toDB.setName("Name NAME");
+        Assertions.assertEquals(VALID_ID, equipmentService.insert(toDB));
+
+        toDB.setName("NAme NAmE123");
+        Assertions.assertEquals(VALID_ID, equipmentService.insert(toDB));
     }
 
     @Test
@@ -129,8 +133,8 @@ class EquipmentServiceTest {
 
     @Test
     public void assignToStudent_ShouldThrowException_WhenStudentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(new Equipment());
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> equipmentService.assignToStudent(VALID_ID, VALID_ID));
@@ -138,8 +142,8 @@ class EquipmentServiceTest {
 
     @Test
     public void assignToStudent_ShouldThrowException_WhenEquipmentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> equipmentService.assignToStudent(VALID_ID, VALID_ID));
@@ -164,8 +168,8 @@ class EquipmentServiceTest {
 
     @Test
     public void unassignFromStudent_ShouldThrowException_WhenStudentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(new Equipment());
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(false);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(true);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> equipmentService.unassignFromStudent(VALID_ID, VALID_ID));
@@ -173,8 +177,8 @@ class EquipmentServiceTest {
 
     @Test
     public void unassignFromStudent_ShouldThrowException_WhenEquipmentNotExist() {
-        Mockito.when(studentDao.getById(VALID_ID)).thenReturn(new Student());
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(studentRepository.existsById(VALID_ID)).thenReturn(true);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> equipmentService.unassignFromStudent(VALID_ID, VALID_ID));
@@ -182,11 +186,9 @@ class EquipmentServiceTest {
 
     @Test
     public void getById_ShouldReturnEquipment_WhenIdIsValid() {
-        Equipment equipment = new Equipment();
-        equipment.setId(VALID_ID);
-        equipment.setName(VALID_NAME);
+        Equipment equipment = getEquipment(VALID_ID, VALID_NAME);
 
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenReturn(equipment);
+        Mockito.when(equipmentRepository.findById(VALID_ID)).thenReturn(Optional.of(equipment));
         Assertions.assertEquals(equipment, equipmentService.getById(VALID_ID));
     }
 
@@ -204,30 +206,17 @@ class EquipmentServiceTest {
     @Test
     public void getById_ShouldThrowException_WhenResultIsEmpty() {
 
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentRepository.findById(VALID_ID)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> equipmentService.getById(VALID_ID));
     }
 
     @Test
-    public void getAll_ShouldReturnResultList_WhenConditionCompleted() {
-        Equipment equipment = new Equipment();
-        equipment.setId(VALID_ID);
-        equipment.setName(VALID_NAME);
-
-        List<Equipment> expectResult = new ArrayList<>();
-        expectResult.add(equipment);
-
-        Mockito.when(equipmentDao.getAll(1, 10)).thenReturn(expectResult);
-        Assertions.assertEquals(expectResult, equipmentService.getAll(1, 10));
-    }
-
-    @Test
     public void getAll_ShouldThrowException_WhenResultIsEmpty() {
-        Mockito.when(equipmentDao.getAll(10, 10)).thenReturn(Collections.emptyList());
+        Mockito.when(equipmentRepository.findAll(PAGEABLE)).thenReturn(Page.empty());
         Assertions.assertThrows(NotFoundException.class,
-                () -> equipmentService.getAll(10, 10));
+                () -> equipmentService.getAll(0));
     }
 
     @Test
@@ -284,11 +273,9 @@ class EquipmentServiceTest {
     @Test
     public void update_ShouldThrowException_WhenEntryNotExist() {
 
-        Mockito.when(equipmentService.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(false);
 
-        Equipment equipment = new Equipment();
-        equipment.setName(VALID_NAME);
-        equipment.setId(VALID_ID);
+        Equipment equipment = getEquipment(VALID_ID, VALID_NAME);
 
         Assertions.assertThrows(ValidationException.class, () -> equipmentService.update(equipment));
     }
@@ -315,9 +302,17 @@ class EquipmentServiceTest {
 
     @Test
     public void deleteById_ShouldThrowException_WhenEntryNotExist() {
-        Mockito.when(equipmentDao.getById(VALID_ID)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentRepository.existsById(VALID_ID)).thenReturn(false);
 
         Assertions.assertThrows(ValidationException.class,
                 () -> equipmentService.deleteById(VALID_ID));
+    }
+
+    private Equipment getEquipment(BigInteger id, String name) {
+
+        Equipment equipment = new Equipment();
+        equipment.setId(id);
+        equipment.setName(name);
+        return equipment;
     }
 }

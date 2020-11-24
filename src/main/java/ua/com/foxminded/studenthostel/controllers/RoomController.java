@@ -20,7 +20,6 @@ import java.util.List;
 public class RoomController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private RoomService roomService;
@@ -63,10 +62,7 @@ public class RoomController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<Room> rooms = roomService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Room> rooms = roomService.getAll(pageNumber);
         model.addAttribute("rooms", rooms);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, rooms.size());
@@ -77,10 +73,7 @@ public class RoomController {
     public String getAllByEquipment(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAllByEquipment, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getting Equipments, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<Equipment> equipments = equipmentService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<Equipment> equipments = equipmentService.getAll(pageNumber);
         model.addAttribute("equipments", equipments);
 
         LOGGER.debug("(GET) getAllByEquipment complete, page number: {}, result size: {}", pageNumber, equipments.size());

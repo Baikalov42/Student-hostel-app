@@ -113,9 +113,9 @@ class TaskControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Task> floors = Collections.singletonList(getTask());
-        Mockito.when(taskService.getAll(0, 10)).thenReturn(floors);
+        Mockito.when(taskService.getAll(0)).thenReturn(floors);
 
-        mockMvc.perform(get("/tasks/page/1"))
+        mockMvc.perform(get("/tasks/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("tasks/tasks-list"))
                 .andExpect(model().attribute("tasks", floors));
@@ -123,9 +123,9 @@ class TaskControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(taskService.getAll(0, 10)).thenThrow(NotFoundException.class);
+        Mockito.when(taskService.getAll(0)).thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/tasks/page/1"))
+        mockMvc.perform(get("/tasks/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }

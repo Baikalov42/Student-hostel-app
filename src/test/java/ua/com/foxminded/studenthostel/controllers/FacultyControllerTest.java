@@ -104,9 +104,9 @@ class FacultyControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Faculty> faculties = Collections.singletonList(getFaculty());
-        Mockito.when(facultyService.getAll(0, 10)).thenReturn(faculties);
+        Mockito.when(facultyService.getAll(0)).thenReturn(faculties);
 
-        mockMvc.perform(get("/faculties/page/1"))
+        mockMvc.perform(get("/faculties/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("faculties/faculties-list"))
                 .andExpect(model().attribute("faculties", faculties));
@@ -114,9 +114,9 @@ class FacultyControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(facultyService.getAll(0, 10)).thenThrow(NotFoundException.class);
+        Mockito.when(facultyService.getAll(0)).thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/faculties/page/1"))
+        mockMvc.perform(get("/faculties/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }

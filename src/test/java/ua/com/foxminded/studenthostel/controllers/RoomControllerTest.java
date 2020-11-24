@@ -115,10 +115,10 @@ class RoomControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Room> rooms = Collections.singletonList(getRoom());
-        Mockito.when(roomService.getAll(0, 10))
+        Mockito.when(roomService.getAll(0))
                 .thenReturn(rooms);
 
-        mockMvc.perform(get("/rooms/page/1"))
+        mockMvc.perform(get("/rooms/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("rooms/rooms-list"))
                 .andExpect(model().attribute("rooms", rooms));
@@ -126,10 +126,10 @@ class RoomControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(roomService.getAll(0, 10))
+        Mockito.when(roomService.getAll(0))
                 .thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/rooms/page/1"))
+        mockMvc.perform(get("/rooms/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
@@ -137,10 +137,10 @@ class RoomControllerTest {
     @Test
     public void getAllByEquipment_ShouldReturnViewListOfEquipments_WhenEquipmentsExists() throws Exception {
         List<Equipment> equipments = Collections.singletonList(getEquipment());
-        Mockito.when(equipmentService.getAll(0, 10))
+        Mockito.when(equipmentService.getAll(0))
                 .thenReturn(equipments);
 
-        mockMvc.perform(get("/rooms/byEquipment/page/1"))
+        mockMvc.perform(get("/rooms/byEquipment/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("rooms/rooms-by-equipment"))
                 .andExpect(model().attribute("equipments", equipments));
@@ -148,10 +148,10 @@ class RoomControllerTest {
 
     @Test
     public void getAllByEquipment_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(equipmentService.getAll(0, 10))
+        Mockito.when(equipmentService.getAll(0))
                 .thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/rooms/byEquipment/page/1"))
+        mockMvc.perform(get("/rooms/byEquipment/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }

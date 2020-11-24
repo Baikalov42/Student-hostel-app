@@ -3,8 +3,13 @@ package ua.com.foxminded.studenthostel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ua.com.foxminded.studenthostel.dao.FacultyDao;
+import ua.com.foxminded.studenthostel.repository.FacultyRepository;
+import ua.com.foxminded.studenthostel.exception.DaoException;
 import ua.com.foxminded.studenthostel.exception.NotFoundException;
 import ua.com.foxminded.studenthostel.exception.ValidationException;
 import ua.com.foxminded.studenthostel.models.Faculty;
@@ -17,9 +22,10 @@ import java.util.List;
 public class FacultyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FacultyService.class);
+    private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private FacultyDao facultyDao;
+    private FacultyRepository facultyRepository;
 
     @Autowired
     private ValidatorEntity<Faculty> validator;
@@ -28,30 +34,32 @@ public class FacultyService {
         LOGGER.debug("inserting {}", faculty);
 
         validator.validate(faculty);
-        BigInteger id = facultyDao.insert(faculty);
-
-        LOGGER.debug("inserting complete, id = {}", id);
-        return id;
+        try {
+            return facultyRepository.save(faculty).getId();
+        } catch (DataAccessException ex) {
+            LOGGER.error("insertion error {}", faculty, ex);
+            throw new DaoException("Insertion error : " + faculty, ex);
+        }
     }
 
     public Faculty getById(BigInteger id) {
         LOGGER.debug("getting by id {}", id);
 
         validator.validateId(id);
-        Faculty faculty = facultyDao.getById(id);
 
-        LOGGER.debug("getting complete {}", faculty);
-        return faculty;
+        return facultyRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found, id = " + id));
     }
 
+    public List<Faculty> getAll(int pageNumber) {
+        LOGGER.debug("getting all, pageNumber = {}, pageSize = {} ", pageNumber, PAGE_SIZE);
 
-    public List<Faculty> getAll(int offset, int limit) {
-        LOGGER.debug("getting all, offset {} , limit {} ", offset, limit);
-        List<Faculty> result = facultyDao.getAll(offset, limit);
+        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, Sort.Direction.ASC, "id");
+        List<Faculty> result = facultyRepository.findAll(pageable).getContent();
 
         if (result.isEmpty()) {
-            LOGGER.warn("result is empty, offset = {}, limit = {}", offset, limit);
-            throw new NotFoundException("Result with offset=" + offset + " and limit=" + limit + " is empty");
+            LOGGER.warn("result is empty, pageNumber = {} ", pageNumber);
+            throw new NotFoundException("Result with pageNumber =" + pageNumber + " is empty");
         }
         return result;
     }
@@ -63,7 +71,12 @@ public class FacultyService {
         validator.validateId(faculty.getId());
         validateExistence(faculty.getId());
 
-        return facultyDao.update(faculty);
+        try {
+            return facultyRepository.save(faculty);
+        } catch (DataAccessException ex) {
+            LOGGER.error("updating error {}", faculty, ex);
+            throw new DaoException("Updating error: " + faculty, ex);
+        }
     }
 
     public void deleteById(BigInteger id) {
@@ -71,18 +84,20 @@ public class FacultyService {
 
         validator.validateId(id);
         validateExistence(id);
-
-        facultyDao.deleteById(id);
+        try {
+            facultyRepository.deleteById(id);
+        } catch (DataAccessException ex) {
+            LOGGER.error("deleting error {}", id, ex);
+            throw new DaoException("Deleting error: " + id, ex);
+        }
     }
 
     void validateExistence(BigInteger id) {
         LOGGER.debug("Validation existence id = {}", id);
-        try {
-            facultyDao.getById(id);
 
-        } catch (NotFoundException ex) {
+        if (!facultyRepository.existsById(id)) {
             LOGGER.warn("entry not exist, id = {}", id);
-            throw new ValidationException("id = " + id + " not exist", ex);
+            throw new ValidationException("id = " + id + " not exist");
         }
     }
 }

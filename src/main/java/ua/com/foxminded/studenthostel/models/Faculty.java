@@ -1,6 +1,5 @@
 package ua.com.foxminded.studenthostel.models;
 
-import org.hibernate.annotations.NamedQuery;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +13,6 @@ import javax.validation.constraints.Size;
 import java.math.BigInteger;
 import java.util.Objects;
 
-@NamedQuery(name="Faculty.getAll", query="SELECT m FROM Faculty m")
 @Entity
 @Table(name = "faculties")
 @NotNull
@@ -36,7 +34,7 @@ public class Faculty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "faculty_id")
+    @Column(name = "faculty_id", nullable = false, unique = true)
     public BigInteger getId() {
         return id;
     }

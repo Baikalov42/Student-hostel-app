@@ -19,7 +19,6 @@ import java.util.List;
 public class CourseNumberController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseNumberController.class);
-    private static final int LINES_LIMIT_ON_PAGE  = 10;
 
     @Autowired
     private CourseNumberService courseNumberService;
@@ -60,10 +59,7 @@ public class CourseNumberController {
     public String getAll(@PathVariable int pageNumber, Model model) {
         LOGGER.debug("(GET) getAll, page number: {}", pageNumber);
 
-        int offset = LINES_LIMIT_ON_PAGE  * pageNumber - LINES_LIMIT_ON_PAGE ;
-        LOGGER.debug("(GET) getAll, offset {} , offset {} ", offset, LINES_LIMIT_ON_PAGE );
-
-        List<CourseNumber> courseNumbers = courseNumberService.getAll(offset, LINES_LIMIT_ON_PAGE );
+        List<CourseNumber> courseNumbers = courseNumberService.getAll(pageNumber);
         model.addAttribute("courses", courseNumbers);
 
         LOGGER.debug("(GET) getAll complete, page number: {}, result size: {}", pageNumber, courseNumbers.size());

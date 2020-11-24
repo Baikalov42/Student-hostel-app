@@ -102,9 +102,9 @@ class EquipmentControllerTest {
     @Test
     public void getAll_ShouldReturnViewWithResultList_WhenEntriesExists() throws Exception {
         List<Equipment> equipments = Collections.singletonList(getEquipment());
-        Mockito.when(equipmentService.getAll(0, 10)).thenReturn(equipments);
+        Mockito.when(equipmentService.getAll(0)).thenReturn(equipments);
 
-        mockMvc.perform(get("/equipments/page/1"))
+        mockMvc.perform(get("/equipments/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("equipments/equipments-list"))
                 .andExpect(model().attribute("equipments", equipments));
@@ -112,9 +112,9 @@ class EquipmentControllerTest {
 
     @Test
     public void getAll_ShouldReturnViewOfError_WhenResultIsEmpty() throws Exception {
-        Mockito.when(equipmentService.getAll(0, 10)).thenThrow(NotFoundException.class);
+        Mockito.when(equipmentService.getAll(0)).thenThrow(NotFoundException.class);
 
-        mockMvc.perform(get("/equipments/page/1"))
+        mockMvc.perform(get("/equipments/page/0"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error"));
     }
@@ -186,14 +186,14 @@ class EquipmentControllerTest {
                 .andExpect(view().name("error"));
     }
 
-     static Equipment getEquipment() {
+    static Equipment getEquipment() {
         Equipment equipment = getNullIdEquipment();
         equipment.setId(ONE);
 
         return equipment;
     }
 
-     static Equipment getNullIdEquipment() {
+    static Equipment getNullIdEquipment() {
         Equipment equipment = new Equipment();
         equipment.setName("Testname");
 

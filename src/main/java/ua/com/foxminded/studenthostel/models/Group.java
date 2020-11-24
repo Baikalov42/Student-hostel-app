@@ -1,6 +1,5 @@
 package ua.com.foxminded.studenthostel.models;
 
-import org.hibernate.annotations.NamedQuery;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +16,6 @@ import javax.validation.constraints.Size;
 import java.math.BigInteger;
 import java.util.Objects;
 
-@NamedQuery(name = "Group.getAll", query = "SELECT m FROM Group m")
 @Entity
 @Table(name = "groups")
 @NotNull
